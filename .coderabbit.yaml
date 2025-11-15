@@ -1,0 +1,355 @@
+# CodeRabbit Configuration for Reputation Manager
+# Multi-tenant SaaS feedback management system
+# Stack: Next.js 15, NestJS, Prisma, PostgreSQL, Redis, BullMQ
+
+# Language: Spanish for reviews (Ecuador-based project)
+language: es
+
+# Review behavior
+reviews:
+  # Request changes workflow - enable blocking reviews for critical issues
+  request_changes_workflow: true
+  
+  # High-level summary at top of PR review
+  high_level_summary: true
+  
+  # Poem style for summary (keep it fun!)
+  poem: true
+  
+  # Review levels per file type
+  review_status: true
+  
+  # Auto-review on push to PR
+  auto_review:
+    enabled: true
+    # Don't auto-review drafts (let developer finish first)
+    drafts: false
+    # Review base branches
+    base_branches:
+      - main
+      - develop
+
+  # Abort review if too many files changed (possible refactor/migration)
+  abort_on_close: true
+  
+  # Collapse walkthrough details by default
+  collapse_walkthrough: false
+
+# Chat features
+chat:
+  # Enable chat interface for questions
+  auto_reply: true
+
+# Tone of reviews
+tone_instructions: |
+  - Sé constructivo y amigable
+  - Usa emojis ocasionalmente para mantenerlo ligero 😊
+  - Prioriza seguridad y multi-tenancy
+  - Enfócate en mejores prácticas de TypeScript
+  - Sugiere optimizaciones de performance cuando sea relevante
+
+# Path-based instructions for context-aware reviews
+path_instructions:
+  # Backend (NestJS API)
+  - path: "apps/api/**/*.ts"
+    instructions: |
+      - Verifica que todos los queries incluyan workspaceId para multi-tenancy isolation
+      - Asegura que Guards (WorkspaceGuard, AuthGuard) estén presentes en endpoints protegidos
+      - Revisa input validation con Zod o class-validator
+      - Chequea error handling apropiado (NotFoundException, BadRequestException, etc.)
+      - Verifica que no haya N+1 queries en Prisma
+      - Asegura que async/await esté usado correctamente
+      
+  # Worker (BullMQ processors)
+  - path: "apps/worker/**/*.ts"
+    instructions: |
+      - Verifica retry logic y error handling robusto
+      - Asegura que los jobs sean idempotentes
+      - Chequea que no haya memory leaks en procesamiento
+      - Verifica logging adecuado para debugging
+      
+  # Frontend (Next.js)
+  - path: "apps/web/**/*.{ts,tsx}"
+    instructions: |
+      - Verifica que components sean accesibles (a11y)
+      - Chequea que forms tengan validation con Zod
+      - Asegura error boundaries y loading states
+      - Verifica que no haya console.logs en producción
+      - Chequea performance (React.memo, useMemo, useCallback donde apropiado)
+      - Asegura que API calls incluyan error handling
+      
+  # Prisma schema
+  - path: "libs/database/prisma/schema.prisma"
+    instructions: |
+      - Verifica que todos los modelos principales tengan workspaceId
+      - Chequea que indexes estén presentes en foreign keys
+      - Asegura que timestamps (createdAt, updatedAt) estén presentes
+      - Verifica nomenclatura consistente (camelCase)
+      - Chequea que relaciones estén correctamente definidas
+      
+  # Shared types (DTOs)
+  - path: "libs/shared-types/**/*.ts"
+    instructions: |
+      - Verifica que DTOs usen Zod schemas
+      - Chequea que types sean exportados correctamente
+      - Asegura nomenclatura consistente (Schema para Zod, Dto para types)
+      
+  # Tests
+  - path: "**/*.spec.ts"
+    instructions: |
+      - Verifica que tests cubran casos edge
+      - Chequea que mocks estén correctamente configurados
+      - Asegura que tests sean determinísticos (no flaky)
+      - Verifica que assertions sean específicas (no solo toBeTruthy)
+      
+  # Integration libraries
+  - path: "libs/integrations/**/*.ts"
+    instructions: |
+      - Verifica error handling para APIs externas
+      - Chequea rate limiting y retry logic
+      - Asegura que secrets no estén hardcoded
+      - Verifica logging de errores para debugging
+
+# Knowledge base - project-specific context
+knowledge_base:
+  # Learnings from this project
+  learnings:
+    - "Este es un sistema multi-tenant. TODOS los queries deben filtrar por workspaceId."
+    - "Usamos Better Auth (no NextAuth). Verificar importaciones correctas."
+    - "Los mensajes SMS/WhatsApp deben descontar credits del workspace."
+    - "Compliance: verificar que hasConsent=true antes de enviar mensajes."
+    - "Ecuador phone format: +593XXXXXXXXX (10 dígitos después del +593)"
+    - "NPS calculation: (promoters - detractors) / total * 100, donde promoters=rating 4-5, detractors=rating 1-2"
+    - "Rating feliz (4-5) → Google Review, Rating infeliz (1-3) → Formulario privado"
+    - "Jobs de BullMQ deben ser scheduled para appointmentTime + scheduledHoursAfter"
+    - "Prisma Client debe usarse como singleton desde @reputation-manager/database"
+    - "DTOs compartidos deben estar en libs/shared-types, no duplicados"
+
+  # Opt-in for CodeRabbit learnings
+  opt_in: true
+
+# Early access features
+early_access: true
+
+# Enable CodeRabbit to learn from this repository
+enable_free_tier: false
+
+# Auto-labeling de PRs
+auto_labeling:
+  enabled: true
+  labels:
+    # Por tipo de cambio
+    - name: "type:feature"
+      description: "New feature"
+      patterns:
+        - "feat:"
+        - "feat("
+    - name: "type:fix"
+      description: "Bug fix"
+      patterns:
+        - "fix:"
+        - "fix("
+    - name: "type:refactor"
+      description: "Code refactor"
+      patterns:
+        - "refactor:"
+        - "refactor("
+    - name: "type:docs"
+      description: "Documentation"
+      patterns:
+        - "docs:"
+        - "docs("
+    - name: "type:test"
+      description: "Tests"
+      patterns:
+        - "test:"
+        - "test("
+    
+    # Por área afectada
+    - name: "area:frontend"
+      description: "Frontend changes"
+      paths:
+        - "apps/web/**"
+    - name: "area:backend"
+      description: "Backend changes"
+      paths:
+        - "apps/api/**"
+    - name: "area:worker"
+      description: "Worker changes"
+      paths:
+        - "apps/worker/**"
+    - name: "area:database"
+      description: "Database changes"
+      paths:
+        - "libs/database/**"
+        - "**/*.prisma"
+    - name: "area:integrations"
+      description: "External integrations"
+      paths:
+        - "libs/integrations/**"
+    
+    # Por prioridad
+    - name: "priority:critical"
+      description: "Critical security or data loss issue"
+      patterns:
+        - "security"
+        - "data loss"
+        - "workspaceId"
+        - "SQL injection"
+    - name: "priority:high"
+      description: "High priority"
+      patterns:
+        - "breaking"
+        - "migration"
+        - "authentication"
+
+# Path filters - ignore certain paths
+path_filters:
+  exclude:
+    - "**/*.md"
+    - "**/*.json"
+    - "**/package-lock.json"
+    - "**/pnpm-lock.yaml"
+    - "**/.next/**"
+    - "**/dist/**"
+    - "**/node_modules/**"
+    - "**/.nx/cache/**"
+
+# Review best practices
+best_practices:
+  - identifier: "multi-tenancy-check"
+    description: "Verificar aislamiento de multi-tenancy"
+    rule: |
+      Todos los queries a la base de datos que involucren datos de usuarios
+      deben filtrar por workspaceId para evitar data leaks entre tenants.
+      
+  - identifier: "credit-deduction"
+    description: "Verificar deducción de créditos"
+    rule: |
+      Cuando se envía un SMS o WhatsApp exitosamente, debe deducirse un crédito
+      del workspace correspondiente. Verificar en los processors de BullMQ.
+      
+  - identifier: "consent-check"
+    description: "Verificar consentimiento del paciente"
+    rule: |
+      Antes de enviar cualquier mensaje, verificar que patient.hasConsent === true
+      y que patient.optedOutAt === null. Es requerimiento legal en Ecuador.
+      
+  - identifier: "error-boundaries"
+    description: "Verificar error boundaries en componentes"
+    rule: |
+      Componentes de React que hacen fetch de datos deben tener error handling
+      apropiado, incluyendo estados de loading y error.
+
+# Security scanning
+security:
+  # Enable security vulnerability scanning
+  enabled: true
+  
+  # Specific security concerns for this project
+  patterns:
+    - pattern: "workspaceId"
+      message: "🔐 Verificar que workspaceId esté presente en el WHERE clause para multi-tenancy isolation"
+    - pattern: "prisma\\.(.*)\\.findMany\\(\\{[^}]*\\}\\)"
+      message: "⚠️ findMany sin workspaceId - posible data leak entre tenants"
+    - pattern: "prisma\\.(.*)\\.findUnique\\(\\{[^}]*\\}\\)"
+      message: "⚠️ findUnique sin workspaceId - verificar que el ID sea único globalmente"
+    - pattern: "(TWILIO_AUTH_TOKEN|STRIPE_SECRET_KEY|DATABASE_URL)"
+      message: "🚨 Secret detectado - asegurar que no esté hardcoded, usar variables de entorno"
+    - pattern: "hasConsent.*false"
+      message: "⚠️ Mensaje siendo enviado sin consentimiento - verificar compliance"
+    - pattern: "\\.sendSMS\\(|sendWhatsApp\\("
+      message: "💰 Verificar que se deduzcan créditos después de envío exitoso"
+
+# Performance hints
+performance:
+  patterns:
+    - pattern: "include:.*include:"
+      message: "🐌 Nested includes detectado - considerar usar select específico para mejor performance"
+    - pattern: "for.*await"
+      message: "🐌 Loop con await - considerar usar Promise.all() para operaciones en paralelo"
+
+# Testing requirements
+testing:
+  # Require tests for certain file patterns
+  require_tests:
+    - pattern: "apps/api/src/**/*.service.ts"
+      test_pattern: "apps/api/src/**/*.service.spec.ts"
+    - pattern: "apps/api/src/**/*.controller.ts"
+      test_pattern: "apps/api/src/**/*.controller.spec.ts"
+    - pattern: "apps/worker/src/**/*.processor.ts"
+      test_pattern: "apps/worker/src/**/*.processor.spec.ts"
+
+# Custom review rules
+review_rules:
+  # Minimum reviewers
+  min_reviewers: 1
+  
+  # Require approval from code owners
+  require_code_owner_reviews: false
+  
+  # Check for common issues
+  checks:
+    - id: "no-console-logs"
+      pattern: "console\\.(log|debug|info)"
+      message: "❌ console.log detectado - remover antes de merge o usar Logger de NestJS"
+      severity: warning
+      exclude_paths:
+        - "**/*.spec.ts"
+        - "**/*.test.ts"
+    
+    - id: "no-any-type"
+      pattern: ":\\s*any"
+      message: "⚠️ Type 'any' detectado - especificar type correcto para type safety"
+      severity: warning
+      exclude_paths:
+        - "**/*.spec.ts"
+    
+    - id: "no-todo-comments"
+      pattern: "//\\s*TODO|//\\s*FIXME"
+      message: "📝 TODO/FIXME encontrado - crear un issue en GitHub para trackear"
+      severity: info
+    
+    - id: "prisma-select-all"
+      pattern: "prisma\\..*\\.find.*\\(\\{\\s*where:"
+      message: "💡 Considerar usar 'select' para especificar solo los campos necesarios"
+      severity: info
+
+# Changelog generation
+changelog:
+  enabled: true
+  format: "conventional"
+  
+# Release notes
+release_notes:
+  enabled: true
+  
+# Commit message validation
+commit_message:
+  # Enforce conventional commits
+  enforce_conventional: true
+  types:
+    - feat
+    - fix
+    - docs
+    - style
+    - refactor
+    - perf
+    - test
+    - build
+    - ci
+    - chore
+    - revert
+  scopes:
+    - auth
+    - campaigns
+    - patients
+    - messages
+    - analytics
+    - billing
+    - integrations
+    - database
+    - worker
+    - frontend
+    - api
+    - ui
