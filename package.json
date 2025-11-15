@@ -2,6 +2,10 @@
   "name": "@reputation-manager/source",
   "version": "0.0.0",
   "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "libs/*"
+  ],
   "scripts": {
     "dev": "nx run-many --target=serve --projects=web,api,worker --parallel=3",
     "prisma:studio": "prisma studio --schema=libs/database/prisma/schema.prisma",
