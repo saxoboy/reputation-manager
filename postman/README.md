@@ -31,9 +31,10 @@ En Postman, selecciona el environment **"Reputation Manager - Local"** en el dro
 El environment tiene estas variables pre-configuradas:
 
 - `baseUrl`: `http://localhost:3000` (puerto del API)
-- `authToken`: (se llena automáticamente al hacer login)
 - `workspaceId`: (se llena automáticamente al crear workspace)
 - `userId`: (manual)
+
+**Nota**: No necesitas `authToken` porque Better Auth usa cookies.
 
 ## 📝 Flujo de Uso Recomendado
 
@@ -55,16 +56,19 @@ Crea una cuenta nueva con:
 
 **O si ya tienes cuenta:**
 
-```
 Auth → Sign In
+
 ```
 
+Las cookies de sesión se manejan automáticamente.
 El token se guarda automáticamente en `{{authToken}}`.
 
 ### 2. Crear Workspace
 
 ```
+
 Workspaces → Create Workspace
+
 ```
 
 El `workspaceId` se guarda automáticamente.
@@ -72,7 +76,9 @@ El `workspaceId` se guarda automáticamente.
 ### 3. Crear Practice
 
 ```
+
 Practices → Create Practice
+
 ```
 
 Usa el `{{workspaceId}}` que se guardó anteriormente.
@@ -80,8 +86,10 @@ Usa el `{{workspaceId}}` que se guardó anteriormente.
 ### 4. Invitar Usuarios
 
 ```
+
 Workspace Users → Invite User
-```
+
+````
 
 ## 📋 Endpoints Disponibles
 
@@ -119,24 +127,60 @@ Workspace Users → Invite User
 
 ## 🔐 Autenticación
 
-Todos los endpoints (excepto Auth) requieren autenticación mediante Bearer Token.
+**Better Auth usa cookies** para manejar la autenticación, no Bearer tokens.
 
-La colección ya tiene configurado el auth a nivel de colección, por lo que el token se envía automáticamente en todos los requests.
+### Configuración Importante en Postman:
+
+1. Ve a **Settings** (⚙️) → **General**
+2. Asegúrate de que **"Automatically follow redirects"** esté activado
+3. Asegúrate de que **"Enable cookie jar"** esté activado (crucial)
+
+### Cómo funciona:
+
+1. Haces **Sign In** o **Sign Up**
+2. Better Auth devuelve una cookie de sesión automáticamente
+3. Postman guarda la cookie en el Cookie Jar
+4. Todos los requests subsecuentes envían la cookie automáticamente
+
+**No necesitas copiar/pegar tokens manualmente.**
 
 ## 🎯 Tests Automáticos
 
-La colección incluye tests que:
+La colección incluye un test que:
 
-1. **Login**: Guarda el token automáticamente en `{{authToken}}`
-2. **Create Workspace**: Guarda el `workspaceId` en `{{workspaceId}}`
+1. **Create Workspace**: Guarda el `workspaceId` en `{{workspaceId}}`
 
+Las cookies de sesión se manejan automáticamente por Postman.
 ## 🐛 Troubleshooting
 
-### Error: "Unauthorized"
+### Error: "404 Not Found" en /api/auth/sign-in/email
 
-- Verifica que hiciste login (`Auth → Sign In`)
-- Revisa que `{{authToken}}` tiene un valor
-- El token puede expirar después de 7 días
+**Solución**: El servidor NestJS debe estar corriendo. Verifica:
+
+```bash
+# En la raíz del proyecto
+pnpm dev
+````
+
+Asegúrate de ver: `🚀 API is running on: http://localhost:3000`
+
+### Error: "Unauthorized" en endpoints protegidos
+
+**Causas posibles**:
+
+1. **No hiciste login**: Ejecuta primero `Auth → Sign In`
+2. **Cookie Jar deshabilitado**:
+   - Ve a Settings (⚙️) → General
+   - Activa "Enable cookie jar"
+3. **Sesión expirada**: Las sesiones duran 7 días. Vuelve a hacer login.
+
+### Verificar cookies manualmente:
+
+1. Después de hacer login, ve a **Cookies** (debajo de Send)
+2. Deberías ver cookies para `localhost:3000`
+3. Si no hay cookies, el login falló
+
+### Error: "Workspace not found"
 
 ### Error: "Workspace not found"
 

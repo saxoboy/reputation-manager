@@ -7,14 +7,7 @@
     "version": "1.0.0"
   },
   "auth": {
-    "type": "bearer",
-    "bearer": [
-      {
-        "key": "token",
-        "value": "{{authToken}}",
-        "type": "string"
-      }
-    ]
+    "type": "noauth"
   },
   "variable": [
     {
@@ -90,13 +83,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Guardar el token automáticamente",
-                  "if (pm.response.code === 200) {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.token) {",
-                  "        pm.collectionVariables.set('authToken', jsonData.token);",
-                  "    }",
-                  "}"
+                  "// Better Auth usa cookies automáticamente",
+                  "// No necesitas hacer nada, las cookies se guardan automáticamente"
                 ],
                 "type": "text/javascript"
               }
