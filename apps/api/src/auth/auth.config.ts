@@ -3,10 +3,12 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { prisma } from '@reputation-manager/database';
 
 export const auth = betterAuth({
+  basePath: '/api/auth',
+
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
-  
+
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false, // Por ahora false para desarrollo
@@ -26,8 +28,12 @@ export const auth = betterAuth({
   },
 
   secret: process.env.BETTER_AUTH_SECRET,
-  
+
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+
+  trustedOrigins: ['http://localhost:4000', 'http://localhost:3000'],
+
+  hooks: {}, // Requerido para usar @Hook decorators
 });
 
 export type Session = typeof auth.$Infer.Session;

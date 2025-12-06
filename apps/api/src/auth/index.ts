@@ -11,8 +11,5 @@ export * from './decorators/current-role.decorator';
 // DTOs
 export * from './dto';
 
-// Module & Service
-export * from './auth.module';
-export * from './auth.service';
-export * from './auth.controller';
+// Auth Config
 export * from './auth.config';

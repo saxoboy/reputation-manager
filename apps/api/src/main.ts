@@ -8,7 +8,9 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false, // Required by @thallesp/nestjs-better-auth
+  });
 
   // Set global prefix for all routes
   app.setGlobalPrefix('api');
