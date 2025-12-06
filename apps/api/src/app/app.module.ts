@@ -1,13 +1,12 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
 import { AuthModule } from '../auth/auth.module';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { PracticesModule } from '../practices/practices.module';
 import { WorkspaceUsersModule } from '../workspace-users/workspace-users.module';
-import { auth } from '../auth/auth.config';
+import { BetterAuthMiddleware } from '../auth/better-auth.middleware';
 
 @Module({
   imports: [
@@ -15,7 +14,6 @@ import { auth } from '../auth/auth.config';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    BetterAuthModule.forRoot({ auth }),
     AuthModule,
     WorkspacesModule,
     PracticesModule,
@@ -24,4 +22,8 @@ import { auth } from '../auth/auth.config';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(BetterAuthMiddleware).forRoutes('auth/*');
+  }
+}
