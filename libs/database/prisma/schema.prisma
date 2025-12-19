@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ============================================
@@ -28,22 +29,23 @@ model User {
 }
 
 model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String  // oauth, email
-  provider          String  // google, credentials
-  providerAccountId String?
-  refreshToken      String? @db.Text
-  accessToken       String? @db.Text
-  expiresAt         Int?
-  tokenType         String?
-  scope             String?
-  idToken           String? @db.Text
-  sessionState      String?
+  id                       String   @id @default(cuid())
+  userId                   String
+  accountId                String   // The ID of the account as provided by the SSO or equal to userId for credential accounts
+  providerId               String   // The ID of the provider (e.g., 'credential', 'google', etc.)
+  accessToken              String?  @db.Text
+  refreshToken             String?  @db.Text
+  accessTokenExpiresAt     DateTime?
+  refreshTokenExpiresAt    DateTime?
+  scope                    String?
+  idToken                  String?  @db.Text
+  password                 String?  // For email/password authentication
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([provider, providerAccountId])
+  @@unique([providerId, accountId])
   @@index([userId])
 }
 
@@ -52,6 +54,8 @@ model Session {
   token     String   @unique
   userId    String
   expiresAt DateTime
+  ipAddress String?
+  userAgent String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
