@@ -424,7 +424,7 @@ pnpm dev
 
 # Apps individuales
 pnpm nx serve web      # Frontend en :3000
-pnpm nx serve api      # API en :3001
+pnpm nx serve api      # API en :3000
 pnpm nx serve worker   # Worker (background)
 ```
 
@@ -642,7 +642,7 @@ pnpm nx reset               # Clear cache
 ### Al debuggear:
 1. Logs: `docker-compose logs -f worker`
 2. Data: `pnpm prisma:studio`
-3. Jobs: Bull Board en `:3001/admin/queues`
+3. Jobs: Bull Board en `:3000/admin/queues`
 4. Errors: Sentry dashboard
 5. Webhooks: Twilio Console → Debugger
 

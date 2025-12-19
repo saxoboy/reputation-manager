@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
+import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { auth } from '../auth/auth.config';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { PracticesModule } from '../practices/practices.module';
@@ -14,11 +14,9 @@ import { WorkspaceUsersModule } from '../workspace-users/workspace-users.module'
       isGlobal: true,
       envFilePath: '.env',
     }),
-    BetterAuthModule.forRoot({
+    AuthModule.forRoot({
       auth,
-      disableTrustedOriginsCors: false,
-      disableBodyParser: false,
-      disableGlobalAuthGuard: false,
+      // No especificar disableBodyParser - usar el valor por defecto del módulo
     }),
     WorkspacesModule,
     PracticesModule,

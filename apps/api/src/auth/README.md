@@ -353,7 +353,7 @@ Asegúrate de tener en tu `.env`:
 ```bash
 # Better Auth
 BETTER_AUTH_SECRET=your-random-secret-min-32-chars
-BETTER_AUTH_URL=http://localhost:3001
+BETTER_AUTH_URL=http://localhost:3000
 
 # Google OAuth (opcional)
 GOOGLE_CLIENT_ID=your-google-client-id

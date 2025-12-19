@@ -292,7 +292,7 @@ https://search.google.com/local/writereview?placeid={googlePlaceId}
 ### Crear primera practice
 
 ```bash
-curl -X POST http://localhost:3001/api/workspaces/clx123.../practices \
+curl -X POST http://localhost:3000/api/workspaces/clx123.../practices \
   -H "Authorization: Bearer eyJhbGc..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -306,7 +306,7 @@ curl -X POST http://localhost:3001/api/workspaces/clx123.../practices \
 ### Actualizar solo teléfono
 
 ```bash
-curl -X PUT http://localhost:3001/api/practices/clx456... \
+curl -X PUT http://localhost:3000/api/practices/clx456... \
   -H "Authorization: Bearer eyJhbGc..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -317,7 +317,7 @@ curl -X PUT http://localhost:3001/api/practices/clx456... \
 ### Eliminar practice (solo OWNER)
 
 ```bash
-curl -X DELETE http://localhost:3001/api/practices/clx456... \
+curl -X DELETE http://localhost:3000/api/practices/clx456... \
   -H "Authorization: Bearer eyJhbGc..."
 ```
 

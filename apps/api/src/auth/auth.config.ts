@@ -3,11 +3,11 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { prisma } from '@reputation-manager/database';
 
 export const auth = betterAuth({
-  basePath: '/api/auth',
-
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
+
+  basePath: '/api/auth', // Especificar explícitamente el basePath completo
 
   emailAndPassword: {
     enabled: true,
