@@ -33,6 +33,10 @@ export const auth = betterAuth({
 
   trustedOrigins: ['http://localhost:4000', 'http://localhost:3000'],
 
+  advanced: {
+    disableCSRFCheck: process.env.NODE_ENV === 'development', // Solo en dev
+  },
+
   hooks: {}, // Requerido para usar @Hook decorators
 });
 
