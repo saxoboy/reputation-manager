@@ -16,7 +16,7 @@
 ### Puertos
 
 - **Web (Next.js)**: 4000
-- **API (NestJS)**: 3001
+- **API (NestJS)**: 3000
 - **Worker**: Sin puerto (background jobs)
 
 ### Variables de Entorno
@@ -25,7 +25,7 @@ Crear `apps/web/.env.local`:
 
 ```bash
 PORT=4000
-NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
 ### Tailwind CSS v4

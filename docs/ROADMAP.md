@@ -253,7 +253,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Enqueue followup
 - [ ] Job: `send-followup`
   - [ ] Mock send appropriate message
-- [ ] Bull Board UI: `http://localhost:3001/admin/queues`
+- [ ] Bull Board UI: `http://localhost:3000/admin/queues`
 
 **Deliverables**:
 - 🎯 Full campaign flow sin integraciones externas

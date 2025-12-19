@@ -129,11 +129,11 @@ BETTER_AUTH_SECRET="replace-with-random-32-char-string-minimum"
 BETTER_AUTH_URL="http://localhost:3000"
 
 # === API ===
-API_PORT=3001
-API_URL="http://localhost:3001"
+API_PORT=3000
+API_URL="http://localhost:3000"
 
 # === Frontend ===
-NEXT_PUBLIC_API_URL="http://localhost:3001"
+NEXT_PUBLIC_API_URL="http://localhost:3000"
 
 # === Twilio (opcional por ahora) ===
 TWILIO_ACCOUNT_SID=
@@ -237,7 +237,7 @@ pnpm dev
 
 Esto levanta:
 - **Web**: `http://localhost:3000` (Next.js)
-- **API**: `http://localhost:3001` (NestJS)
+- **API**: `http://localhost:3000` (NestJS)
 - **Worker**: Background (sin puerto)
 
 **Salida esperada**:
@@ -245,7 +245,7 @@ Esto levanta:
 > nx run-many --target=serve --projects=web,api,worker --parallel=3
 
 ✔ Web server is running on http://localhost:3000
-✔ API server is running on http://localhost:3001
+✔ API server is running on http://localhost:3000
 ✔ Worker is processing jobs...
 ```
 
@@ -263,7 +263,7 @@ Abre tu navegador en `http://localhost:3000`.
 En otra terminal:
 
 ```bash
-curl http://localhost:3001/health
+curl http://localhost:3000/health
 ```
 
 **Respuesta esperada**:
@@ -370,7 +370,7 @@ docker-compose up -d
 
 **Checklist**:
 1. ¿Ejecutaste el seed? `pnpm prisma:seed`
-2. ¿El API está corriendo? `curl http://localhost:3001/health`
+2. ¿El API está corriendo? `curl http://localhost:3000/health`
 3. ¿Las credenciales son correctas? `admin@clinicademo.com` / `Demo123!`
 4. Revisa logs del API: `pnpm nx serve api`
 
@@ -406,7 +406,7 @@ Esto:
 
 **Test rápido**:
 ```bash
-curl -X POST http://localhost:3001/api/test/sms \
+curl -X POST http://localhost:3000/api/test/sms \
   -H "Content-Type: application/json" \
   -d '{"to": "+593999999999", "message": "Test from Reputation Manager"}'
 ```
@@ -451,7 +451,7 @@ brew install stripe/stripe-cli/stripe
 stripe login
 
 # Forward webhooks
-stripe listen --forward-to localhost:3001/webhooks/stripe
+stripe listen --forward-to localhost:3000/webhooks/stripe
 ```
 
 Copia el webhook secret → `STRIPE_WEBHOOK_SECRET`
@@ -530,7 +530,7 @@ reputation-manager/
 ├── node_modules/               # ✅ Instalado
 ├── apps/
 │   ├── web/                    # ✅ http://localhost:3000
-│   ├── api/                    # ✅ http://localhost:3001
+│   ├── api/                    # ✅ http://localhost:3000
 │   └── worker/                 # ✅ Running
 ├── libs/
 │   └── database/

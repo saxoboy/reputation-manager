@@ -242,7 +242,7 @@ Authorization: Bearer {token}
 ### Crear mi primer workspace
 
 ```bash
-curl -X POST http://localhost:3001/api/workspaces \
+curl -X POST http://localhost:3000/api/workspaces \
   -H "Authorization: Bearer eyJhbGc..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -253,7 +253,7 @@ curl -X POST http://localhost:3001/api/workspaces \
 ### Actualizar nombre
 
 ```bash
-curl -X PUT http://localhost:3001/api/workspaces/clx123... \
+curl -X PUT http://localhost:3000/api/workspaces/clx123... \
   -H "Authorization: Bearer eyJhbGc..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -264,7 +264,7 @@ curl -X PUT http://localhost:3001/api/workspaces/clx123... \
 ### Intentar eliminar con usuarios activos (fallará)
 
 ```bash
-curl -X DELETE http://localhost:3001/api/workspaces/clx123... \
+curl -X DELETE http://localhost:3000/api/workspaces/clx123... \
   -H "Authorization: Bearer eyJhbGc..."
 
 # Respuesta: 409 Conflict

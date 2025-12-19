@@ -60,7 +60,7 @@ docker-compose up -d
 pnpm prisma:studio
 
 # BullMQ Dashboard (ver jobs)
-# Disponible automáticamente en: http://localhost:3001/admin/queues
+# Disponible automáticamente en: http://localhost:3000/admin/queues
 ```
 
 ---
@@ -981,7 +981,7 @@ console.table(patients);
 
 **Ver jobs en BullMQ Dashboard**:
 ```
-http://localhost:3001/admin/queues
+http://localhost:3000/admin/queues
 ```
 
 **Logs del worker**:

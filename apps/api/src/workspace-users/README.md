@@ -325,7 +325,7 @@ graph TD
 ### Invitar un doctor
 
 ```bash
-curl -X POST http://localhost:3001/api/workspaces/clx123.../users/invite \
+curl -X POST http://localhost:3000/api/workspaces/clx123.../users/invite \
   -H "Authorization: Bearer eyJhbGc..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -337,7 +337,7 @@ curl -X POST http://localhost:3001/api/workspaces/clx123.../users/invite \
 ### Degradar DOCTOR a RECEPTIONIST (solo OWNER)
 
 ```bash
-curl -X PUT http://localhost:3001/api/workspaces/clx123.../users/user-456/role \
+curl -X PUT http://localhost:3000/api/workspaces/clx123.../users/user-456/role \
   -H "Authorization: Bearer eyJhbGc..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -348,7 +348,7 @@ curl -X PUT http://localhost:3001/api/workspaces/clx123.../users/user-456/role \
 ### DOCTOR remueve a RECEPTIONIST
 
 ```bash
-curl -X DELETE http://localhost:3001/api/workspaces/clx123.../users/user-789 \
+curl -X DELETE http://localhost:3000/api/workspaces/clx123.../users/user-789 \
   -H "Authorization: Bearer eyJhbGc..."
 
 # Respuesta: 204 No Content
@@ -357,7 +357,7 @@ curl -X DELETE http://localhost:3001/api/workspaces/clx123.../users/user-789 \
 ### RECEPTIONIST intenta remover a DOCTOR (fallará)
 
 ```bash
-curl -X DELETE http://localhost:3001/api/workspaces/clx123.../users/user-456 \
+curl -X DELETE http://localhost:3000/api/workspaces/clx123.../users/user-456 \
   -H "Authorization: Bearer eyJhbGc..."
 
 # Respuesta: 403 Forbidden
@@ -371,7 +371,7 @@ curl -X DELETE http://localhost:3001/api/workspaces/clx123.../users/user-456 \
 
 ```bash
 # Usuario se remueve a sí mismo
-curl -X DELETE http://localhost:3001/api/workspaces/clx123.../users/mi-user-id \
+curl -X DELETE http://localhost:3000/api/workspaces/clx123.../users/mi-user-id \
   -H "Authorization: Bearer eyJhbGc..."
 
 # Respuesta: 204 No Content
@@ -380,7 +380,7 @@ curl -X DELETE http://localhost:3001/api/workspaces/clx123.../users/mi-user-id \
 ### Intentar remover último OWNER (fallará)
 
 ```bash
-curl -X DELETE http://localhost:3001/api/workspaces/clx123.../users/ultimo-owner-id \
+curl -X DELETE http://localhost:3000/api/workspaces/clx123.../users/ultimo-owner-id \
   -H "Authorization: Bearer eyJhbGc..."
 
 # Respuesta: 409 Conflict
