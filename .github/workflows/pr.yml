@@ -45,26 +45,6 @@ jobs:
       - name: Derive appropriate SHAs for base and head
         uses: nrwl/nx-set-shas@v4
 
-      - name: Debug - Check lockfile
-        run: |
-          echo "=== PWD ==="
-          pwd
-          echo "=== Listing root files ==="
-          ls -la
-          echo "=== Checking pnpm-lock.yaml ==="
-          if [ -f pnpm-lock.yaml ]; then
-            echo "✅ pnpm-lock.yaml exists"
-            echo "File size: $(du -h pnpm-lock.yaml)"
-            echo "Line count: $(wc -l pnpm-lock.yaml)"
-            echo "First 5 lines:"
-            head -5 pnpm-lock.yaml
-          else
-            echo "❌ pnpm-lock.yaml NOT FOUND"
-            exit 1
-          fi
-          echo "=== Checking pnpm-workspace.yaml ==="
-          cat pnpm-workspace.yaml
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -73,7 +53,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 10
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -90,11 +70,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: |
-          echo "=== Before pnpm install ==="
-          pwd
-          ls -la pnpm-lock.yaml
-          pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
         run: pnpm prisma:generate
