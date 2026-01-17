@@ -40,6 +40,7 @@ Este directorio contiene los workflows de CI/CD para Reputation Manager.
 **Duración aproximada**: 3-5 minutos (solo afectados)
 
 > **Nota sobre Dependency Review**: Este check está comentado porque requiere GitHub Advanced Security, que es de pago para repositorios privados. Para habilitarlo:
+>
 > - Haz tu repo público (gratis), o
 > - Activa Advanced Security (Settings → Security → Code security)
 
@@ -50,11 +51,13 @@ Este directorio contiene los workflows de CI/CD para Reputation Manager.
 **CodeRabbit NO es un workflow** - es una GitHub App que se instala desde el Marketplace.
 
 **Instalación**:
+
 1. Ve a: https://github.com/marketplace/coderabbitai
 2. Instala la app en tu repositorio
 3. Automáticamente empezará a revisar PRs
 
 **Funcionalidad**:
+
 - 🤖 Review automático de código con IA
 - 📝 Comentarios inline en el PR
 - 🔍 Detecta bugs potenciales
@@ -91,6 +94,7 @@ Ya agregados al README.md principal:
 ```
 
 Para agregar Codecov (opcional):
+
 ```markdown
 [![codecov](https://codecov.io/gh/saxoboy/reputation-manager/branch/main/graph/badge.svg)](https://codecov.io/gh/saxoboy/reputation-manager)
 ```
