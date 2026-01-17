@@ -111,11 +111,7 @@ export class WorkspacesService {
    * Actualizar workspace
    * Solo OWNER puede actualizar
    */
-  async update(
-    workspaceId: string,
-    userId: string,
-    dto: UpdateWorkspaceDto
-  ) {
+  async update(workspaceId: string, userId: string, dto: UpdateWorkspaceDto) {
     // Verificar que el usuario sea OWNER
     const workspaceUser = await this.prisma.workspaceUser.findUnique({
       where: {
@@ -131,7 +127,9 @@ export class WorkspacesService {
     }
 
     if (workspaceUser.role !== UserRole.OWNER) {
-      throw new ForbiddenException('Solo el OWNER puede actualizar el workspace');
+      throw new ForbiddenException(
+        'Solo el OWNER puede actualizar el workspace'
+      );
     }
 
     const workspace = await this.prisma.workspace.update({

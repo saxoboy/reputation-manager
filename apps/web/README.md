@@ -35,7 +35,7 @@ Tailwind v4 utiliza el nuevo sistema `@theme` en lugar de `tailwind.config.js`.
 **Configuración en `global.css`:**
 
 ```css
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   --color-primary: #3b82f6;
@@ -45,6 +45,7 @@ Tailwind v4 utiliza el nuevo sistema `@theme` en lugar de `tailwind.config.js`.
 ```
 
 **Características principales:**
+
 - ✅ CSS-first configuration
 - ✅ Variables CSS nativas
 - ✅ Dark mode con `prefers-color-scheme`
@@ -72,11 +73,7 @@ export default {
 ```typescript
 import { cn } from '@/lib/utils';
 
-<div className={cn(
-  "base-classes",
-  condition && "conditional-classes",
-  "override-classes"
-)} />
+<div className={cn('base-classes', condition && 'conditional-classes', 'override-classes')} />;
 ```
 
 Combina `clsx` + `tailwind-merge` para resolver conflictos de clases.
@@ -162,13 +159,7 @@ pnpm nx serve web --turbo
 
 ```typescript
 // app/page.tsx
-export default async function Page({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ slug: string }>;
-  searchParams: Promise<{ [key: string]: string }>;
-}) {
+export default async function Page({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ [key: string]: string }> }) {
   const { slug } = await params;
   const search = await searchParams;
   // ...

@@ -39,14 +39,17 @@ GET /api/workspaces/:workspaceId/practices
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer {token}
 ```
 
 **Parámetros:**
+
 - `workspaceId`: ID del workspace
 
 **Respuesta:**
+
 ```json
 [
   {
@@ -85,15 +88,18 @@ POST /api/workspaces/:workspaceId/practices
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer {token}
 Content-Type: application/json
 ```
 
 **Parámetros:**
+
 - `workspaceId`: ID del workspace
 
 **Body:**
+
 ```json
 {
   "name": "Consultorio Sur",
@@ -104,12 +110,14 @@ Content-Type: application/json
 ```
 
 **Validaciones:**
+
 - `name`: Requerido, string (3-100 caracteres)
 - `address`: Opcional, string
 - `phone`: Opcional, string
 - `googlePlaceId`: Opcional, string (ID de Google Places)
 
 **Respuesta:**
+
 ```json
 {
   "id": "clx999...",
@@ -126,6 +134,7 @@ Content-Type: application/json
 **Permisos:** OWNER o DOCTOR
 
 **Errores:**
+
 - `403 Forbidden`: Usuario es RECEPTIONIST
 
 ---
@@ -137,14 +146,17 @@ GET /api/practices/:id
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer {token}
 ```
 
 **Parámetros:**
+
 - `id`: ID de la practice
 
 **Respuesta:**
+
 ```json
 {
   "id": "clx456...",
@@ -161,6 +173,7 @@ Authorization: Bearer {token}
 **Permisos:** Solo usuarios del workspace al que pertenece la practice
 
 **Errores:**
+
 - `404 Not Found`: "Práctica no encontrada"
 
 ---
@@ -172,15 +185,18 @@ PUT /api/practices/:id
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer {token}
 Content-Type: application/json
 ```
 
 **Parámetros:**
+
 - `id`: ID de la practice
 
 **Body:**
+
 ```json
 {
   "name": "Consultorio Centro - Actualizado",
@@ -189,6 +205,7 @@ Content-Type: application/json
 ```
 
 **Validaciones:**
+
 - Todos los campos son opcionales
 - `name`: string (3-100 caracteres)
 - `address`: string
@@ -196,6 +213,7 @@ Content-Type: application/json
 - `googlePlaceId`: string
 
 **Respuesta:**
+
 ```json
 {
   "id": "clx456...",
@@ -212,6 +230,7 @@ Content-Type: application/json
 **Permisos:** OWNER o DOCTOR
 
 **Errores:**
+
 - `403 Forbidden`: Usuario es RECEPTIONIST o no pertenece al workspace
 - `404 Not Found`: Practice no existe
 
@@ -224,14 +243,17 @@ DELETE /api/practices/:id
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer {token}
 ```
 
 **Parámetros:**
+
 - `id`: ID de la practice
 
 **Respuesta:**
+
 ```
 204 No Content
 ```
@@ -239,6 +261,7 @@ Authorization: Bearer {token}
 **Permisos:** Solo OWNER
 
 **Errores:**
+
 - `403 Forbidden`: Usuario no es OWNER o no pertenece al workspace
 - `404 Not Found`: Practice no existe
 
@@ -246,22 +269,22 @@ Authorization: Bearer {token}
 
 ## Roles y Permisos
 
-| Acción | OWNER | DOCTOR | RECEPTIONIST |
-|--------|-------|--------|--------------|
-| Listar practices | ✅ | ✅ | ✅ |
-| Ver practice | ✅ | ✅ | ✅ |
-| Crear practice | ✅ | ✅ | ❌ |
-| Actualizar practice | ✅ | ✅ | ❌ |
-| Eliminar practice | ✅ | ❌ | ❌ |
+| Acción              | OWNER | DOCTOR | RECEPTIONIST |
+| ------------------- | ----- | ------ | ------------ |
+| Listar practices    | ✅    | ✅     | ✅           |
+| Ver practice        | ✅    | ✅     | ✅           |
+| Crear practice      | ✅    | ✅     | ❌           |
+| Actualizar practice | ✅    | ✅     | ❌           |
+| Eliminar practice   | ✅    | ❌     | ❌           |
 
 ## Limitaciones por Plan
 
-| Plan | Máximo de Practices |
-|------|-------------------|
-| FREE | 1 |
-| STARTER | 1 |
-| PROFESSIONAL | 5 |
-| ENTERPRISE | Ilimitado |
+| Plan         | Máximo de Practices |
+| ------------ | ------------------- |
+| FREE         | 1                   |
+| STARTER      | 1                   |
+| PROFESSIONAL | 5                   |
+| ENTERPRISE   | Ilimitado           |
 
 > **Nota:** Las validaciones de límites por plan se implementarán en el módulo de Billing.
 
@@ -275,6 +298,7 @@ Authorization: Bearer {token}
 4. Copiar el Place ID de la URL o usar [Place ID Finder](https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder)
 
 ### Ejemplo de Place ID
+
 ```
 ChIJN1t_tDeuEmsRUsoyG83frY4
 ```

@@ -39,6 +39,7 @@ apps/api/src/auth/
 ## Endpoints Disponibles
 
 ### 1. Registro de Usuario
+
 ```bash
 POST /auth/register
 Content-Type: application/json
@@ -51,6 +52,7 @@ Content-Type: application/json
 ```
 
 **Respuesta:**
+
 ```json
 {
   "user": {
@@ -69,7 +71,9 @@ Content-Type: application/json
 ```
 
 ### 2. Login
+
 Better Auth maneja el login directamente:
+
 ```bash
 POST /api/auth/sign-in/email
 Content-Type: application/json
@@ -81,6 +85,7 @@ Content-Type: application/json
 ```
 
 ### 3. Obtener Usuario Actual
+
 ```bash
 GET /auth/me
 Cookie: better-auth.session_token=...
@@ -100,6 +105,7 @@ Cookie: better-auth.session_token=...
 ```
 
 ### 4. Logout
+
 ```bash
 POST /auth/logout
 Cookie: better-auth.session_token=...
@@ -143,10 +149,7 @@ import { User, Workspace } from '@prisma/client';
 @UseGuards(AuthGuard, WorkspaceGuard)
 export class CampaignsController {
   @Get()
-  async getCampaigns(
-    @CurrentUser() user: User,
-    @CurrentWorkspace() workspace: Workspace
-  ) {
+  async getCampaigns(@CurrentUser() user: User, @CurrentWorkspace() workspace: Workspace) {
     return {
       userId: user.id,
       workspaceId: workspace.id,
@@ -173,11 +176,7 @@ import { UserRole, Workspace } from '@prisma/client';
 export class SettingsController {
   @Post('invite')
   @Roles(UserRole.OWNER, UserRole.DOCTOR) // Solo OWNER y DOCTOR pueden invitar
-  async inviteUser(
-    @CurrentWorkspace() workspace: Workspace,
-    @CurrentRole() role: UserRole,
-    @Body() body: { email: string }
-  ) {
+  async inviteUser(@CurrentWorkspace() workspace: Workspace, @CurrentRole() role: UserRole, @Body() body: { email: string }) {
     return {
       workspaceId: workspace.id,
       inviterRole: role,
@@ -296,6 +295,7 @@ pnpm nx test api --testPathPattern=auth --coverage
 ### Fase 1 - Semana 3-4: Base UI & Workspace CRUD
 
 **Frontend (apps/web):**
+
 - [ ] Setup Better Auth client
 - [ ] Crear páginas de login/register
 - [ ] Protected layout wrapper
@@ -303,6 +303,7 @@ pnpm nx test api --testPathPattern=auth --coverage
 - [ ] User management UI
 
 **Backend adicional:**
+
 - [ ] Workspace CRUD endpoints
 - [ ] User management endpoints (invite, remove)
 - [ ] Email invitations con SendGrid
@@ -337,10 +338,7 @@ export class WorkspacesController {
   @Put(':workspaceId')
   @UseGuards(WorkspaceGuard, RoleGuard)
   @Roles(UserRole.OWNER)
-  async updateWorkspace(
-    @Param('workspaceId') workspaceId: string,
-    @Body() dto: UpdateWorkspaceDto
-  ) {
+  async updateWorkspace(@Param('workspaceId') workspaceId: string, @Body() dto: UpdateWorkspaceDto) {
     // Solo OWNER puede actualizar
   }
 }

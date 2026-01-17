@@ -44,10 +44,7 @@ export class WorkspacesController {
    * Obtener un workspace específico
    */
   @Get(':id')
-  async findOne(
-    @Param('id') id: string,
-    @CurrentUser('id') userId: string
-  ) {
+  async findOne(@Param('id') id: string, @CurrentUser('id') userId: string) {
     return this.workspacesService.findOne(id, userId);
   }
 
@@ -69,10 +66,7 @@ export class WorkspacesController {
    * Eliminar un workspace (solo OWNER)
    */
   @Delete(':id')
-  async remove(
-    @Param('id') id: string,
-    @CurrentUser('id') userId: string
-  ) {
+  async remove(@Param('id') id: string, @CurrentUser('id') userId: string) {
     return this.workspacesService.remove(id, userId);
   }
 }

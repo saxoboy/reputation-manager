@@ -46,11 +46,13 @@ GET /api/workspaces
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer {token}
 ```
 
 **Respuesta:**
+
 ```json
 [
   {
@@ -79,12 +81,14 @@ POST /api/workspaces
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer {token}
 Content-Type: application/json
 ```
 
 **Body:**
+
 ```json
 {
   "name": "Mi Consultorio"
@@ -92,9 +96,11 @@ Content-Type: application/json
 ```
 
 **Validaciones:**
+
 - `name`: Requerido, string (3-100 caracteres)
 
 **Respuesta:**
+
 ```json
 {
   "id": "clx123...",
@@ -117,14 +123,17 @@ GET /api/workspaces/:id
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer {token}
 ```
 
 **Parámetros:**
+
 - `id`: ID del workspace
 
 **Respuesta:**
+
 ```json
 {
   "id": "clx123...",
@@ -139,6 +148,7 @@ Authorization: Bearer {token}
 **Permisos:** Solo usuarios miembros del workspace pueden acceder.
 
 **Errores:**
+
 - `404 Not Found`: Workspace no existe o usuario no tiene acceso
 
 ---
@@ -150,15 +160,18 @@ PUT /api/workspaces/:id
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer {token}
 Content-Type: application/json
 ```
 
 **Parámetros:**
+
 - `id`: ID del workspace
 
 **Body:**
+
 ```json
 {
   "name": "Consultorio Norte - Actualizado"
@@ -166,9 +179,11 @@ Content-Type: application/json
 ```
 
 **Validaciones:**
+
 - `name`: Opcional, string (3-100 caracteres)
 
 **Respuesta:**
+
 ```json
 {
   "id": "clx123...",
@@ -183,6 +198,7 @@ Content-Type: application/json
 **Permisos:** Solo **OWNER**
 
 **Errores:**
+
 - `403 Forbidden`: Usuario no es OWNER
 - `404 Not Found`: Workspace no existe
 
@@ -195,14 +211,17 @@ DELETE /api/workspaces/:id
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer {token}
 ```
 
 **Parámetros:**
+
 - `id`: ID del workspace
 
 **Respuesta:**
+
 ```
 204 No Content
 ```
@@ -210,10 +229,12 @@ Authorization: Bearer {token}
 **Permisos:** Solo **OWNER**
 
 **Validaciones de negocio:**
+
 - No se puede eliminar un workspace con otros usuarios activos
 - Primero debe remover a todos los usuarios excepto el OWNER que ejecuta la eliminación
 
 **Errores:**
+
 - `403 Forbidden`: Usuario no es OWNER
 - `404 Not Found`: Workspace no existe
 - `409 Conflict`: "No puedes eliminar un workspace con otros usuarios. Remuévelos primero."
@@ -222,13 +243,13 @@ Authorization: Bearer {token}
 
 ## Roles y Permisos
 
-| Acción | OWNER | DOCTOR | RECEPTIONIST |
-|--------|-------|--------|--------------|
-| Listar workspaces | ✅ Propios | ✅ Propios | ✅ Propios |
-| Ver workspace | ✅ | ✅ | ✅ |
-| Crear workspace | ✅ | ✅ | ✅ |
-| Actualizar workspace | ✅ | ❌ | ❌ |
-| Eliminar workspace | ✅ | ❌ | ❌ |
+| Acción               | OWNER      | DOCTOR     | RECEPTIONIST |
+| -------------------- | ---------- | ---------- | ------------ |
+| Listar workspaces    | ✅ Propios | ✅ Propios | ✅ Propios   |
+| Ver workspace        | ✅         | ✅         | ✅           |
+| Crear workspace      | ✅         | ✅         | ✅           |
+| Actualizar workspace | ✅         | ❌         | ❌           |
+| Eliminar workspace   | ✅         | ❌         | ❌           |
 
 ## Flujo de Creación
 

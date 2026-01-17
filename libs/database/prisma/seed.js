@@ -20,7 +20,9 @@ async function main() {
   console.log('   1. Inicia el servidor: pnpm nx serve api');
   console.log('   2. Abre Postman');
   console.log('   3. POST http://localhost:3000/api/auth/sign-up/email');
-  console.log('   4. Body: { "email": "doctor@correo.com", "password": "password123", "name": "Dr. Juan Pérez" }');
+  console.log(
+    '   4. Body: { "email": "doctor@correo.com", "password": "password123", "name": "Dr. Juan Pérez" }'
+  );
   console.log('\n💡 Después de registrarte:');
   console.log('   - Crea un workspace: POST /api/workspaces');
   console.log('   - Crea una práctica: POST /api/workspaces/:id/practices');
@@ -39,4 +41,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-

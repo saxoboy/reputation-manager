@@ -57,7 +57,10 @@ export class WorkspaceUsersService {
       },
     });
 
-    if (!inviter || (inviter.role !== UserRole.OWNER && inviter.role !== UserRole.DOCTOR)) {
+    if (
+      !inviter ||
+      (inviter.role !== UserRole.OWNER && inviter.role !== UserRole.DOCTOR)
+    ) {
       throw new ForbiddenException(
         'Solo OWNER y DOCTOR pueden invitar usuarios'
       );
@@ -218,11 +221,7 @@ export class WorkspaceUsersService {
    * DOCTOR puede remover a RECEPTIONIST
    * Usuarios pueden removerse a sí mismos (salir del workspace)
    */
-  async remove(
-    workspaceId: string,
-    targetUserId: string,
-    requesterId: string
-  ) {
+  async remove(workspaceId: string, targetUserId: string, requesterId: string) {
     // Verificar permisos del requester
     const requester = await this.prisma.workspaceUser.findUnique({
       where: {

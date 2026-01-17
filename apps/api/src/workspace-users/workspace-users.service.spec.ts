@@ -140,7 +140,10 @@ describe('WorkspaceUsersService', () => {
     it('should allow DOCTOR to invite DOCTOR or RECEPTIONIST', async () => {
       const workspaceId = 'ws-1';
       const requesterId = 'user-doctor';
-      const dto = { email: 'reception@example.com', role: 'RECEPTIONIST' as const };
+      const dto = {
+        email: 'reception@example.com',
+        role: 'RECEPTIONIST' as const,
+      };
 
       mockPrisma.workspaceUser.findUnique.mockResolvedValueOnce({
         role: 'DOCTOR',

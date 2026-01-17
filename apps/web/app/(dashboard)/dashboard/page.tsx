@@ -100,9 +100,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">0</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Este mes
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">Este mes</p>
             </CardContent>
           </Card>
         </div>

@@ -20,9 +20,7 @@ import { UserRole } from '@prisma/client';
 @Controller('workspaces/:workspaceId/users')
 @UseGuards(AuthGuard, WorkspaceGuard)
 export class WorkspaceUsersController {
-  constructor(
-    private readonly workspaceUsersService: WorkspaceUsersService
-  ) {}
+  constructor(private readonly workspaceUsersService: WorkspaceUsersService) {}
 
   /**
    * GET /workspaces/:workspaceId/users

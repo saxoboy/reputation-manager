@@ -14,9 +14,9 @@ export const Roles = (...roles: UserRole[]) => SetMetadata(ROLES_KEY, roles);
 
 /**
  * RoleGuard - Verifica que el usuario tenga uno de los roles requeridos
- * 
+ *
  * Requiere que AuthGuard y WorkspaceGuard se ejecuten primero.
- * 
+ *
  * Uso:
  * @UseGuards(AuthGuard, WorkspaceGuard, RoleGuard)
  * @Roles(UserRole.OWNER, UserRole.DOCTOR)

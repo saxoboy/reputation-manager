@@ -40,6 +40,7 @@ pnpm dev
 ### 3. Verificar
 
 Abre http://localhost:4000 y deberías ver:
+
 - ✅ Landing page con diseño moderno
 - ✅ Tailwind v4 funcionando (gradientes, hover effects)
 - ✅ Dark mode automático si tu sistema lo tiene activado
@@ -163,4 +164,3 @@ pnpm dev
 **URL:** http://localhost:4000
 
 ¿Continuamos con Better Auth?
-

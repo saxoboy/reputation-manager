@@ -66,14 +66,17 @@ GET /api/workspaces/:workspaceId/users
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer {token}
 ```
 
 **Parámetros:**
+
 - `workspaceId`: ID del workspace
 
 **Respuesta:**
+
 ```json
 [
   {
@@ -114,15 +117,18 @@ POST /api/workspaces/:workspaceId/users/invite
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer {token}
 Content-Type: application/json
 ```
 
 **Parámetros:**
+
 - `workspaceId`: ID del workspace
 
 **Body:**
+
 ```json
 {
   "email": "nuevo@example.com",
@@ -131,10 +137,12 @@ Content-Type: application/json
 ```
 
 **Validaciones:**
+
 - `email`: Requerido, email válido
 - `role`: Requerido, enum (`OWNER`, `DOCTOR`, `RECEPTIONIST`)
 
 **Respuesta:**
+
 ```json
 {
   "id": "wu-3",
@@ -147,13 +155,14 @@ Content-Type: application/json
 
 **Permisos por rol:**
 
-| Rol Invitante | Puede invitar |
-|---------------|---------------|
-| OWNER | OWNER, DOCTOR, RECEPTIONIST |
-| DOCTOR | DOCTOR, RECEPTIONIST |
-| RECEPTIONIST | ❌ Ninguno |
+| Rol Invitante | Puede invitar               |
+| ------------- | --------------------------- |
+| OWNER         | OWNER, DOCTOR, RECEPTIONIST |
+| DOCTOR        | DOCTOR, RECEPTIONIST        |
+| RECEPTIONIST  | ❌ Ninguno                  |
 
 **Errores:**
+
 - `404 Not Found`: "Usuario no encontrado"
 - `403 Forbidden`: "No tienes permiso para invitar este rol"
 - `409 Conflict`: "Usuario ya es miembro del workspace"
@@ -167,16 +176,19 @@ PUT /api/workspaces/:workspaceId/users/:userId/role
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer {token}
 Content-Type: application/json
 ```
 
 **Parámetros:**
+
 - `workspaceId`: ID del workspace
 - `userId`: ID del usuario a modificar
 
 **Body:**
+
 ```json
 {
   "role": "RECEPTIONIST"
@@ -184,9 +196,11 @@ Content-Type: application/json
 ```
 
 **Validaciones:**
+
 - `role`: Requerido, enum (`OWNER`, `DOCTOR`, `RECEPTIONIST`)
 
 **Respuesta:**
+
 ```json
 {
   "id": "wu-2",
@@ -200,10 +214,12 @@ Content-Type: application/json
 **Permisos:** Solo OWNER
 
 **Reglas de negocio:**
+
 - ❌ No se puede cambiar el rol del último OWNER
 - ❌ Debe haber al menos 1 OWNER en el workspace
 
 **Errores:**
+
 - `403 Forbidden`: "Solo los OWNER pueden cambiar roles"
 - `404 Not Found`: Usuario no encontrado en workspace
 - `409 Conflict`: "No puedes cambiar el rol del último OWNER"
@@ -217,35 +233,40 @@ DELETE /api/workspaces/:workspaceId/users/:userId
 ```
 
 **Headers:**
+
 ```
 Authorization: Bearer {token}
 ```
 
 **Parámetros:**
+
 - `workspaceId`: ID del workspace
 - `userId`: ID del usuario a remover
 
 **Respuesta:**
+
 ```
 204 No Content
 ```
 
 **Permisos por rol:**
 
-| Rol Ejecutor | Puede remover |
-|--------------|---------------|
-| OWNER | Cualquier usuario (excepto último OWNER) |
-| DOCTOR | RECEPTIONIST |
-| RECEPTIONIST | ❌ Ninguno |
-| Cualquiera | ✅ A sí mismo (auto-remoción) |
+| Rol Ejecutor | Puede remover                            |
+| ------------ | ---------------------------------------- |
+| OWNER        | Cualquier usuario (excepto último OWNER) |
+| DOCTOR       | RECEPTIONIST                             |
+| RECEPTIONIST | ❌ Ninguno                               |
+| Cualquiera   | ✅ A sí mismo (auto-remoción)            |
 
 **Reglas de negocio:**
+
 - ✅ Cualquier usuario puede removerse a sí mismo
 - ❌ No se puede remover al último OWNER
 - ❌ DOCTOR no puede remover a OWNER o DOCTOR
 - ❌ RECEPTIONIST no puede remover a nadie (solo auto-remoción)
 
 **Errores:**
+
 - `403 Forbidden`: "No tienes permiso para remover este usuario"
 - `404 Not Found`: Usuario no encontrado en workspace
 - `409 Conflict`: "No puedes remover al último OWNER del workspace"
@@ -256,27 +277,27 @@ Authorization: Bearer {token}
 
 ### Invitar Usuarios
 
-|  | Invitar OWNER | Invitar DOCTOR | Invitar RECEPTIONIST |
-|--|---------------|----------------|---------------------|
-| **OWNER** | ✅ | ✅ | ✅ |
-| **DOCTOR** | ❌ | ✅ | ✅ |
-| **RECEPTIONIST** | ❌ | ❌ | ❌ |
+|                  | Invitar OWNER | Invitar DOCTOR | Invitar RECEPTIONIST |
+| ---------------- | ------------- | -------------- | -------------------- |
+| **OWNER**        | ✅            | ✅             | ✅                   |
+| **DOCTOR**       | ❌            | ✅             | ✅                   |
+| **RECEPTIONIST** | ❌            | ❌             | ❌                   |
 
 ### Cambiar Roles
 
-|  | Cambiar roles |
-|--|---------------|
-| **OWNER** | ✅ (excepto último OWNER) |
-| **DOCTOR** | ❌ |
-| **RECEPTIONIST** | ❌ |
+|                  | Cambiar roles             |
+| ---------------- | ------------------------- |
+| **OWNER**        | ✅ (excepto último OWNER) |
+| **DOCTOR**       | ❌                        |
+| **RECEPTIONIST** | ❌                        |
 
 ### Remover Usuarios
 
-|  | Remover OWNER | Remover DOCTOR | Remover RECEPTIONIST | Auto-remoción |
-|--|---------------|----------------|---------------------|---------------|
-| **OWNER** | ✅* | ✅ | ✅ | ✅ |
-| **DOCTOR** | ❌ | ❌ | ✅ | ✅ |
-| **RECEPTIONIST** | ❌ | ❌ | ❌ | ✅ |
+|                  | Remover OWNER | Remover DOCTOR | Remover RECEPTIONIST | Auto-remoción |
+| ---------------- | ------------- | -------------- | -------------------- | ------------- |
+| **OWNER**        | ✅\*          | ✅             | ✅                   | ✅            |
+| **DOCTOR**       | ❌            | ❌             | ✅                   | ✅            |
+| **RECEPTIONIST** | ❌            | ❌             | ❌                   | ✅            |
 
 \* Excepto el último OWNER
 
@@ -441,12 +462,12 @@ PostgreSQL (workspaceUser table)
 
 ## Limitaciones por Plan
 
-| Plan | Máximo de Usuarios |
-|------|-------------------|
-| FREE | 1 |
-| STARTER | 2 |
-| PROFESSIONAL | 5 |
-| ENTERPRISE | Ilimitado |
+| Plan         | Máximo de Usuarios |
+| ------------ | ------------------ |
+| FREE         | 1                  |
+| STARTER      | 2                  |
+| PROFESSIONAL | 5                  |
+| ENTERPRISE   | Ilimitado          |
 
 > **Nota:** Las validaciones de límites por plan se implementarán en el módulo de Billing.
 

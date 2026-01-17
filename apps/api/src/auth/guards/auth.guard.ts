@@ -9,7 +9,7 @@ import { auth } from '../auth.config';
 
 /**
  * AuthGuard - Verifica que el usuario esté autenticado
- * 
+ *
  * Uso:
  * @UseGuards(AuthGuard)
  * @Get('profile')
@@ -19,7 +19,7 @@ import { auth } from '../auth.config';
 export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    
+
     try {
       // Better Auth verifica la sesión usando cookies
       const session = await auth.api.getSession({

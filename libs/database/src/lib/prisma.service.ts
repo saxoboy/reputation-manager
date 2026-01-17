@@ -3,12 +3,12 @@ import { PrismaClient } from '@prisma/client';
 
 /**
  * PrismaService - Servicio de Prisma para NestJS
- * 
+ *
  * Maneja la conexión a la base de datos y el ciclo de vida.
- * 
+ *
  * Uso:
  * constructor(private prisma: PrismaService) {}
- * 
+ *
  * async findUser() {
  *   return this.prisma.user.findMany();
  * }
@@ -20,9 +20,10 @@ export class PrismaService
 {
   constructor() {
     super({
-      log: process.env['NODE_ENV'] === 'development' 
-        ? ['query', 'error', 'warn'] 
-        : ['error'],
+      log:
+        process.env['NODE_ENV'] === 'development'
+          ? ['query', 'error', 'warn']
+          : ['error'],
     });
   }
 

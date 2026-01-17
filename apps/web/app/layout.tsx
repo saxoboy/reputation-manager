@@ -10,8 +10,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Reputation Manager - Gestión de Feedback para Profesionales de la Salud',
-  description: 'Sistema automatizado de gestión de reseñas y feedback para médicos y odontólogos en Ecuador',
+  title:
+    'Reputation Manager - Gestión de Feedback para Profesionales de la Salud',
+  description:
+    'Sistema automatizado de gestión de reseñas y feedback para médicos y odontólogos en Ecuador',
 };
 
 export default function RootLayout({

@@ -9,10 +9,10 @@ import { PrismaService } from '@reputation-manager/database';
 
 /**
  * WorkspaceGuard - Verifica que el usuario tenga acceso al workspace
- * 
+ *
  * Requiere que AuthGuard se ejecute primero.
  * Lee el workspaceId de los params, query o body.
- * 
+ *
  * Uso:
  * @UseGuards(AuthGuard, WorkspaceGuard)
  * @Get('workspaces/:workspaceId/campaigns')
@@ -56,9 +56,7 @@ export class WorkspaceGuard implements CanActivate {
     });
 
     if (!workspaceUser) {
-      throw new ForbiddenException(
-        'No tienes acceso a este workspace'
-      );
+      throw new ForbiddenException('No tienes acceso a este workspace');
     }
 
     // Adjuntar workspace y role al request

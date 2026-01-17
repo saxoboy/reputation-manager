@@ -19,13 +19,13 @@ Esta guía te llevará paso a paso desde cero hasta tener el proyecto corriendo 
 
 ### Software Requerido
 
-| Software | Versión Mínima | Instalación |
-|----------|----------------|-------------|
-| **Node.js** | 20.x LTS | [nodejs.org](https://nodejs.org/) |
-| **pnpm** | 8.x | `npm install -g pnpm` |
-| **Docker** | 24.x | [docker.com](https://www.docker.com/products/docker-desktop) |
-| **Docker Compose** | 2.x | Incluido con Docker Desktop |
-| **Git** | 2.x | [git-scm.com](https://git-scm.com/) |
+| Software           | Versión Mínima | Instalación                                                  |
+| ------------------ | -------------- | ------------------------------------------------------------ |
+| **Node.js**        | 20.x LTS       | [nodejs.org](https://nodejs.org/)                            |
+| **pnpm**           | 8.x            | `npm install -g pnpm`                                        |
+| **Docker**         | 24.x           | [docker.com](https://www.docker.com/products/docker-desktop) |
+| **Docker Compose** | 2.x            | Incluido con Docker Desktop                                  |
+| **Git**            | 2.x            | [git-scm.com](https://git-scm.com/)                          |
 
 ### Verificar Instalaciones
 
@@ -66,6 +66,7 @@ pnpm install
 Esto puede tomar 2-5 minutos dependiendo de tu conexión.
 
 **Salida esperada**:
+
 ```
 Progress: resolved 1234, reused 1234, downloaded 0, added 1234
 Done in 2.3s
@@ -104,6 +105,7 @@ docker-compose ps
 ```
 
 **Salida esperada**:
+
 ```
 NAME                    STATUS    PORTS
 reputation-postgres     Up        0.0.0.0:5432->5432/tcp
@@ -177,6 +179,7 @@ pnpm prisma:migrate
 ```
 
 **Salida esperada**:
+
 ```
 Environment variables loaded from .env
 Prisma schema loaded from libs/database/prisma/schema.prisma
@@ -199,8 +202,9 @@ pnpm prisma:seed
 ```
 
 **Datos creados**:
+
 - 1 Workspace: "Clínica Demo"
-- 2 Users: 
+- 2 Users:
   - `admin@clinicademo.com` (OWNER)
   - `doctor@clinicademo.com` (DOCTOR)
 - 1 Practice: "Consultorio Norte"
@@ -208,6 +212,7 @@ pnpm prisma:seed
 - 5 Campaigns con pacientes
 
 **Credenciales de prueba**:
+
 ```
 Email: admin@clinicademo.com
 Password: Demo123!
@@ -236,11 +241,13 @@ pnpm dev
 ```
 
 Esto levanta:
+
 - **Web**: `http://localhost:3000` (Next.js)
 - **API**: `http://localhost:3000` (NestJS)
 - **Worker**: Background (sin puerto)
 
 **Salida esperada**:
+
 ```
 > nx run-many --target=serve --projects=web,api,worker --parallel=3
 
@@ -254,6 +261,7 @@ Esto levanta:
 Abre tu navegador en `http://localhost:3000`.
 
 **Deberías ver**:
+
 - Página de login
 - Formulario con email/password
 - Opción "Sign in with Google" (sin configurar aún)
@@ -267,6 +275,7 @@ curl http://localhost:3000/health
 ```
 
 **Respuesta esperada**:
+
 ```json
 {
   "status": "ok",
@@ -297,6 +306,7 @@ En el browser (`http://localhost:3000`):
 **Causa**: PostgreSQL no está corriendo.
 
 **Solución**:
+
 ```bash
 docker-compose up -d postgres
 docker-compose logs postgres  # Ver logs
@@ -307,6 +317,7 @@ docker-compose logs postgres  # Ver logs
 **Causa**: Redis no está corriendo.
 
 **Solución**:
+
 ```bash
 docker-compose up -d redis
 docker-compose logs redis
@@ -317,6 +328,7 @@ docker-compose logs redis
 **Causa**: Otro proceso está usando el puerto.
 
 **Solución**:
+
 ```bash
 # Encuentra el proceso
 lsof -i :3000
@@ -333,6 +345,7 @@ NEXT_PUBLIC_PORT=3002
 **Causa**: Falta generar el cliente de Prisma.
 
 **Solución**:
+
 ```bash
 pnpm prisma:generate
 ```
@@ -342,6 +355,7 @@ pnpm prisma:generate
 **Causa**: Dependencias no instaladas correctamente.
 
 **Solución**:
+
 ```bash
 # Limpia todo
 rm -rf node_modules
@@ -356,6 +370,7 @@ pnpm install
 **Causa**: Posible problema de memoria con Docker.
 
 **Solución**:
+
 1. Abre Docker Desktop
 2. Settings → Resources
 3. Aumenta Memory a al menos 4GB
@@ -369,6 +384,7 @@ docker-compose up -d
 ### No puedo hacer login
 
 **Checklist**:
+
 1. ¿Ejecutaste el seed? `pnpm prisma:seed`
 2. ¿El API está corriendo? `curl http://localhost:3000/health`
 3. ¿Las credenciales son correctas? `admin@clinicademo.com` / `Demo123!`
@@ -379,11 +395,13 @@ docker-compose up -d
 **Error común**: "Database is not empty"
 
 **Solución** (⚠️ BORRA TODOS LOS DATOS):
+
 ```bash
 pnpm prisma:reset
 ```
 
 Esto:
+
 1. Dropea la base de datos
 2. Crea una nueva
 3. Aplica todas las migraciones
@@ -405,6 +423,7 @@ Esto:
 6. Copia el número → `TWILIO_PHONE_NUMBER`
 
 **Test rápido**:
+
 ```bash
 curl -X POST http://localhost:3000/api/test/sms \
   -H "Content-Type: application/json" \
@@ -427,6 +446,7 @@ curl -X POST http://localhost:3000/api/test/sms \
    - Client Secret → `GOOGLE_CLIENT_SECRET`
 
 **Reinicia el frontend**:
+
 ```bash
 pnpm nx serve web
 ```
@@ -443,6 +463,7 @@ Ahora "Sign in with Google" debería funcionar.
    - Publishable key → `STRIPE_PUBLISHABLE_KEY`
 
 **Para webhooks** (necesitas ngrok o similar):
+
 ```bash
 # Instala Stripe CLI
 brew install stripe/stripe-cli/stripe
@@ -461,16 +482,19 @@ Copia el webhook secret → `STRIPE_WEBHOOK_SECRET`
 ## Siguientes Pasos
 
 1. **Lee la documentación**:
+
    - [DEVELOPMENT.md](./DEVELOPMENT.md) - Workflows diarios
    - [DATABASE.md](./DATABASE.md) - Schema y queries
    - [ARCHITECTURE.md](../ARCHITECTURE.md) - Arquitectura completa
 
 2. **Explora el código**:
+
    ```bash
    pnpm nx graph  # Visualiza dependencias entre apps/libs
    ```
 
 3. **Ejecuta tests**:
+
    ```bash
    pnpm test
    ```
