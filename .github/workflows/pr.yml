@@ -84,6 +84,8 @@ jobs:
 
       - name: Validate Prisma schema
         run: pnpm prisma validate --schema=libs/database/prisma/schema.prisma
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/reputation_manager_test
 
       - name: Check format
         run: pnpm nx format:check --all
