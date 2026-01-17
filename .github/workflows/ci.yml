@@ -105,7 +105,7 @@ jobs:
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
-        if: always()
+        if: always() && github.event.repository.private == false
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
