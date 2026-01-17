@@ -58,10 +58,12 @@
    - ✅ Auto-labeling por tamaño (S/M/L/XL)
    - ✅ Dependency review
 
-3. **[coderabbit.yml](.github/workflows/coderabbit.yml)** - AI Reviews
-   - ✅ Review automático con IA
-   - ✅ Comentarios inline
-   - ✅ Sugerencias de mejora
+3. **CodeRabbit** - AI Reviews (GitHub App)
+   - ✅ Archivo `.coderabbit.yaml` configurado
+   - 📦 Se instala desde Marketplace (no es un workflow)
+   - 🤖 Review automático con IA
+   - 📝 Comentarios inline
+   - 💡 Sugerencias de mejora
 
 #### Scripts Agregados
 
@@ -93,7 +95,7 @@
 | Documentación | ✅     | 100% (6/6)           |
 | Estructura    | ✅     | 100% (7/7 proyectos) |
 | Database      | ✅     | 100% (6 migraciones) |
-| CI/CD         | ✅     | 100% (3 workflows)   |
+| CI/CD         | ✅     | 100% (2 workflows)   |
 | DevOps        | ✅     | 100%                 |
 
 **Total Phase 0**: ✅ **100% Completado**

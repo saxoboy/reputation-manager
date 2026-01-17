@@ -39,18 +39,24 @@ Este directorio contiene los workflows de CI/CD para Reputation Manager.
 
 **Duración aproximada**: 3-5 minutos (solo afectados)
 
-### 3. CodeRabbit (`coderabbit.yml`)
+---
 
-**Trigger**: Pull requests (opened, synchronize, reopened)
+## CodeRabbit (GitHub App)
+
+**CodeRabbit NO es un workflow** - es una GitHub App que se instala desde el Marketplace.
+
+**Instalación**:
+1. Ve a: https://github.com/marketplace/coderabbitai
+2. Instala la app en tu repositorio
+3. Automáticamente empezará a revisar PRs
 
 **Funcionalidad**:
-
 - 🤖 Review automático de código con IA
 - 📝 Comentarios inline en el PR
 - 🔍 Detecta bugs potenciales
 - 💡 Sugerencias de mejora
 
-**Configuración**: Ver [.coderabbit.yaml](../../.coderabbit.yaml)
+**Configuración**: El archivo [.coderabbit.yaml](../../.coderabbit.yaml) ya está configurado
 
 ## Variables de Entorno Requeridas
 
@@ -72,11 +78,16 @@ Estos labels son creados automáticamente por el workflow de PR:
 
 ## Badges para README
 
-Agrega estos badges al README.md principal:
+Ya agregados al README.md principal:
 
 ```markdown
 ![CI](https://github.com/saxoboy/reputation-manager/workflows/CI/badge.svg)
 ![PR Checks](https://github.com/saxoboy/reputation-manager/workflows/PR%20Checks/badge.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+```
+
+Para agregar Codecov (opcional):
+```markdown
 [![codecov](https://codecov.io/gh/saxoboy/reputation-manager/branch/main/graph/badge.svg)](https://codecov.io/gh/saxoboy/reputation-manager)
 ```
 

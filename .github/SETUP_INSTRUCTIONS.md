@@ -122,19 +122,34 @@ gh label create "priority: low" --color 0E8A16 --description "Baja"
 
 ---
 
-## 4. Configurar CodeRabbit (Opcional)
+## 4. Configurar CodeRabbit (Opcional pero Recomendado)
 
-1. Ve a: https://coderabbit.ai/
-2. **Sign up** con tu cuenta de GitHub
-3. **Instala la app** en tu repositorio
-4. El archivo `.coderabbit.yaml` ya está configurado
+**⚠️ IMPORTANTE**: CodeRabbit es una GitHub App, NO un workflow.
+
+### Instalación:
+
+1. Ve a: https://github.com/marketplace/coderabbitai
+2. Click en **"Install it for free"** o **"Set up a plan"**
+3. Selecciona tu cuenta/organización
+4. Elige el repositorio `reputation-manager`
+5. Autoriza los permisos necesarios
+6. ¡Listo! El archivo `.coderabbit.yaml` ya está configurado
+
+### Verificación:
+
+- Crea un PR de prueba
+- CodeRabbit debería comentar automáticamente en 1-2 minutos
+- No necesitas ningún workflow adicional
 
 **Beneficios**:
 
-- 🤖 Reviews automáticos con IA
+- 🤖 Reviews automáticos con IA en cada PR
 - 📝 Comentarios inline inteligentes
 - 🔍 Detecta bugs y problemas de seguridad
 - 💡 Sugerencias de mejora de código
+- 🎓 Aprende de tu estilo de código
+
+**Gratis** para repositorios open source.
 
 ---
 
