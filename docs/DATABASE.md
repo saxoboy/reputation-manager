@@ -1,6 +1,7 @@
 # Reputation Manager - Database Documentation
 
 ## Tabla de Contenidos
+
 1. [Visión General](#visión-general)
 2. [Diagrama de Entidades y Relaciones](#diagrama-de-entidades-y-relaciones)
 3. [Schema de Prisma](#schema-de-prisma)
@@ -16,12 +17,14 @@
 ## Visión General
 
 ### Tecnología
+
 - **Database**: PostgreSQL 16
 - **ORM**: Prisma 5.x
 - **Connection Pool**: PgBouncer (producción)
 - **Backup**: Automated daily snapshots (Railway/AWS)
 
 ### Principios de Diseño
+
 1. **Multi-tenancy**: Todas las tablas (excepto Workspace) tienen `workspaceId` para isolation
 2. **Soft Deletes**: Campos `*DeletedAt` para cumplimiento GDPR
 3. **Audit Trail**: Timestamps (`createdAt`, `updatedAt`) en todas las tablas
@@ -195,23 +198,23 @@ model Workspace {
   id   String @id @default(cuid())
   name String
   plan Plan   @default(FREE)
-  
+
   // Billing & Credits
   messageCredits       Int     @default(50)
   stripeCustomerId     String? @unique
   stripeSubscriptionId String? @unique
-  
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // Relations
   users     User[]
   practices Practice[]
   campaigns Campaign[]
   patients  Patient[]
   templates Template[]
-  
+
   @@index([plan])
   @@map("workspaces")
 }
@@ -222,23 +225,23 @@ model User {
   password String // Hashed con bcrypt
   name     String
   role     Role   @default(DOCTOR)
-  
+
   // Avatar & Profile
   avatarUrl String?
   phone     String?
-  
+
   // Multi-tenancy
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   lastLoginAt DateTime?
-  
+
   // Relations
   campaignsCreated Campaign[]
-  
+
   @@index([workspaceId])
   @@index([email])
   @@index([role])
@@ -248,33 +251,33 @@ model User {
 model Practice {
   id   String @id @default(cuid())
   name String
-  
+
   // Location
   address       String?
   city          String?
   state         String?
   zipCode       String?
   country       String  @default("EC") // Ecuador
-  
+
   // Google Integration
   googlePlaceId String? // Para generar review link
   // Formato: https://search.google.com/local/writereview?placeid={googlePlaceId}
-  
+
   // Contact
   phone String?
   email String?
-  
+
   // Multi-tenancy
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // Relations
   campaigns Campaign[]
-  
+
   @@index([workspaceId])
   @@index([googlePlaceId])
   @@map("practices")
@@ -283,32 +286,32 @@ model Practice {
 model Campaign {
   id   String         @id @default(cuid())
   name String
-  
+
   // Configuration
   status              CampaignStatus @default(ACTIVE)
   scheduledHoursAfter Int            @default(2) // Horas después de cita
-  
+
   // Description (opcional)
   description String?
-  
+
   // Multi-tenancy & Relations
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   practiceId String
   practice   Practice @relation(fields: [practiceId], references: [id])
-  
+
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id])
-  
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // Relations
   patients Patient[]
   messages Message[]
-  
+
   @@index([workspaceId])
   @@index([practiceId])
   @@index([createdById])
@@ -319,39 +322,39 @@ model Campaign {
 
 model Patient {
   id String @id @default(cuid())
-  
+
   // Personal Info
   name  String
   phone String // Formato: +593XXXXXXXXX (Ecuador)
   email String?
-  
+
   // Appointment
   appointmentTime DateTime
   appointmentType String? // "Consulta", "Limpieza", "Cirugía", etc.
-  
+
   // Compliance & Legal (CRÍTICO)
   hasConsent    Boolean   @default(false) // MUST be true to send messages
   optedOutAt    DateTime? // If not null, NEVER send messages
   dataDeletedAt DateTime? // Soft delete for GDPR compliance
-  
+
   // Preferences
   preferredChannel MessageChannel @default(SMS)
   language         String         @default("es") // Idioma preferido
-  
+
   // Multi-tenancy & Relations
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  
+
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // Relations
   messages Message[]
-  
+
   // Indexes (Performance crítico para webhooks)
   @@index([workspaceId])
   @@index([campaignId])
@@ -365,39 +368,39 @@ model Patient {
 
 model Message {
   id String @id @default(cuid())
-  
+
   // Message Details
   type    MessageType
   channel MessageChannel
   status  MessageStatus  @default(PENDING)
   content String         @db.Text // Mensaje completo enviado
-  
+
   // Response Tracking
   rating Int? // 1-5, NULL si no ha respondido
-  
+
   // Delivery Tracking
   sentAt      DateTime?
   deliveredAt DateTime?
   repliedAt   DateTime?
-  
+
   // External Integration
   externalId String? // Twilio MessageSid (SM...) o WhatsApp WAMID
   error      String? @db.Text // Error message si falló
-  
+
   // Cost Tracking (opcional, para analytics)
   cost Decimal? @db.Decimal(10, 4) // Costo real del mensaje
-  
+
   // Multi-tenancy & Relations
   patientId String
   patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  
+
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // Indexes
   @@index([patientId])
   @@index([campaignId])
@@ -413,23 +416,23 @@ model Template {
   id   String      @id @default(cuid())
   name String
   type MessageType
-  
+
   // Template Content
   content   String   @db.Text // "Hola {{name}}, ¿cómo calificarías tu visita al Dr. {{doctor}}?"
   variables String[] // ["name", "doctor", "practice", "appointmentType"]
-  
+
   // Metadata
   description String?
   isDefault   Boolean @default(false)
-  
+
   // Multi-tenancy
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([workspaceId])
   @@index([type])
   @@index([isDefault])
@@ -443,24 +446,24 @@ model Template {
 
 model AuditLog {
   id String @id @default(cuid())
-  
+
   // Who & What
   userId     String?
   workspaceId String
   action     String  // "campaign.create", "message.send", etc.
   entityType String  // "Campaign", "Patient", etc.
   entityId   String
-  
+
   // Changes
   oldValue Json?
   newValue Json?
-  
+
   // Context
   ipAddress String?
   userAgent String?
-  
+
   createdAt DateTime @default(now())
-  
+
   @@index([workspaceId])
   @@index([userId])
   @@index([action])
@@ -478,6 +481,7 @@ model AuditLog {
 **Propósito**: Contenedor principal para multi-tenancy. Cada consultorio/clínica es un Workspace.
 
 **Campos Críticos**:
+
 ```prisma
 plan: Plan               // Determina límites y features
 messageCredits: Int      // Créditos disponibles para enviar mensajes
@@ -485,30 +489,32 @@ stripeCustomerId: String // Para facturación
 ```
 
 **Reglas de Negocio**:
+
 - Un Workspace FREE puede tener máximo 1 usuario
 - Un Workspace debe tener al menos 1 Practice para crear Campaigns
 - `messageCredits` se decrementa con cada mensaje enviado
 - Cuando `messageCredits` llega a 0, no se pueden enviar más mensajes (hasta que compren más)
 
 **Ejemplo**:
+
 ```typescript
 const workspace = await prisma.workspace.create({
   data: {
-    name: "Consultorio Dental Sonrisas",
-    plan: "STARTER",
+    name: 'Consultorio Dental Sonrisas',
+    plan: 'STARTER',
     messageCredits: 500,
     users: {
       create: {
-        email: "dr.perez@example.com",
-        name: "Dr. Juan Pérez",
-        role: "OWNER",
-        password: await bcrypt.hash("secure-password", 10),
+        email: 'dr.perez@example.com',
+        name: 'Dr. Juan Pérez',
+        role: 'OWNER',
+        password: await bcrypt.hash('secure-password', 10),
       },
     },
     practices: {
       create: {
-        name: "Consultorio Centro",
-        googlePlaceId: "ChIJN1t_tDeuEmsRUsoyG83frY4",
+        name: 'Consultorio Centro',
+        googlePlaceId: 'ChIJN1t_tDeuEmsRUsoyG83frY4',
       },
     },
   },
@@ -523,13 +529,14 @@ const workspace = await prisma.workspace.create({
 
 **Roles y Permisos**:
 
-| Role | Puede crear campañas | Puede ver todas las campañas | Puede gestionar usuarios | Puede ver billing |
-|------|---------------------|------------------------------|-------------------------|-------------------|
-| **OWNER** | ✅ | ✅ | ✅ | ✅ |
-| **DOCTOR** | ✅ | ⚠️ Solo las suyas | ❌ | ❌ |
-| **RECEPTIONIST** | ✅ Solo subir CSV | ❌ | ❌ | ❌ |
+| Role             | Puede crear campañas | Puede ver todas las campañas | Puede gestionar usuarios | Puede ver billing |
+| ---------------- | -------------------- | ---------------------------- | ------------------------ | ----------------- |
+| **OWNER**        | ✅                   | ✅                           | ✅                       | ✅                |
+| **DOCTOR**       | ✅                   | ⚠️ Solo las suyas            | ❌                       | ❌                |
+| **RECEPTIONIST** | ✅ Solo subir CSV    | ❌                           | ❌                       | ❌                |
 
 **Reglas de Negocio**:
+
 - Email debe ser único globalmente
 - Cada User pertenece a exactamente 1 Workspace
 - OWNER no puede eliminarse si es el único owner del workspace
@@ -542,6 +549,7 @@ const workspace = await prisma.workspace.create({
 **Propósito**: Representar una ubicación física del consultorio. Usado para generar links de Google Reviews.
 
 **googlePlaceId**:
+
 ```typescript
 // Obtener Place ID de Google:
 // 1. Ir a: https://developers.google.com/maps/documentation/places/web-service/place-id
@@ -561,6 +569,7 @@ const reviewLink = `https://search.google.com/local/writereview?placeid=${practi
 **Propósito**: Agrupa un conjunto de pacientes para una campaña de feedback específica.
 
 **Lifecycle**:
+
 ```
 DRAFT → ACTIVE → COMPLETED
    ↓        ↓
@@ -568,14 +577,16 @@ CANCELLED  CANCELLED
 ```
 
 **Campos Importantes**:
+
 - `scheduledHoursAfter`: Cuántas horas esperar después de `appointmentTime` antes de enviar mensaje inicial
-- `status`: 
+- `status`:
   - `DRAFT`: Creada pero no activada
   - `ACTIVE`: Jobs encolados, enviando mensajes
   - `COMPLETED`: Todos los mensajes enviados o fallidos
   - `CANCELLED`: Detenida manualmente
 
 **Query típico**:
+
 ```typescript
 // Obtener campaigns activas con stats
 const campaigns = await prisma.campaign.findMany({
@@ -597,21 +608,17 @@ const campaigns = await prisma.campaign.findMany({
 });
 
 // Calcular stats
-campaigns.map(campaign => ({
+campaigns.map((campaign) => ({
   ...campaign,
   stats: {
     totalPatients: campaign.patients.length,
-    messagesSent: campaign.patients.filter(p => 
-      p.messages.some(m => m.status === 'DELIVERED')
-    ).length,
-    repliesReceived: campaign.patients.filter(p => 
-      p.messages.some(m => m.rating !== null)
-    ).length,
+    messagesSent: campaign.patients.filter((p) => p.messages.some((m) => m.status === 'DELIVERED')).length,
+    repliesReceived: campaign.patients.filter((p) => p.messages.some((m) => m.rating !== null)).length,
     averageRating: calculateAverage(
       campaign.patients
-        .flatMap(p => p.messages)
-        .filter(m => m.rating !== null)
-        .map(m => m.rating)
+        .flatMap((p) => p.messages)
+        .filter((m) => m.rating !== null)
+        .map((m) => m.rating)
     ),
   },
 }));
@@ -632,17 +639,15 @@ dataDeletedAt: DateTime? // Soft delete (GDPR "Right to be Forgotten")
 ```
 
 **Validación antes de enviar mensaje**:
+
 ```typescript
 function canSendMessage(patient: Patient): boolean {
-  return (
-    patient.hasConsent === true &&
-    patient.optedOutAt === null &&
-    patient.dataDeletedAt === null
-  );
+  return patient.hasConsent === true && patient.optedOutAt === null && patient.dataDeletedAt === null;
 }
 ```
 
 **Formato de teléfono**:
+
 ```typescript
 // Ecuador: +593 + 9 dígitos
 // Ejemplo: +593987654321
@@ -655,6 +660,7 @@ function validateEcuadorPhone(phone: string): boolean {
 ```
 
 **Opt-out handling**:
+
 ```typescript
 // Cuando paciente responde "STOP"
 async function handleOptOut(patientId: string) {
@@ -662,7 +668,7 @@ async function handleOptOut(patientId: string) {
     where: { id: patientId },
     data: { optedOutAt: new Date() },
   });
-  
+
   // Cancelar jobs pendientes
   const jobs = await queue.getJobs(['waiting', 'delayed']);
   for (const job of jobs) {
@@ -688,12 +694,13 @@ FAILED   FAILED   (timeout)
 ```
 
 **Tracking de Tiempos**:
+
 ```typescript
 interface MessageTimeline {
-  createdAt: Date;    // Job creado en BullMQ
-  sentAt: Date;       // Enviado a Twilio/WhatsApp
-  deliveredAt: Date;  // Confirmado por proveedor (webhook)
-  repliedAt: Date;    // Paciente respondió (webhook)
+  createdAt: Date; // Job creado en BullMQ
+  sentAt: Date; // Enviado a Twilio/WhatsApp
+  deliveredAt: Date; // Confirmado por proveedor (webhook)
+  repliedAt: Date; // Paciente respondió (webhook)
 }
 
 // Calcular métricas
@@ -702,6 +709,7 @@ const avgResponseTime = repliedAt - deliveredAt;
 ```
 
 **Rating & Follow-up Logic**:
+
 ```typescript
 async function handlePatientReply(messageId: string, rating: number) {
   // 1. Actualizar mensaje con rating
@@ -713,17 +721,21 @@ async function handlePatientReply(messageId: string, rating: number) {
       repliedAt: new Date(),
     },
   });
-  
+
   // 2. Determinar tipo de follow-up
   const followupType = rating >= 4 ? 'FOLLOWUP_HAPPY' : 'FOLLOWUP_UNHAPPY';
-  
+
   // 3. Encolar job de follow-up
-  await queue.add('send-followup', {
-    messageId,
-    type: followupType,
-  }, {
-    delay: 1000, // 1 segundo después
-  });
+  await queue.add(
+    'send-followup',
+    {
+      messageId,
+      type: followupType,
+    },
+    {
+      delay: 1000, // 1 segundo después
+    }
+  );
 }
 ```
 
@@ -734,6 +746,7 @@ async function handlePatientReply(messageId: string, rating: number) {
 **Propósito**: Plantillas personalizables para mensajes.
 
 **Variables disponibles**:
+
 ```typescript
 const availableVariables = {
   name: 'patient.name',
@@ -764,6 +777,7 @@ function renderTemplate(template: Template, data: any): string {
 ```
 
 **Templates por defecto** (seed data):
+
 ```typescript
 const defaultTemplates = [
   {
@@ -815,6 +829,7 @@ const defaultTemplates = [
 ### Queries Optimizados
 
 **❌ Lento** (N+1 queries):
+
 ```typescript
 const campaigns = await prisma.campaign.findMany({ where: { workspaceId } });
 
@@ -827,6 +842,7 @@ for (const campaign of campaigns) {
 ```
 
 **✅ Rápido** (1 query con include):
+
 ```typescript
 const campaigns = await prisma.campaign.findMany({
   where: { workspaceId },
@@ -923,11 +939,11 @@ ALTER TABLE "patients" ALTER COLUMN "hasConsent" SET DEFAULT false;
 -- Normalizar teléfonos de Ecuador a formato +593XXXXXXXXX
 
 -- Backup current data
-CREATE TABLE patients_phone_backup AS 
+CREATE TABLE patients_phone_backup AS
 SELECT id, phone FROM patients;
 
 -- Update format
-UPDATE patients 
+UPDATE patients
 SET phone = '+593' || regexp_replace(phone, '[^0-9]', '', 'g')
 WHERE phone NOT LIKE '+593%';
 
@@ -1139,6 +1155,7 @@ main()
 ```
 
 **Ejecutar seed**:
+
 ```bash
 pnpm exec prisma db seed
 ```
@@ -1173,8 +1190,8 @@ async function calculateNPS(workspaceId: string, dateRange?: { from: Date; to: D
   const total = messages.length;
   if (total === 0) return null;
 
-  const promoters = messages.filter(m => m.rating! >= 4).length;
-  const detractors = messages.filter(m => m.rating! <= 2).length;
+  const promoters = messages.filter((m) => m.rating! >= 4).length;
+  const detractors = messages.filter((m) => m.rating! <= 2).length;
 
   const nps = ((promoters - detractors) / total) * 100;
 
@@ -1200,8 +1217,8 @@ async function calculateConversionRate(campaignId: string) {
     _count: true,
   });
 
-  const sent = stats.find(s => ['DELIVERED', 'REPLIED'].includes(s.status))?._count || 0;
-  const replied = stats.find(s => s.status === 'REPLIED')?._count || 0;
+  const sent = stats.find((s) => ['DELIVERED', 'REPLIED'].includes(s.status))?._count || 0;
+  const replied = stats.find((s) => s.status === 'REPLIED')?._count || 0;
 
   return {
     conversionRate: sent > 0 ? (replied / sent) * 100 : 0,
@@ -1264,13 +1281,13 @@ psql $DATABASE_URL < backup_20251115_120000.sql
 
 ```sql
 -- Ver cambios recientes (audit log)
-SELECT * FROM audit_logs 
+SELECT * FROM audit_logs
 WHERE created_at >= NOW() - INTERVAL '1 hour'
 ORDER BY created_at DESC;
 
 -- Restaurar paciente eliminado por error
-UPDATE patients 
-SET data_deleted_at = NULL 
+UPDATE patients
+SET data_deleted_at = NULL
 WHERE id = 'patient-id' AND data_deleted_at IS NOT NULL;
 ```
 
@@ -1293,7 +1310,7 @@ VACUUM ANALYZE patients;
 
 ```sql
 -- Eliminar mensajes antiguos (después de 90 días)
-DELETE FROM messages 
+DELETE FROM messages
 WHERE created_at < NOW() - INTERVAL '90 days'
 AND status IN ('FAILED', 'DELIVERED');
 
@@ -1311,6 +1328,7 @@ AND data_deleted_at IS NULL;
 **Mantenedor**: @saxoboy
 
 **Ver también**:
+
 - [`ARCHITECTURE.md`](../ARCHITECTURE.md) - Arquitectura completa
 - [`SETUP.md`](SETUP.md) - Guía de instalación
 - [Prisma Documentation](https://www.prisma.io/docs/)

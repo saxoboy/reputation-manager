@@ -3,3 +3,24 @@
 /coverage
 /.nx/cache
 /.nx/workspace-data
+
+# Next.js
+.next
+.turbo
+
+# Build outputs
+build
+out
+tmp
+
+# Dependencies
+node_modules
+
+# Prisma generated
+libs/database/src/generated
+
+# VSCode
+.vscode
+
+# Logs
+*.log
