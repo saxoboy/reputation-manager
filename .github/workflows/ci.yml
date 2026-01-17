@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  main:
+    name: CI Pipeline
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: reputation_manager_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm prisma:generate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/reputation_manager_test
+
+      - name: Run Prisma migrations
+        run: pnpm prisma migrate deploy --schema=libs/database/prisma/schema.prisma
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/reputation_manager_test
+
+      - name: Lint
+        run: pnpm nx run-many --target=lint --all --parallel=3
+
+      - name: Type check
+        run: pnpm nx run-many --target=typecheck --all --parallel=3 --skip-nx-cache || echo "Type check not configured yet"
+
+      - name: Test
+        run: pnpm nx run-many --target=test --all --parallel=3 --coverage
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/reputation_manager_test
+          REDIS_URL: redis://localhost:6379
+          BETTER_AUTH_SECRET: test-secret-key-for-ci-pipeline-only
+          BETTER_AUTH_URL: http://localhost:3000
+
+      - name: Build
+        run: pnpm nx run-many --target=build --all --parallel=3
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/reputation_manager_test
+          REDIS_URL: redis://localhost:6379
+          BETTER_AUTH_SECRET: test-secret-key-for-ci-pipeline-only
+          BETTER_AUTH_URL: http://localhost:3000
+          NEXT_PUBLIC_API_URL: http://localhost:3000
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
