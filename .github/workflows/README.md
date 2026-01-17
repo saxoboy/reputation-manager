@@ -35,9 +35,13 @@ Este directorio contiene los workflows de CI/CD para Reputation Manager.
 - ✅ Tests de código afectado
 - ✅ Build de código afectado
 - ✅ Etiqueta PRs por tamaño (S/M/L/XL)
-- ✅ Revisa dependencias por vulnerabilidades
+- ⚠️ Dependency Review (comentado - requiere Advanced Security)
 
 **Duración aproximada**: 3-5 minutos (solo afectados)
+
+> **Nota sobre Dependency Review**: Este check está comentado porque requiere GitHub Advanced Security, que es de pago para repositorios privados. Para habilitarlo:
+> - Haz tu repo público (gratis), o
+> - Activa Advanced Security (Settings → Security → Code security)
 
 ---
 
