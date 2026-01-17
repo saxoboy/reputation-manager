@@ -34,11 +34,11 @@ git push origin main  # o develop según tu branch
 1. Ve a: **Settings** → **Labels**
 2. Crea los siguientes labels manualmente:
 
-| Label | Color | Descripción |
-|-------|-------|-------------|
-| `size/S` | `#0E8A16` | PR pequeño (<200 líneas) |
-| `size/M` | `#FBCA04` | PR mediano (200-500 líneas) |
-| `size/L` | `#FE7D37` | PR grande (500-1000 líneas) |
+| Label     | Color     | Descripción                  |
+| --------- | --------- | ---------------------------- |
+| `size/S`  | `#0E8A16` | PR pequeño (<200 líneas)     |
+| `size/M`  | `#FBCA04` | PR mediano (200-500 líneas)  |
+| `size/L`  | `#FE7D37` | PR grande (500-1000 líneas)  |
 | `size/XL` | `#D73A4A` | PR muy grande (>1000 líneas) |
 
 ### Opción B: Usar GitHub CLI (Más rápido)
@@ -91,7 +91,7 @@ gh label create "priority: low" --color 0E8A16 --description "Baja"
    ☑️ Require branches to be up to date before merging
    Busca y selecciona:
    - CI Pipeline
-   - PR Validation  
+   - PR Validation
    - Dependency Review
 
 ☑️ Require conversation resolution before merging
@@ -130,6 +130,7 @@ gh label create "priority: low" --color 0E8A16 --description "Baja"
 4. El archivo `.coderabbit.yaml` ya está configurado
 
 **Beneficios**:
+
 - 🤖 Reviews automáticos con IA
 - 📝 Comentarios inline inteligentes
 - 🔍 Detecta bugs y problemas de seguridad
@@ -155,6 +156,7 @@ Para ver coverage de tests:
 ## 6. Verificar Workflows
 
 ### Primera vez
+
 ```bash
 # Ver workflows en GitHub
 https://github.com/saxoboy/reputation-manager/actions
@@ -186,6 +188,7 @@ git push origin test/ci-verification
 En **Settings** → **Secrets and variables** → **Actions**, agrega:
 
 ### Para desarrollo (más adelante)
+
 - `TWILIO_ACCOUNT_SID`
 - `TWILIO_AUTH_TOKEN`
 - `STRIPE_SECRET_KEY`
@@ -281,15 +284,19 @@ Antes de continuar con Phase 1, verifica:
 ## 🆘 Troubleshooting
 
 ### "Workflow not found"
+
 **Solución**: Asegúrate de haber hecho push de `.github/workflows/`
 
 ### "Required status check not found"
+
 **Solución**: Espera a que el workflow se ejecute al menos una vez antes de configurar branch protection
 
 ### "GITHUB_TOKEN permissions"
+
 **Solución**: En Settings → Actions → General → Workflow permissions, selecciona "Read and write permissions"
 
 ### "CodeRabbit not commenting"
+
 **Solución**: Verifica que la app esté instalada en el repo y que tengas permisos
 
 ---
