@@ -92,6 +92,7 @@ gh label create "priority: low" --color 0E8A16 --description "Baja"
    Busca y selecciona:
    - CI Pipeline
    - PR Validation
+   - Dependency Review
 
 ☑️ Require conversation resolution before merging
 
