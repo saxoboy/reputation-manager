@@ -72,13 +72,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Generate Prisma Client
-        run: pnpm prisma:generate
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/reputation_manager_test
-
       - name: Run Prisma migrations
-        run: pnpm prisma migrate deploy --schema=libs/database/prisma/schema.prisma
+        run: pnpm prisma migrate deploy --schema=libs/database/prisma/schema.prisma --skip-generate
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/reputation_manager_test
 

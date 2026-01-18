@@ -48,5 +48,8 @@ Thumbs.db
 out
 node_modules
 
+# Prisma generated client
+libs/database/src/generated
+
 # Environment variables
 .env

@@ -13,6 +13,7 @@ export default [
       '**/coverage',
       '**/.nx',
       '**/tmp',
+      '**/next-env.d.ts',
     ],
   },
   {
