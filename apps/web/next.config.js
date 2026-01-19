@@ -16,4 +16,16 @@ const plugins = [
   withNx,
 ];
 
-module.exports = composePlugins(...plugins)(nextConfig);
+const nextConfigWithRewrites = {
+  ...nextConfig,
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:3000/api/:path*',
+      },
+    ];
+  },
+};
+
+module.exports = composePlugins(...plugins)(nextConfigWithRewrites);
