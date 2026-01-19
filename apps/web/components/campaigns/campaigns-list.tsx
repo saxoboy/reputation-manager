@@ -26,13 +26,16 @@ interface CampaignsListProps {
 
 export function CampaignsList({ campaigns }: CampaignsListProps) {
   const getStatusBadge = (status: CampaignStatus) => {
-    const variants: Record<CampaignStatus, "default" | "secondary" | "destructive" | "outline"> = {
+    const variants: Record<
+      CampaignStatus,
+      'default' | 'secondary' | 'destructive' | 'outline'
+    > = {
       DRAFT: 'secondary',
       ACTIVE: 'default',
       PAUSED: 'destructive',
       COMPLETED: 'outline',
     };
-    
+
     const labels: Record<CampaignStatus, string> = {
       DRAFT: 'Borrador',
       ACTIVE: 'Activa',
@@ -74,23 +77,34 @@ export function CampaignsList({ campaigns }: CampaignsListProps) {
                     {campaign.practiceName}
                   </div>
                 </TableCell>
-                <TableCell>
-                  {getStatusBadge(campaign.status)}
-                </TableCell>
+                <TableCell>{getStatusBadge(campaign.status)}</TableCell>
                 <TableCell>{campaign.patientsCount}</TableCell>
                 <TableCell>
                   {campaign.respondedCount}
                   <span className="text-xs text-muted-foreground ml-1">
-                     ({campaign.patientsCount > 0 ? Math.round((campaign.respondedCount / campaign.patientsCount) * 100) : 0}%)
+                    (
+                    {campaign.patientsCount > 0
+                      ? Math.round(
+                          (campaign.respondedCount / campaign.patientsCount) *
+                            100,
+                        )
+                      : 0}
+                    %)
                   </span>
                 </TableCell>
                 <TableCell>
                   {campaign.nps > 0 ? (
-                    <span className={campaign.nps >= 50 ? "text-green-600 font-medium" : "text-yellow-600"}>
+                    <span
+                      className={
+                        campaign.nps >= 50
+                          ? 'text-green-600 font-medium'
+                          : 'text-yellow-600'
+                      }
+                    >
                       {campaign.nps}
                     </span>
                   ) : (
-                    "-"
+                    '-'
                   )}
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">

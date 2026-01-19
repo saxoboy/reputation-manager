@@ -3,7 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useWorkspace } from '../../../../hooks/use-workspace';
 import { Button } from '../../../../components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../../../../components/ui/card';
 import { Plus } from 'lucide-react';
 import { Practice } from '../../../../types/mock-types';
 import { PracticesList } from '../../../../components/practices/practices-list';
@@ -19,7 +25,9 @@ export default function PracticesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPractice, setEditingPractice] = useState<Practice | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [practiceToDelete, setPracticeToDelete] = useState<Practice | null>(null);
+  const [practiceToDelete, setPracticeToDelete] = useState<Practice | null>(
+    null,
+  );
 
   const fetchPractices = async () => {
     if (!workspace) return;

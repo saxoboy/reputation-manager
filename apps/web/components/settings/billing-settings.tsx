@@ -18,9 +18,7 @@ export function BillingSettings() {
     <Card>
       <CardHeader>
         <CardTitle>Facturación</CardTitle>
-        <CardDescription>
-          Administra tu plan y métodos de pago
-        </CardDescription>
+        <CardDescription>Administra tu plan y métodos de pago</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <Alert>

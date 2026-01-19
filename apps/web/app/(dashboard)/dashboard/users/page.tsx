@@ -5,7 +5,11 @@ import { UserPlus } from 'lucide-react';
 import { UsersList } from '../../../../components/users/users-list';
 import { InviteUserDialog } from '../../../../components/users/invite-user-dialog';
 import { PendingInvitations } from '../../../../components/users/pending-invitations';
-import { useWorkspaceUsers, useRemoveUser, useUpdateUserRole } from '../../../../hooks/use-users';
+import {
+  useWorkspaceUsers,
+  useRemoveUser,
+  useUpdateUserRole,
+} from '../../../../hooks/use-users';
 import { useCurrentWorkspace } from '../../../../hooks/use-workspaces';
 import { useState } from 'react';
 import { Skeleton } from '../../../../components/ui/skeleton';
@@ -13,9 +17,10 @@ import { Skeleton } from '../../../../components/ui/skeleton';
 export default function UsersPage() {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
-  const { data: workspace, isLoading: loadingWorkspace } = useCurrentWorkspace();
+  const { data: workspace, isLoading: loadingWorkspace } =
+    useCurrentWorkspace();
   const { data: workspaceUsers, isLoading: loadingUsers } = useWorkspaceUsers(
-    workspace?.id || ''
+    workspace?.id || '',
   );
 
   const removeUserMutation = useRemoveUser(workspace?.id || '');
@@ -25,7 +30,10 @@ export default function UsersPage() {
     removeUserMutation.mutate(id);
   };
 
-  const handleRoleChange = (id: string, newRole: 'OWNER' | 'DOCTOR' | 'RECEPTIONIST') => {
+  const handleRoleChange = (
+    id: string,
+    newRole: 'OWNER' | 'DOCTOR' | 'RECEPTIONIST',
+  ) => {
     if (newRole === 'OWNER') return; // No se puede cambiar a OWNER
     updateRoleMutation.mutate({ userId: id, role: newRole });
   };
@@ -50,13 +58,14 @@ export default function UsersPage() {
   }
 
   // Transformar WorkspaceUser[] a User[] para compatibilidad con componentes existentes
-  const users = workspaceUsers?.map(wu => ({
-    id: wu.userId,
-    name: wu.user.name,
-    email: wu.user.email,
-    role: wu.role,
-    createdAt: new Date(wu.createdAt).toISOString().split('T')[0],
-  })) || [];
+  const users =
+    workspaceUsers?.map((wu) => ({
+      id: wu.userId,
+      name: wu.user.name,
+      email: wu.user.email,
+      role: wu.role,
+      createdAt: new Date(wu.createdAt).toISOString().split('T')[0],
+    })) || [];
 
   return (
     <div className="space-y-6">

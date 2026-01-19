@@ -12,7 +12,7 @@ import {
   Settings,
   FileText,
   CreditCard,
-  LucideIcon
+  LucideIcon,
 } from 'lucide-react';
 import { Separator } from '../ui/separator';
 import { Badge } from '../ui/badge';

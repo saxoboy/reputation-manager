@@ -35,7 +35,10 @@ interface UsersListProps {
 
 const roleLabels: Record<
   string,
-  { label: string; variant: 'default' | 'outline' | 'secondary' | 'destructive' }
+  {
+    label: string;
+    variant: 'default' | 'outline' | 'secondary' | 'destructive';
+  }
 > = {
   OWNER: { label: 'Dueño', variant: 'default' },
   DOCTOR: { label: 'Doctor', variant: 'secondary' },

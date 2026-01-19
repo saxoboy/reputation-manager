@@ -11,9 +11,9 @@ import { TemplatesList } from '../../../../components/templates/templates-list';
 const TemplateDialog = dynamic(
   () =>
     import('../../../../components/templates/template-dialog').then(
-      (mod) => mod.TemplateDialog
+      (mod) => mod.TemplateDialog,
     ),
-  { ssr: false }
+  { ssr: false },
 );
 
 // Mock Data
@@ -56,7 +56,7 @@ export default function TemplatesPage() {
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
 
   const handleCreate = (
-    newTemplate: Omit<Template, 'id' | 'updatedAt' | 'variables'>
+    newTemplate: Omit<Template, 'id' | 'updatedAt' | 'variables'>,
   ) => {
     const template: Template = {
       ...newTemplate,
@@ -73,23 +73,23 @@ export default function TemplatesPage() {
   };
 
   const handleUpdate = (
-    updatedData: Omit<Template, 'id' | 'updatedAt' | 'variables'>
+    updatedData: Omit<Template, 'id' | 'updatedAt' | 'variables'>,
   ) => {
     if (!editingTemplate) return;
     setTemplates(
       templates.map((t) =>
         t.id === editingTemplate.id
           ? {
-            ...t,
-            ...updatedData,
-            updatedAt: new Date().toISOString().split('T')[0],
-            variables:
-              updatedData.content
-                .match(/{[^}]+}/g)
-                ?.map((v) => v.toString()) || [],
-          }
-          : t
-      )
+              ...t,
+              ...updatedData,
+              updatedAt: new Date().toISOString().split('T')[0],
+              variables:
+                updatedData.content
+                  .match(/{[^}]+}/g)
+                  ?.map((v) => v.toString()) || [],
+            }
+          : t,
+      ),
     );
     toast.success('Plantilla actualizada', {
       description: 'Los cambios han sido guardados.',

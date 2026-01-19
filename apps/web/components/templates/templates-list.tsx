@@ -65,9 +65,7 @@ export function TemplatesList({
               </div>
             </TableCell>
             <TableCell>
-              <Badge variant="outline">
-                {TEMPLATE_TYPES[template.type]}
-              </Badge>
+              <Badge variant="outline">{TEMPLATE_TYPES[template.type]}</Badge>
             </TableCell>
             <TableCell>
               <p className="text-sm text-muted-foreground truncate max-w-75">

@@ -19,7 +19,7 @@ export function WorkspaceSettings() {
   const [workspaceName, setWorkspaceName] = useState('Mi Consultorio');
   const [currentPlan] = useState('STARTER');
   const [messageCredits] = useState(500);
-  
+
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -125,8 +125,8 @@ export function WorkspaceSettings() {
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              Eliminar tu workspace borrará todos los datos, campañas, pacientes y
-              plantillas. Esta acción no se puede deshacer.
+              Eliminar tu workspace borrará todos los datos, campañas, pacientes
+              y plantillas. Esta acción no se puede deshacer.
             </AlertDescription>
           </Alert>
           <Button variant="destructive" disabled>

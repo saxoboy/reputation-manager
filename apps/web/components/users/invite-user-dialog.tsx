@@ -87,7 +87,10 @@ export function InviteUserDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4 py-4"
+          >
             <FormField
               control={form.control}
               name="name"
@@ -137,11 +140,14 @@ export function InviteUserDialog({
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="DOCTOR">Doctor</SelectItem>
-                      <SelectItem value="RECEPTIONIST">Recepcionista</SelectItem>
+                      <SelectItem value="RECEPTIONIST">
+                        Recepcionista
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    Los doctores pueden crear campañas. Los recepcionistas solo pueden ver.
+                    Los doctores pueden crear campañas. Los recepcionistas solo
+                    pueden ver.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

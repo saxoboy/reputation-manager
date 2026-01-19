@@ -51,7 +51,9 @@ export function CreateCampaignDialog({ onCreate }: CreateCampaignDialogProps) {
     e.preventDefault();
 
     // Simulate campaign creation with file processing
-    const practiceName = MOCK_PRACTICES.find(p => p.id === formData.practiceId)?.name || 'Desconocido';
+    const practiceName =
+      MOCK_PRACTICES.find((p) => p.id === formData.practiceId)?.name ||
+      'Desconocido';
 
     const newCampaign: Campaign = {
       id: Math.random().toString(36).substr(2, 9),
@@ -84,7 +86,8 @@ export function CreateCampaignDialog({ onCreate }: CreateCampaignDialogProps) {
         <DialogHeader>
           <DialogTitle>Crear Nueva Campaña</DialogTitle>
           <DialogDescription>
-            Importa un archivo CSV con tus pacientes para iniciar el proceso de feedback.
+            Importa un archivo CSV con tus pacientes para iniciar el proceso de
+            feedback.
           </DialogDescription>
         </DialogHeader>
 
@@ -94,7 +97,9 @@ export function CreateCampaignDialog({ onCreate }: CreateCampaignDialogProps) {
             <Input
               placeholder="Ej. Visitas Enero 2026"
               value={formData.name}
-              onChange={e => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               required
             />
           </div>
@@ -103,15 +108,19 @@ export function CreateCampaignDialog({ onCreate }: CreateCampaignDialogProps) {
             <Label>Consultorio</Label>
             <Select
               value={formData.practiceId}
-              onValueChange={(val: string) => setFormData({ ...formData, practiceId: val })}
+              onValueChange={(val: string) =>
+                setFormData({ ...formData, practiceId: val })
+              }
               required
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona el consultorio" />
               </SelectTrigger>
               <SelectContent>
-                {MOCK_PRACTICES.map(p => (
-                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                {MOCK_PRACTICES.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -123,8 +132,12 @@ export function CreateCampaignDialog({ onCreate }: CreateCampaignDialogProps) {
               <FileSpreadsheet className="h-8 w-8 text-muted-foreground mb-2" />
               {selectedFile ? (
                 <div className="text-sm">
-                  <p className="font-medium text-primary">{selectedFile.name}</p>
-                  <p className="text-muted-foreground">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                  <p className="font-medium text-primary">
+                    {selectedFile.name}
+                  </p>
+                  <p className="text-muted-foreground">
+                    {(selectedFile.size / 1024).toFixed(1)} KB
+                  </p>
                 </div>
               ) : (
                 <div className="text-sm text-muted-foreground">
