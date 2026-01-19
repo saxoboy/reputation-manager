@@ -22,11 +22,13 @@ Guía completa para desarrollo diario, workflows, convenciones y mejores prácti
 ### Levantar el Proyecto
 
 **Opción 1: Todo junto**
+
 ```bash
 pnpm dev
 ```
 
 **Opción 2: Apps individuales** (más control, logs separados)
+
 ```bash
 # Terminal 1: Frontend
 pnpm nx serve web
@@ -39,6 +41,7 @@ pnpm nx serve worker
 ```
 
 **Opción 3: Con watch mode para libs**
+
 ```bash
 pnpm nx run-many --target=serve --projects=web,api,worker --parallel=3 --with-deps
 ```
@@ -46,6 +49,7 @@ pnpm nx run-many --target=serve --projects=web,api,worker --parallel=3 --with-de
 ### Hot Reload
 
 Todos los cambios se recargan automáticamente:
+
 - **Frontend (Next.js)**: Fast Refresh
 - **Backend (NestJS)**: Webpack HMR
 - **Shared libs**: Nx watch mode
@@ -60,7 +64,7 @@ docker-compose up -d
 pnpm prisma:studio
 
 # BullMQ Dashboard (ver jobs)
-# Disponible automáticamente en: http://localhost:3001/admin/queues
+# Disponible automáticamente en: http://localhost:3000/admin/queues
 ```
 
 ---
@@ -72,6 +76,7 @@ pnpm prisma:studio
 #### Ejemplo: "Agregar campo 'specialty' a Practice"
 
 **Paso 1: Crear branch**
+
 ```bash
 git checkout develop
 git pull origin develop
@@ -79,6 +84,7 @@ git checkout -b feature/add-practice-specialty
 ```
 
 **Paso 2: Actualizar schema de Prisma**
+
 ```typescript
 // libs/database/prisma/schema.prisma
 model Practice {
@@ -100,11 +106,13 @@ model Practice {
 ```
 
 **Paso 3: Crear migración**
+
 ```bash
 pnpm prisma:migrate --name add_practice_specialty
 ```
 
 **Paso 4: Actualizar DTOs**
+
 ```typescript
 // libs/shared-types/src/dtos/practice.dto.ts
 import { z } from 'zod';
@@ -113,21 +121,19 @@ export const CreatePracticeSchema = z.object({
   workspaceId: z.string().cuid(),
   name: z.string().min(3).max(100),
   address: z.string().optional(),
-  phone: z.string().regex(/^\+593\d{9}$/).optional(),
+  phone: z
+    .string()
+    .regex(/^\+593\d{9}$/)
+    .optional(),
   googlePlaceId: z.string().optional(),
-  specialty: z.enum([
-    'GENERAL_MEDICINE',
-    'DENTISTRY',
-    'CARDIOLOGY',
-    'DERMATOLOGY',
-    'OTHER'
-  ]).optional(), // 👈 Nuevo campo
+  specialty: z.enum(['GENERAL_MEDICINE', 'DENTISTRY', 'CARDIOLOGY', 'DERMATOLOGY', 'OTHER']).optional(), // 👈 Nuevo campo
 });
 
 export type CreatePracticeDto = z.infer<typeof CreatePracticeSchema>;
 ```
 
 **Paso 5: Actualizar Service**
+
 ```typescript
 // apps/api/src/practices/practice.service.ts
 async create(dto: CreatePracticeDto) {
@@ -145,6 +151,7 @@ async create(dto: CreatePracticeDto) {
 ```
 
 **Paso 6: Actualizar Frontend**
+
 ```typescript
 // apps/web/components/practices/practice-form.tsx
 <FormField
@@ -173,6 +180,7 @@ async create(dto: CreatePracticeDto) {
 ```
 
 **Paso 7: Agregar tests**
+
 ```typescript
 // apps/api/src/practices/practice.service.spec.ts
 it('should create practice with specialty', async () => {
@@ -189,12 +197,14 @@ it('should create practice with specialty', async () => {
 ```
 
 **Paso 8: Ejecutar tests**
+
 ```bash
 pnpm nx test api
 pnpm nx test web
 ```
 
 **Paso 9: Commit y push**
+
 ```bash
 git add .
 git commit -m "feat(practices): add specialty field"
@@ -202,6 +212,7 @@ git push origin feature/add-practice-specialty
 ```
 
 **Paso 10: Crear PR en GitHub**
+
 - CodeRabbit revisará automáticamente
 - Esperar aprobación
 - Merge a `develop`
@@ -213,6 +224,7 @@ git push origin feature/add-practice-specialty
 #### Ejemplo: "GET /api/campaigns/:id/stats"
 
 **Paso 1: Definir el DTO de respuesta**
+
 ```typescript
 // libs/shared-types/src/dtos/campaign-stats.dto.ts
 export interface CampaignStatsDto {
@@ -233,6 +245,7 @@ export interface CampaignStatsDto {
 ```
 
 **Paso 2: Implementar en el Service**
+
 ```typescript
 // apps/api/src/campaigns/campaign.service.ts
 async getStats(campaignId: string, workspaceId: string): Promise<CampaignStatsDto> {
@@ -285,6 +298,7 @@ async getStats(campaignId: string, workspaceId: string): Promise<CampaignStatsDt
 ```
 
 **Paso 3: Agregar ruta en el Controller**
+
 ```typescript
 // apps/api/src/campaigns/campaign.controller.ts
 @Get(':id/stats')
@@ -298,13 +312,11 @@ async getStats(
 ```
 
 **Paso 4: Agregar test**
+
 ```typescript
 // apps/api/src/campaigns/campaign.controller.spec.ts
 it('GET /campaigns/:id/stats should return stats', async () => {
-  const response = await request(app.getHttpServer())
-    .get('/campaigns/campaign-1/stats')
-    .set('Authorization', `Bearer ${token}`)
-    .expect(200);
+  const response = await request(app.getHttpServer()).get('/campaigns/campaign-1/stats').set('Authorization', `Bearer ${token}`).expect(200);
 
   expect(response.body).toMatchObject({
     totalPatients: expect.any(Number),
@@ -325,22 +337,20 @@ it('GET /campaigns/:id/stats should return stats', async () => {
 ```
 
 **Paso 5: Consumir desde el Frontend**
+
 ```typescript
 // apps/web/lib/api/campaigns.ts
 export async function getCampaignStats(campaignId: string) {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/campaigns/${campaignId}/stats`,
-    {
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-      },
-    }
-  );
-  
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/campaigns/${campaignId}/stats`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+  });
+
   if (!response.ok) {
     throw new Error('Failed to fetch campaign stats');
   }
-  
+
   return response.json() as Promise<CampaignStatsDto>;
 }
 ```
@@ -352,6 +362,7 @@ export async function getCampaignStats(campaignId: string) {
 #### Ejemplo: "Send reminder si no responde en 24h"
 
 **Paso 1: Definir el payload del job**
+
 ```typescript
 // libs/shared-types/src/interfaces/jobs.interface.ts
 export interface SendReminderJobPayload {
@@ -363,6 +374,7 @@ export interface SendReminderJobPayload {
 ```
 
 **Paso 2: Encolar el job desde el API**
+
 ```typescript
 // apps/api/src/messages/message.service.ts
 async scheduleReminder(messageId: string) {
@@ -398,6 +410,7 @@ async scheduleReminder(messageId: string) {
 ```
 
 **Paso 3: Crear el Processor**
+
 ```typescript
 // apps/worker/src/processors/send-reminder.processor.ts
 import { Processor, WorkerHost } from '@nestjs/bullmq';
@@ -445,20 +458,20 @@ export class SendReminderProcessor extends WorkerHost {
 ```
 
 **Paso 4: Registrar el Processor**
+
 ```typescript
 // apps/worker/src/worker.module.ts
 import { SendReminderProcessor } from './processors/send-reminder.processor';
 
 @Module({
-  imports: [
-    BullModule.registerQueue({ name: 'messages' }),
-  ],
+  imports: [BullModule.registerQueue({ name: 'messages' })],
   providers: [SendReminderProcessor],
 })
 export class WorkerModule {}
 ```
 
 **Paso 5: Agregar test**
+
 ```typescript
 // apps/worker/src/processors/send-reminder.processor.spec.ts
 describe('SendReminderProcessor', () => {
@@ -478,7 +491,7 @@ describe('SendReminderProcessor', () => {
     expect(twilioService.sendSMS).toHaveBeenCalledWith(
       expect.objectContaining({
         to: '+593999999999',
-      })
+      }),
     );
   });
 
@@ -624,6 +637,7 @@ libs/
 ### Naming
 
 **Files**: `kebab-case.extension`
+
 ```
 create-campaign.dto.ts
 send-message.service.ts
@@ -631,34 +645,43 @@ workspace.guard.ts
 ```
 
 **Classes**: `PascalCase`
+
 ```typescript
-CreateCampaignDto
-SendMessageService
-WorkspaceGuard
+CreateCampaignDto;
+SendMessageService;
+WorkspaceGuard;
 ```
 
 **Functions**: `camelCase` (start with verb)
+
 ```typescript
-createCampaign()
-sendMessage()
-validatePhone()
+createCampaign();
+sendMessage();
+validatePhone();
 ```
 
 **Constants**: `SCREAMING_SNAKE_CASE`
+
 ```typescript
 const MAX_RETRIES = 3;
 const DEFAULT_DELAY_HOURS = 2;
 ```
 
 **Interfaces**: `PascalCase` (no "I" prefix)
+
 ```typescript
-interface Campaign { /* ... */ }
-interface User { /* ... */ }
+interface Campaign {
+  /* ... */
+}
+interface User {
+  /* ... */
+}
 ```
 
 ### Imports
 
 **Order** (eslint enforced):
+
 ```typescript
 // 1. External packages
 import { Injectable } from '@nestjs/common';
@@ -694,6 +717,7 @@ export type CreateCampaignDto = z.infer<typeof CreateCampaignSchema>;
 ```
 
 **Uso en NestJS**:
+
 ```typescript
 import { CreateCampaignSchema, CreateCampaignDto } from '@reputation-manager/shared-types';
 
@@ -740,6 +764,7 @@ export class CampaignService {
 ### Error Handling
 
 **Backend**:
+
 ```typescript
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 
@@ -757,6 +782,7 @@ async findCampaign(id: string, workspaceId: string) {
 ```
 
 **Frontend**:
+
 ```typescript
 try {
   const campaign = await getCampaign(id);
@@ -776,6 +802,7 @@ try {
 ### Unit Tests
 
 **Service Example**:
+
 ```typescript
 // campaign.service.spec.ts
 describe('CampaignService', () => {
@@ -826,6 +853,7 @@ describe('CampaignService', () => {
 ```
 
 **Ejecutar**:
+
 ```bash
 pnpm nx test api                    # Todos los tests del API
 pnpm nx test api --watch            # Watch mode
@@ -850,10 +878,8 @@ describe('CampaignController (e2e)', () => {
     await app.init();
 
     // Login to get token
-    const loginRes = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'test@test.com', password: 'test123' });
-    
+    const loginRes = await request(app.getHttpServer()).post('/auth/login').send({ email: 'test@test.com', password: 'test123' });
+
     token = loginRes.body.accessToken;
   });
 
@@ -865,11 +891,7 @@ describe('CampaignController (e2e)', () => {
       scheduledHoursAfter: 2,
     };
 
-    const response = await request(app.getHttpServer())
-      .post('/campaigns')
-      .set('Authorization', `Bearer ${token}`)
-      .send(dto)
-      .expect(201);
+    const response = await request(app.getHttpServer()).post('/campaigns').set('Authorization', `Bearer ${token}`).send(dto).expect(201);
 
     expect(response.body).toMatchObject({
       id: expect.any(String),
@@ -911,6 +933,7 @@ describe('CampaignForm', () => {
 ### Backend (NestJS)
 
 **Opción 1: Console logs**
+
 ```typescript
 console.log('Campaign:', campaign);
 console.error('Error creating campaign:', error);
@@ -919,6 +942,7 @@ console.error('Error creating campaign:', error);
 **Opción 2: VS Code Debugger**
 
 `.vscode/launch.json`:
+
 ```json
 {
   "version": "0.2.0",
@@ -939,6 +963,7 @@ console.error('Error creating campaign:', error);
 Agregar breakpoints y presionar F5.
 
 **Opción 3: Logs estructurados**
+
 ```typescript
 import { Logger } from '@nestjs/common';
 
@@ -947,7 +972,7 @@ export class CampaignService {
 
   async create(dto: CreateCampaignDto) {
     this.logger.log(`Creating campaign: ${dto.name}`);
-    
+
     try {
       const campaign = await this.prisma.campaign.create({ data: dto });
       this.logger.log(`Campaign created: ${campaign.id}`);
@@ -963,16 +988,19 @@ export class CampaignService {
 ### Frontend (Next.js)
 
 **Opción 1: React DevTools**
+
 - Instala extensión de Chrome
 - Inspecciona componentes y state
 
 **Opción 2: Console logs**
+
 ```typescript
 console.log('Campaign data:', campaign);
 console.table(patients);
 ```
 
 **Opción 3: Network tab**
+
 - Abre DevTools → Network
 - Filtra por XHR/Fetch
 - Inspecciona requests/responses
@@ -980,16 +1008,19 @@ console.table(patients);
 ### Worker (BullMQ)
 
 **Ver jobs en BullMQ Dashboard**:
+
 ```
-http://localhost:3001/admin/queues
+http://localhost:3000/admin/queues
 ```
 
 **Logs del worker**:
+
 ```bash
 docker-compose logs -f worker
 ```
 
 **Debugging de un job específico**:
+
 ```typescript
 // send-initial-message.processor.ts
 async process(job: Job<SendInitialMessagePayload>) {
@@ -1009,11 +1040,13 @@ async process(job: Job<SendInitialMessagePayload>) {
 ### Database
 
 **Prisma Studio**:
+
 ```bash
 pnpm prisma:studio
 ```
 
 **Raw SQL en desarrollo**:
+
 ```typescript
 const result = await this.prisma.$queryRaw`
   SELECT * FROM "Campaign" WHERE "workspaceId" = ${workspaceId}
@@ -1022,6 +1055,7 @@ console.log(result);
 ```
 
 **Enable query logging**:
+
 ```typescript
 // libs/database/src/client.ts
 const prisma = new PrismaClient({
@@ -1074,9 +1108,11 @@ git commit -m "chore(deps): update Next.js to 15.1"
 
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Type of Change
+
 - [ ] Feature
 - [ ] Bug fix
 - [ ] Refactor
@@ -1084,11 +1120,13 @@ Brief description of changes
 - [ ] Other
 
 ## Testing
+
 - [ ] Unit tests added/updated
 - [ ] Integration tests added/updated
 - [ ] Manual testing performed
 
 ## Checklist
+
 - [ ] Code follows project conventions
 - [ ] Self-review performed
 - [ ] No console.logs left
@@ -1098,6 +1136,7 @@ Brief description of changes
 ## Screenshots (if applicable)
 
 ## Related Issues
+
 Closes #123
 ```
 
@@ -1108,31 +1147,37 @@ Closes #123
 ### Checklist for Reviewers
 
 **Funcionalidad**:
+
 - [ ] El código hace lo que dice hacer
 - [ ] No hay edge cases sin manejar
 - [ ] Errores son manejados correctamente
 
 **Multi-tenancy**:
+
 - [ ] Todos los queries filtran por `workspaceId`
 - [ ] No hay data leaks entre workspaces
 
 **Seguridad**:
+
 - [ ] Input validation presente
 - [ ] No hay SQL injection risks
 - [ ] Secrets no están hardcoded
 
 **Testing**:
+
 - [ ] Tests incluidos
 - [ ] Coverage adecuado
 - [ ] Tests pasan
 
 **Código**:
+
 - [ ] Sigue convenciones del proyecto
 - [ ] Nombres descriptivos
 - [ ] Funciones pequeñas (< 50 líneas)
 - [ ] No hay código duplicado
 
 **Performance**:
+
 - [ ] No hay N+1 queries
 - [ ] Indexes necesarios agregados
 - [ ] Paginación implementada donde corresponde
@@ -1140,6 +1185,7 @@ Closes #123
 ### CodeRabbit
 
 CodeRabbit revisará automáticamente:
+
 - Bugs potenciales
 - Security issues
 - Performance problems
@@ -1147,6 +1193,7 @@ CodeRabbit revisará automáticamente:
 - Test coverage
 
 **Responder a CodeRabbit**:
+
 ```
 @coderabbit: Thanks for the review! Fixed the N+1 query issue.
 ```
@@ -1204,6 +1251,7 @@ docker-compose ps                 # Status
 ### Backend
 
 **1. Use select/include judiciously**
+
 ```typescript
 // ❌ Fetches all fields
 const campaigns = await prisma.campaign.findMany();
@@ -1219,6 +1267,7 @@ const campaigns = await prisma.campaign.findMany({
 ```
 
 **2. Paginate large result sets**
+
 ```typescript
 async findAll(workspaceId: string, page: number = 1, limit: number = 20) {
   const skip = (page - 1) * limit;
@@ -1233,6 +1282,7 @@ async findAll(workspaceId: string, page: number = 1, limit: number = 20) {
 ```
 
 **3. Use transactions for multiple operations**
+
 ```typescript
 await this.prisma.$transaction(async (tx) => {
   const campaign = await tx.campaign.create({ data: campaignDto });
@@ -1244,6 +1294,7 @@ await this.prisma.$transaction(async (tx) => {
 ### Frontend
 
 **1. Use React.memo for expensive components**
+
 ```typescript
 export const PatientList = React.memo(({ patients }: Props) => {
   return <div>{/* ... */}</div>;
@@ -1251,14 +1302,13 @@ export const PatientList = React.memo(({ patients }: Props) => {
 ```
 
 **2. Debounce search inputs**
+
 ```typescript
-const debouncedSearch = useMemo(
-  () => debounce((value: string) => setSearchTerm(value), 300),
-  []
-);
+const debouncedSearch = useMemo(() => debounce((value: string) => setSearchTerm(value), 300), []);
 ```
 
 **3. Use TanStack Query for caching**
+
 ```typescript
 const { data: campaigns } = useQuery({
   queryKey: ['campaigns', workspaceId],

@@ -5,10 +5,13 @@
 **Reputation Manager** es un sistema Multi-tenant SaaS de gestión de feedback para profesionales de la salud (médicos, odontólogos) en Ecuador.
 
 ### El Problema
+
 Los profesionales de la salud viven de su reputación online. Los pacientes insatisfechos siempre dejan reseñas negativas, pero los satisfechos rara vez lo hacen.
 
 ### La Solución
+
 Sistema automatizado que:
+
 1. Envía SMS/WhatsApp 2 horas después de la cita
 2. Solicita calificación del 1-5
 3. **Pacientes felices (4-5)**: Redirige a Google Reviews
@@ -107,6 +110,7 @@ reputation-manager/
 ### Componentes Principales
 
 #### 1. **Web App** (Next.js 15)
+
 - **Responsabilidad**: UI del dashboard para doctores
 - **Funcionalidades clave**:
   - Login/registro con Better Auth
@@ -118,6 +122,7 @@ reputation-manager/
   - Billing y créditos
 
 #### 2. **API** (NestJS)
+
 - **Responsabilidad**: REST API principal, lógica de negocio
 - **Funcionalidades clave**:
   - CRUD completo para todas las entidades
@@ -128,6 +133,7 @@ reputation-manager/
   - Analytics y reporting
 
 #### 3. **Worker** (NestJS)
+
 - **Responsabilidad**: Procesamiento asíncrono de jobs
 - **Jobs principales**:
   - `send-initial-message`: Envía SMS/WhatsApp después de X horas
@@ -202,7 +208,7 @@ reputation-manager/
    📱 Si feliz (5):
    "¡Nos alegra! ¿Compartirías tu experiencia en Google?"
    [Link a Google Maps Review]
-   
+
    📱 Si infeliz (1-3):
    "Lamentamos no cumplir tus expectativas. Cuéntanos qué salió mal:"
    [Link a formulario privado]
@@ -213,6 +219,7 @@ reputation-manager/
 ## Stack Tecnológico
 
 ### Frontend
+
 - **Framework**: Next.js 15.x (App Router)
 - **Runtime**: React 19.x
 - **Styling**: Tailwind CSS v4
@@ -223,6 +230,7 @@ reputation-manager/
 - **Auth**: Better Auth
 
 ### Backend
+
 - **Framework**: NestJS 10.x
 - **ORM**: Prisma 5.x
 - **Database**: PostgreSQL 16
@@ -232,6 +240,7 @@ reputation-manager/
 - **Testing**: Jest + Supertest
 
 ### Integraciones
+
 - **SMS**: Twilio API
 - **WhatsApp**: WhatsApp Business API (Meta)
 - **Email**: SendGrid
@@ -239,6 +248,7 @@ reputation-manager/
 - **Monitoring**: Sentry
 
 ### DevOps
+
 - **Monorepo**: Nx
 - **Package Manager**: pnpm
 - **Containerization**: Docker + Docker Compose
@@ -277,14 +287,15 @@ Workspace (Tenant raíz)
 
 ### Planes y Pricing
 
-| Plan | Precio/mes | Mensajes incluidos | Usuarios | Locations |
-|------|------------|-------------------|----------|-----------|
-| **FREE** | $0 | 50 | 1 | 1 |
-| **STARTER** | $39 | 500 | 2 | 1 |
-| **PROFESSIONAL** | $129 | 2000 | 5 | 5 |
-| **ENTERPRISE** | Custom | Ilimitado | Ilimitado | Ilimitado |
+| Plan             | Precio/mes | Mensajes incluidos | Usuarios  | Locations |
+| ---------------- | ---------- | ------------------ | --------- | --------- |
+| **FREE**         | $0         | 50                 | 1         | 1         |
+| **STARTER**      | $39        | 500                | 2         | 1         |
+| **PROFESSIONAL** | $129       | 2000               | 5         | 5         |
+| **ENTERPRISE**   | Custom     | Ilimitado          | Ilimitado | Ilimitado |
 
 **Mensajes adicionales**:
+
 - STARTER: $0.10/mensaje
 - PROFESSIONAL: $0.08/mensaje
 
@@ -298,7 +309,7 @@ const campaigns = await prisma.campaign.findMany();
 
 // ✅ SIEMPRE incluir workspaceId
 const campaigns = await prisma.campaign.findMany({
-  where: { workspaceId: user.workspaceId }
+  where: { workspaceId: user.workspaceId },
 });
 ```
 
@@ -309,6 +320,7 @@ const campaigns = await prisma.campaign.findMany({
 ### Naming Conventions
 
 **Files**: Kebab-case con sufijos claros
+
 ```
 send-message.service.ts
 create-campaign.dto.ts
@@ -316,22 +328,25 @@ workspace.guard.ts
 ```
 
 **Classes**: PascalCase descriptivos
+
 ```typescript
-SendMessageService
-CreateCampaignDto
-WorkspaceGuard
+SendMessageService;
+CreateCampaignDto;
+WorkspaceGuard;
 ```
 
 **Functions**: camelCase con verbos
+
 ```typescript
-findPatientsByWorkspace()
-createCampaign()
-sendInitialMessage()
+findPatientsByWorkspace();
+createCampaign();
+sendInitialMessage();
 ```
 
 ### TypeScript Patterns
 
 **DTOs con Zod** (compartidos):
+
 ```typescript
 // libs/shared-types/src/dtos/campaign.dto.ts
 export const CreateCampaignSchema = z.object({
@@ -339,19 +354,24 @@ export const CreateCampaignSchema = z.object({
   practiceId: z.string().cuid(),
   name: z.string().min(3).max(100),
   scheduledHoursAfter: z.number().min(1).max(48).default(2),
-  patients: z.array(z.object({
-    name: z.string(),
-    phone: z.string().regex(/^\+593\d{9}$/), // Ecuador
-    email: z.string().email().optional(),
-    appointmentTime: z.string().datetime(),
-    hasConsent: z.boolean()
-  })).min(1)
+  patients: z
+    .array(
+      z.object({
+        name: z.string(),
+        phone: z.string().regex(/^\+593\d{9}$/), // Ecuador
+        email: z.string().email().optional(),
+        appointmentTime: z.string().datetime(),
+        hasConsent: z.boolean(),
+      }),
+    )
+    .min(1),
 });
 
 export type CreateCampaignDto = z.infer<typeof CreateCampaignSchema>;
 ```
 
 **Repository Pattern**:
+
 ```typescript
 // apps/api/src/campaigns/campaign.repository.ts
 @Injectable()
@@ -361,7 +381,7 @@ export class CampaignRepository {
   async findByWorkspace(workspaceId: string) {
     return this.prisma.campaign.findMany({
       where: { workspaceId },
-      include: { patients: { include: { messages: true } } }
+      include: { patients: { include: { messages: true } } },
     });
   }
 }
@@ -370,6 +390,7 @@ export class CampaignRepository {
 ### Git Workflow
 
 **Branches**:
+
 ```
 main           # Producción
 develop        # Desarrollo activo
@@ -378,6 +399,7 @@ fix/*          # Bug fixes
 ```
 
 **Commits** (Conventional Commits):
+
 ```
 feat(campaigns): add CSV upload validation
 fix(worker): handle Twilio webhook timeout
@@ -424,7 +446,7 @@ pnpm dev
 
 # Apps individuales
 pnpm nx serve web      # Frontend en :3000
-pnpm nx serve api      # API en :3001
+pnpm nx serve api      # API en :3000
 pnpm nx serve worker   # Worker (background)
 ```
 
@@ -466,6 +488,7 @@ pnpm prisma:reset
 ### Better Auth (Autenticación)
 
 **Variables de entorno**:
+
 ```env
 GOOGLE_CLIENT_ID=your-google-oauth-client-id
 GOOGLE_CLIENT_SECRET=your-google-oauth-secret
@@ -476,6 +499,7 @@ BETTER_AUTH_URL=http://localhost:3000
 ### Twilio (SMS)
 
 **Variables de entorno**:
+
 ```env
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 TWILIO_AUTH_TOKEN=your-auth-token
@@ -489,6 +513,7 @@ TWILIO_PHONE_NUMBER=+593xxxxxxxxx
 ### WhatsApp Business API
 
 **Variables de entorno**:
+
 ```env
 WHATSAPP_ACCESS_TOKEN=your-meta-access-token
 WHATSAPP_PHONE_NUMBER_ID=your-phone-number-id
@@ -500,6 +525,7 @@ WHATSAPP_BUSINESS_ACCOUNT_ID=your-business-account-id
 ### Stripe (Pagos)
 
 **Variables de entorno**:
+
 ```env
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_PUBLISHABLE_KEY=pk_test_...
@@ -509,6 +535,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 ### SendGrid (Email)
 
 **Variables de entorno**:
+
 ```env
 SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 SENDGRID_FROM_EMAIL=noreply@yourapp.com
@@ -519,30 +546,37 @@ SENDGRID_FROM_EMAIL=noreply@yourapp.com
 ## Decisiones Arquitectónicas Importantes
 
 ### 1. Monorepo con Nx
+
 **Por qué**: Compartir código TypeScript, build cache, refactoring fácil.  
 **Trade-off**: Curva de aprendizaje inicial.
 
 ### 2. Worker separado del API
+
 **Por qué**: Escala independiente, deployment independiente, failure isolation.  
 **Trade-off**: Más complejidad en deployment.
 
 ### 3. BullMQ vs cron
+
 **Por qué**: Persistencia, retry logic, concurrency control, delayed jobs exactos.  
 **Trade-off**: Dependencia en Redis.
 
 ### 4. Prisma vs TypeORM
+
 **Por qué**: Type-safety superior, DX mejor, migrations más simples.  
 **Trade-off**: Menos flexible para queries muy complejas.
 
 ### 5. Better Auth vs NextAuth.js
+
 **Por qué**: Más moderno, más ligero, diseñado para Next.js 15 App Router.  
 **Trade-off**: Comunidad más pequeña.
 
 ### 6. Multi-tenant vs apps separadas
+
 **Por qué**: Un deployment para todos, mantenimiento más fácil, costos compartidos.  
 **Trade-off**: Complejidad en isolation y seguridad.
 
 ### 7. Railway vs AWS para MVP
+
 **Por qué**: Time-to-market rápido, DX excelente, costo inicial bajo.  
 **Exit strategy**: Migrar a AWS cuando llegues a 300+ clientes.
 
@@ -553,12 +587,14 @@ SENDGRID_FROM_EMAIL=noreply@yourapp.com
 ### Protección de Datos (Ecuador)
 
 **Requisitos**:
+
 1. ✅ Consentimiento explícito del paciente
 2. ✅ Opt-out fácil ("Responde STOP")
 3. ✅ Almacenamiento seguro
 4. ✅ Derecho al olvido
 
 **Implementación**:
+
 ```typescript
 model Patient {
   hasConsent    Boolean   @default(false)  // MUST be true
@@ -570,6 +606,7 @@ model Patient {
 ### Google Review Policy
 
 **Estrategia legal**:
+
 - Marketing: "Feedback management" (no "filtrado de reseñas")
 - Términos claros: Doctor responsable del uso ético
 - Educar clientes sobre riesgos de Google
@@ -620,33 +657,36 @@ pnpm nx reset               # Clear cache
 
 ## Archivos Clave
 
-| Archivo | Descripción |
-|---------|-------------|
-| `nx.json` | Configuración Nx |
-| `docker-compose.yml` | Servicios locales |
-| `libs/database/prisma/schema.prisma` | Schema DB completo |
-| `.coderabbit.yaml` | Config CodeRabbit |
-| `docs/ARCHITECTURE.md` | Arquitectura detallada |
-| `docs/DATABASE.md` | Schema y migrations |
+| Archivo                              | Descripción            |
+| ------------------------------------ | ---------------------- |
+| `nx.json`                            | Configuración Nx       |
+| `docker-compose.yml`                 | Servicios locales      |
+| `libs/database/prisma/schema.prisma` | Schema DB completo     |
+| `.coderabbit.yaml`                   | Config CodeRabbit      |
+| `docs/ARCHITECTURE.md`               | Arquitectura detallada |
+| `docs/DATABASE.md`                   | Schema y migrations    |
 
 ---
 
 ## Notas para AI Agents
 
 ### Al agregar features:
+
 1. Considera multi-tenancy (filtrar por `workspaceId`)
 2. Valida con Zod en `libs/shared-types`
 3. Features que envían mensajes deben descontar créditos
 4. Tests son obligatorios
 
 ### Al debuggear:
+
 1. Logs: `docker-compose logs -f worker`
 2. Data: `pnpm prisma:studio`
-3. Jobs: Bull Board en `:3001/admin/queues`
+3. Jobs: Bull Board en `:3000/admin/queues`
 4. Errors: Sentry dashboard
 5. Webhooks: Twilio Console → Debugger
 
 ### Contexto de negocio:
+
 - **Target**: Doctores/dentistas en Ecuador
 - **Pain point**: Reseñas negativas cuestan pacientes
 - **USP**: Filtro pre-Google + feedback privado + analytics

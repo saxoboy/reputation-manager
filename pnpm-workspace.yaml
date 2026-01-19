@@ -1,8 +1,13 @@
+packages:
+  - 'apps/*'
+  - 'libs/*'
+
 autoInstallPeers: true
 
 onlyBuiltDependencies:
   - '@nestjs/core'
   - '@parcel/watcher'
+  - '@prisma/client'
   - '@prisma/engines'
   - '@swc/core'
   - bcrypt

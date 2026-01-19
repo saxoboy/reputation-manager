@@ -1,5 +1,9 @@
 # Reputation Manager
 
+![CI](https://github.com/saxoboy/reputation-manager/workflows/CI/badge.svg)
+![PR Checks](https://github.com/saxoboy/reputation-manager/workflows/PR%20Checks/badge.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **Sistema Multi-tenant SaaS de gestión de feedback para profesionales de la salud en Ecuador**
 
 ## 🎯 El Problema
@@ -9,6 +13,7 @@ Los profesionales de la salud viven de su reputación online. Los pacientes insa
 ## 💡 La Solución
 
 Sistema automatizado que:
+
 1. Envía SMS/WhatsApp 2 horas después de la cita
 2. Solicita calificación del 1-5
 3. **Pacientes felices (4-5)**: Redirige a Google Reviews
@@ -136,4 +141,3 @@ MIT
 ---
 
 **Desarrollado con ❤️ para mejorar la reputación online de profesionales de la salud en Ecuador**
-

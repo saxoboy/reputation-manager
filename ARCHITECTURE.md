@@ -1,6 +1,7 @@
 # Reputation Manager - Arquitectura del Sistema
 
 ## Tabla de Contenidos
+
 1. [Visión General](#visión-general)
 2. [Arquitectura de Alto Nivel](#arquitectura-de-alto-nivel)
 3. [Componentes del Sistema](#componentes-del-sistema)
@@ -142,6 +143,7 @@
 ### 1. Web App (Next.js 15)
 
 **Tecnologías**:
+
 - Next.js 15 con App Router
 - React 19 (Server & Client Components)
 - Tailwind CSS v4
@@ -149,6 +151,7 @@
 - Better Auth
 
 **Responsabilidades**:
+
 ```typescript
 apps/web/
 ├── app/
@@ -185,6 +188,7 @@ apps/web/
 ```
 
 **Estado y Fetching**:
+
 ```typescript
 // Usando TanStack Query para cache y sync
 import { useQuery } from '@tanstack/react-query';
@@ -199,9 +203,10 @@ function useCampaigns(workspaceId: string) {
 ```
 
 **Autenticación**:
+
 ```typescript
 // Better Auth setup
-import { betterAuth } from "better-auth";
+import { betterAuth } from 'better-auth';
 
 export const auth = betterAuth({
   database: prisma,
@@ -228,6 +233,7 @@ export async function middleware(req: NextRequest) {
 ### 2. API Server (NestJS)
 
 **Estructura**:
+
 ```typescript
 apps/api/src/
 ├── main.ts                        // Bootstrap
@@ -281,6 +287,7 @@ apps/api/src/
 ```
 
 **Ejemplo: Campaign Controller**:
+
 ```typescript
 @Controller('workspaces/:workspaceId/campaigns')
 @UseGuards(WorkspaceGuard, RolesGuard)
@@ -292,11 +299,7 @@ export class CampaignsController {
 
   @Post()
   @Roles('owner', 'doctor')
-  async create(
-    @Param('workspaceId') workspaceId: string,
-    @Body(new ZodValidationPipe(CreateCampaignSchema)) dto: CreateCampaignDto,
-    @CurrentUser() user: User,
-  ) {
+  async create(@Param('workspaceId') workspaceId: string, @Body(new ZodValidationPipe(CreateCampaignSchema)) dto: CreateCampaignDto, @CurrentUser() user: User) {
     // 1. Validar créditos disponibles
     await this.campaignsService.validateCredits(workspaceId, dto.patients.length);
 
@@ -309,32 +312,31 @@ export class CampaignsController {
 
     // 3. Encolar jobs para envío de mensajes
     for (const patient of campaign.patients) {
-      const delay = this.calculateDelay(
-        patient.appointmentTime,
-        dto.scheduledHoursAfter,
-      );
+      const delay = this.calculateDelay(patient.appointmentTime, dto.scheduledHoursAfter);
 
-      await this.queue.add('send-initial-message', {
-        patientId: patient.id,
-        campaignId: campaign.id,
-        workspaceId,
-      }, { delay });
+      await this.queue.add(
+        'send-initial-message',
+        {
+          patientId: patient.id,
+          campaignId: campaign.id,
+          workspaceId,
+        },
+        { delay },
+      );
     }
 
     return campaign;
   }
 
   @Get()
-  async findAll(
-    @Param('workspaceId') workspaceId: string,
-    @Query() filters: CampaignFiltersDto,
-  ) {
+  async findAll(@Param('workspaceId') workspaceId: string, @Query() filters: CampaignFiltersDto) {
     return this.campaignsService.findByWorkspace(workspaceId, filters);
   }
 }
 ```
 
 **Workspace Guard** (Multi-tenancy):
+
 ```typescript
 @Injectable()
 export class WorkspaceGuard implements CanActivate {
@@ -371,6 +373,7 @@ export class WorkspaceGuard implements CanActivate {
 ### 3. Worker (NestJS)
 
 **Estructura**:
+
 ```typescript
 apps/worker/src/
 ├── main.ts                        // Bootstrap worker
@@ -385,6 +388,7 @@ apps/worker/src/
 ```
 
 **Ejemplo: Send Initial Message Processor**:
+
 ```typescript
 @Processor('send-initial-message')
 export class SendInitialMessageProcessor {
@@ -413,10 +417,7 @@ export class SendInitialMessageProcessor {
       }
 
       // 3. Obtener template personalizado
-      const template = await this.templateService.getTemplate(
-        workspaceId,
-        'INITIAL',
-      );
+      const template = await this.templateService.getTemplate(workspaceId, 'INITIAL');
 
       const message = this.templateService.render(template.content, {
         name: patient.name,
@@ -449,7 +450,6 @@ export class SendInitialMessageProcessor {
       await this.billingService.deductCredit(workspaceId);
 
       return { success: true, messageId: result.sid };
-
     } catch (error) {
       // Log error a Sentry
       Sentry.captureException(error, {
@@ -481,6 +481,7 @@ export class SendInitialMessageProcessor {
 ```
 
 **BullMQ Configuration**:
+
 ```typescript
 // apps/worker/src/config/bullmq.config.ts
 export const bullmqConfig = {
@@ -495,7 +496,7 @@ export const bullmqConfig = {
       delay: 2000, // 2s, 4s, 8s
     },
     removeOnComplete: 100, // Keep last 100 completed
-    removeOnFail: 500,     // Keep last 500 failed
+    removeOnFail: 500, // Keep last 500 failed
   },
 };
 ```
@@ -553,6 +554,7 @@ export const bullmqConfig = {
 ```
 
 **Validaciones CSV**:
+
 ```typescript
 const CsvRowSchema = z.object({
   nombre: z.string().min(2),
@@ -899,19 +901,19 @@ model Workspace {
   name           String
   plan           Plan     @default(FREE)
   messageCredits Int      @default(50)
-  
+
   stripeCustomerId   String?
   stripeSubscriptionId String?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   users      User[]
   practices  Practice[]
   campaigns  Campaign[]
   patients   Patient[]
   templates  Template[]
-  
+
   @@index([plan])
 }
 
@@ -920,15 +922,15 @@ model User {
   email String @unique
   name  String
   role  Role   @default(DOCTOR)
-  
+
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   campaignsCreated Campaign[]
-  
+
   @@index([workspaceId])
   @@index([email])
 }
@@ -938,15 +940,15 @@ model Practice {
   name          String
   address       String?
   googlePlaceId String? // Para generar review link
-  
+
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   campaigns Campaign[]
-  
+
   @@index([workspaceId])
 }
 
@@ -955,22 +957,22 @@ model Campaign {
   name               String
   status             CampaignStatus @default(ACTIVE)
   scheduledHoursAfter Int           @default(2) // Horas después de cita
-  
+
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   practiceId String
   practice   Practice @relation(fields: [practiceId], references: [id])
-  
+
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id])
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   patients Patient[]
   messages Message[]
-  
+
   @@index([workspaceId])
   @@index([status])
   @@index([createdAt])
@@ -982,25 +984,25 @@ model Patient {
   phone           String    // Formato: +593xxxxxxxxx
   email           String?
   appointmentTime DateTime
-  
+
   // Compliance fields
   hasConsent    Boolean   @default(false) // MUST be true
   optedOutAt    DateTime? // Not null = opted out
   dataDeletedAt DateTime? // Soft delete
-  
+
   preferredChannel MessageChannel @default(SMS)
-  
+
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  
+
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   messages Message[]
-  
+
   @@index([workspaceId])
   @@index([campaignId])
   @@index([phone])
@@ -1014,25 +1016,25 @@ model Message {
   channel MessageChannel
   status  MessageStatus @default(PENDING)
   content String
-  
+
   rating Int? // 1-5, NULL si no respondió
-  
+
   sentAt      DateTime?
   deliveredAt DateTime?
   repliedAt   DateTime?
-  
+
   externalId String? // Twilio MessageSid or WhatsApp WAMID
   error      String?
-  
+
   patientId String
   patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  
+
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([patientId])
   @@index([campaignId])
   @@index([status])
@@ -1046,13 +1048,13 @@ model Template {
   type      MessageType
   content   String      // "Hola {{name}}, ..."
   variables String[]    // ["name", "doctor", "practice"]
-  
+
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([workspaceId])
   @@index([type])
 }
@@ -1089,21 +1091,21 @@ const queues = {
   'send-initial-message': {
     concurrency: 10, // 10 mensajes simultáneos
     rateLimit: {
-      max: 100,      // Máximo 100 jobs
-      duration: 60000 // por minuto (límite Twilio)
-    }
+      max: 100, // Máximo 100 jobs
+      duration: 60000, // por minuto (límite Twilio)
+    },
   },
   'send-followup': {
     concurrency: 10,
     rateLimit: {
       max: 100,
-      duration: 60000
-    }
+      duration: 60000,
+    },
   },
   'handle-response': {
     concurrency: 50, // Procesamiento rápido
-    rateLimit: null   // Sin límite
-  }
+    rateLimit: null, // Sin límite
+  },
 };
 ```
 
@@ -1135,7 +1137,7 @@ async onFailed(job: Job, error: Error) {
       error: error.message,
       attempts: job.attemptsMade,
     });
-    
+
     // Notificar al admin
     await this.notifyAdmin(job, error);
   }
@@ -1161,7 +1163,7 @@ class CampaignRepository {
       },
     });
   }
-  
+
   async findAll(workspaceId: string) {
     return this.prisma.campaign.findMany({
       where: { workspaceId },
@@ -1175,12 +1177,12 @@ prisma.$use(async (params, next) => {
   if (!['findUnique', 'findFirst', 'findMany', 'update', 'delete'].includes(params.action)) {
     return next(params);
   }
-  
+
   // Verificar que workspaceId esté presente
   if (params.model !== 'Workspace' && !params.args.where?.workspaceId) {
     throw new Error('workspaceId is required for data isolation');
   }
-  
+
   return next(params);
 });
 ```
@@ -1194,15 +1196,15 @@ enum Permission {
   CAMPAIGN_READ = 'campaign:read',
   CAMPAIGN_UPDATE = 'campaign:update',
   CAMPAIGN_DELETE = 'campaign:delete',
-  
+
   // Users
   USER_INVITE = 'user:invite',
   USER_MANAGE = 'user:manage',
-  
+
   // Billing
   BILLING_VIEW = 'billing:view',
   BILLING_MANAGE = 'billing:manage',
-  
+
   // Settings
   SETTINGS_VIEW = 'settings:view',
   SETTINGS_MANAGE = 'settings:manage',
@@ -1255,16 +1257,16 @@ export class WorkspaceThrottlerGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const workspaceId = request.user.workspaceId;
-    
+
     const requestCount = await this.redis.incr(`ratelimit:${workspaceId}`);
     if (requestCount === 1) {
       await this.redis.expire(`ratelimit:${workspaceId}`, 60);
     }
-    
+
     // FREE: 100 req/min, STARTER: 300, PRO: 1000
     const limits = { FREE: 100, STARTER: 300, PROFESSIONAL: 1000 };
     const workspace = await this.getWorkspace(workspaceId);
-    
+
     return requestCount <= limits[workspace.plan];
   }
 }
@@ -1280,14 +1282,11 @@ export class WorkspaceThrottlerGuard implements CanActivate {
 @Injectable()
 export class TwilioService {
   private client: Twilio;
-  
+
   constructor() {
-    this.client = twilio(
-      process.env.TWILIO_ACCOUNT_SID,
-      process.env.TWILIO_AUTH_TOKEN,
-    );
+    this.client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
   }
-  
+
   async sendSMS(to: string, body: string): Promise<TwilioMessage> {
     try {
       const message = await this.client.messages.create({
@@ -1296,7 +1295,7 @@ export class TwilioService {
         body,
         statusCallback: `${process.env.API_URL}/webhooks/twilio/status`,
       });
-      
+
       return {
         sid: message.sid,
         status: message.status,
@@ -1309,14 +1308,9 @@ export class TwilioService {
       throw error;
     }
   }
-  
+
   verifyWebhookSignature(signature: string, url: string, params: any): boolean {
-    return twilio.validateRequest(
-      process.env.TWILIO_AUTH_TOKEN,
-      signature,
-      url,
-      params,
-    );
+    return twilio.validateRequest(process.env.TWILIO_AUTH_TOKEN, signature, url, params);
   }
 }
 ```
@@ -1327,51 +1321,43 @@ export class TwilioService {
 @Injectable()
 export class WhatsAppService {
   private axios: AxiosInstance;
-  
+
   constructor() {
     this.axios = axios.create({
       baseURL: 'https://graph.facebook.com/v18.0',
       headers: {
-        'Authorization': `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+        Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
         'Content-Type': 'application/json',
       },
     });
   }
-  
-  async sendTemplate(
-    to: string,
-    templateName: string,
-    languageCode: string = 'es',
-    parameters: string[],
-  ) {
-    const response = await this.axios.post(
-      `/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
-      {
-        messaging_product: 'whatsapp',
-        to,
-        type: 'template',
-        template: {
-          name: templateName,
-          language: { code: languageCode },
-          components: [
-            {
-              type: 'body',
-              parameters: parameters.map(text => ({
-                type: 'text',
-                text,
-              })),
-            },
-          ],
-        },
+
+  async sendTemplate(to: string, templateName: string, languageCode: string = 'es', parameters: string[]) {
+    const response = await this.axios.post(`/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+      messaging_product: 'whatsapp',
+      to,
+      type: 'template',
+      template: {
+        name: templateName,
+        language: { code: languageCode },
+        components: [
+          {
+            type: 'body',
+            parameters: parameters.map((text) => ({
+              type: 'text',
+              text,
+            })),
+          },
+        ],
       },
-    );
-    
+    });
+
     return {
       wamid: response.data.messages[0].id,
       status: 'sent',
     };
   }
-  
+
   // WhatsApp templates deben estar pre-aprobados por Meta
   // Ejemplo de template:
   // Name: "initial_feedback"
@@ -1386,37 +1372,37 @@ export class WhatsAppService {
 @Injectable()
 export class BillingService {
   private stripe: Stripe;
-  
+
   constructor(private prisma: PrismaService) {
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: '2023-10-16',
     });
   }
-  
+
   async createSubscription(workspaceId: string, priceId: string) {
     const workspace = await this.prisma.workspace.findUnique({
       where: { id: workspaceId },
     });
-    
+
     // Crear customer si no existe
     if (!workspace.stripeCustomerId) {
       const customer = await this.stripe.customers.create({
         metadata: { workspaceId },
       });
-      
+
       await this.prisma.workspace.update({
         where: { id: workspaceId },
         data: { stripeCustomerId: customer.id },
       });
     }
-    
+
     // Crear subscription
     const subscription = await this.stripe.subscriptions.create({
       customer: workspace.stripeCustomerId,
       items: [{ price: priceId }],
       metadata: { workspaceId },
     });
-    
+
     // Actualizar plan y créditos
     const planCredits = {
       FREE: 50,
@@ -1424,7 +1410,7 @@ export class BillingService {
       PROFESSIONAL: 2000,
       ENTERPRISE: 999999,
     };
-    
+
     await this.prisma.workspace.update({
       where: { id: workspaceId },
       data: {
@@ -1433,17 +1419,13 @@ export class BillingService {
         messageCredits: planCredits[this.getPlanFromPriceId(priceId)],
       },
     });
-    
+
     return subscription;
   }
-  
+
   async handleWebhook(rawBody: Buffer, signature: string) {
-    const event = this.stripe.webhooks.constructEvent(
-      rawBody,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET,
-    );
-    
+    const event = this.stripe.webhooks.constructEvent(rawBody, signature, process.env.STRIPE_WEBHOOK_SECRET);
+
     switch (event.type) {
       case 'invoice.payment_succeeded':
         await this.handlePaymentSucceeded(event.data.object);
@@ -1456,16 +1438,16 @@ export class BillingService {
         break;
     }
   }
-  
+
   async deductCredit(workspaceId: string) {
     const workspace = await this.prisma.workspace.findUnique({
       where: { id: workspaceId },
     });
-    
+
     if (workspace.messageCredits <= 0) {
       throw new BadRequestException('Insufficient credits');
     }
-    
+
     await this.prisma.workspace.update({
       where: { id: workspaceId },
       data: { messageCredits: { decrement: 1 } },
@@ -1490,7 +1472,7 @@ services:
     resources:
       memory: 512MB
       cpu: 0.5
-  
+
   # API: Escala con carga de requests
   api:
     instances: 2-10 # Auto-scale
@@ -1498,14 +1480,14 @@ services:
     resources:
       memory: 1GB
       cpu: 1
-  
+
   # Worker: Escala con tamaño de queue
   worker:
     instances: 2-20 # Auto-scale basado en BullMQ queue size
     resources:
       memory: 512MB
       cpu: 0.5
-  
+
   # PostgreSQL: Vertical scaling initially
   postgres:
     instances: 1
@@ -1513,7 +1495,7 @@ services:
       memory: 4GB
       cpu: 2
       storage: 50GB
-  
+
   # Redis: Vertical scaling
   redis:
     instances: 1
@@ -1570,39 +1552,39 @@ async getAnalytics(workspaceId: string) {
 @Injectable()
 export class CacheService {
   constructor(@InjectRedis() private redis: Redis) {}
-  
+
   // Cache templates (cambian poco)
   async getTemplate(workspaceId: string, type: string) {
     const cacheKey = `template:${workspaceId}:${type}`;
-    
+
     let template = await this.redis.get(cacheKey);
     if (template) {
       return JSON.parse(template);
     }
-    
+
     template = await this.prisma.template.findFirst({
       where: { workspaceId, type },
     });
-    
+
     await this.redis.setex(cacheKey, 3600, JSON.stringify(template));
     return template;
   }
-  
+
   // Cache workspace data (credits, plan)
   async getWorkspace(id: string) {
     const cacheKey = `workspace:${id}`;
-    
+
     let workspace = await this.redis.get(cacheKey);
     if (workspace) {
       return JSON.parse(workspace);
     }
-    
+
     workspace = await this.prisma.workspace.findUnique({ where: { id } });
     await this.redis.setex(cacheKey, 300, JSON.stringify(workspace)); // 5 min
-    
+
     return workspace;
   }
-  
+
   // Invalidar cache cuando se actualizan créditos
   async invalidateWorkspace(id: string) {
     await this.redis.del(`workspace:${id}`);
@@ -1622,20 +1604,12 @@ import { createLogger, format, transports } from 'winston';
 
 const logger = createLogger({
   level: 'info',
-  format: format.combine(
-    format.timestamp(),
-    format.errors({ stack: true }),
-    format.json(),
-  ),
+  format: format.combine(format.timestamp(), format.errors({ stack: true }), format.json()),
   defaultMeta: {
     service: 'reputation-manager-api',
     environment: process.env.NODE_ENV,
   },
-  transports: [
-    new transports.Console(),
-    new transports.File({ filename: 'error.log', level: 'error' }),
-    new transports.File({ filename: 'combined.log' }),
-  ],
+  transports: [new transports.Console(), new transports.File({ filename: 'error.log', level: 'error' }), new transports.File({ filename: 'combined.log' })],
 });
 
 // Log con contexto
@@ -1657,10 +1631,7 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.NODE_ENV,
   tracesSampleRate: 0.1, // 10% de traces
-  integrations: [
-    new Sentry.Integrations.Http({ tracing: true }),
-    new Sentry.Integrations.Prisma({ client: prisma }),
-  ],
+  integrations: [new Sentry.Integrations.Http({ tracing: true }), new Sentry.Integrations.Prisma({ client: prisma })],
 });
 
 // Capturar errores con contexto
@@ -1724,17 +1695,13 @@ export class HealthController {
     private redis: Redis,
     private twilioService: TwilioService,
   ) {}
-  
+
   @Get()
   async check() {
-    const checks = await Promise.allSettled([
-      this.checkDatabase(),
-      this.checkRedis(),
-      this.checkTwilio(),
-    ]);
-    
-    const status = checks.every(c => c.status === 'fulfilled') ? 'healthy' : 'degraded';
-    
+    const checks = await Promise.allSettled([this.checkDatabase(), this.checkRedis(), this.checkTwilio()]);
+
+    const status = checks.every((c) => c.status === 'fulfilled') ? 'healthy' : 'degraded';
+
     return {
       status,
       timestamp: new Date().toISOString(),
@@ -1745,15 +1712,15 @@ export class HealthController {
       },
     };
   }
-  
+
   private async checkDatabase() {
     await this.prisma.$queryRaw`SELECT 1`;
   }
-  
+
   private async checkRedis() {
     await this.redis.ping();
   }
-  
+
   private async checkTwilio() {
     // Check Twilio account balance
     const account = await this.twilioService.client.api.accounts().fetch();
@@ -1767,26 +1734,31 @@ export class HealthController {
 ## Decisiones Técnicas Documentadas
 
 ### ADR-001: Monorepo con Nx
+
 **Contexto**: Necesitamos compartir código TypeScript entre apps.  
 **Decisión**: Usar Nx monorepo.  
 **Consecuencias**: Build cache compartido, pero curva de aprendizaje.
 
 ### ADR-002: Worker Separado
+
 **Contexto**: Jobs de larga duración pueden bloquear API.  
 **Decisión**: Apps separadas para API y Worker.  
 **Consecuencias**: Mejor escalabilidad, pero deploy más complejo.
 
 ### ADR-003: BullMQ sobre Cron
+
 **Contexto**: Necesitamos scheduling preciso y retry logic.  
 **Decisión**: BullMQ para job queue.  
 **Consecuencias**: Persistencia garantizada, pero dependencia en Redis.
 
 ### ADR-004: Multi-tenant con workspaceId
+
 **Contexto**: Un deployment para todos los clientes.  
 **Decisión**: Row-level isolation con workspaceId.  
 **Consecuencias**: Más simple que schemas separados, pero require disciplina.
 
 ### ADR-005: Railway para MVP
+
 **Contexto**: Time-to-market es crítico.  
 **Decisión**: Railway para hosting inicial.  
 **Consecuencias**: Deploy rápido, pero más caro a escala.
@@ -1798,6 +1770,7 @@ export class HealthController {
 **Mantenedor**: @saxoboy
 
 **Ver también**:
+
 - [`docs/DATABASE.md`](docs/DATABASE.md) - Schema completo y migrations
 - [`docs/SETUP.md`](docs/SETUP.md) - Guía de instalación
 - [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) - Workflows de desarrollo

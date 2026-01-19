@@ -5,7 +5,15 @@
   "type": "commonjs",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
+  "scripts": {
+    "postinstall": "prisma generate --schema=./prisma/schema.prisma --config=./prisma/prisma.config.ts"
+  },
   "dependencies": {
+    "@prisma/client": "7.2.0",
+    "@nestjs/common": "^11.0.0",
+    "@prisma/adapter-pg": "7.2.0",
+    "pg": "^8.17.0",
+    "prisma": "7.2.0",
     "tslib": "^2.3.0"
   }
 }

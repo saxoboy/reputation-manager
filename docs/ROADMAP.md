@@ -27,7 +27,7 @@ Phase 8: Launch          │██████│ 2 semanas (Ago 2 - Ago 15, 202
 ## Phase 0: Setup (2 semanas)
 
 **Fecha**: Nov 15 - Nov 30, 2025  
-**Estado**: 🚧 En progreso  
+**Estado**: ✅ **COMPLETADO** (Finalizado: Ene 17, 2026)  
 **Goal**: Proyecto inicializado, documentación completa, repositorio configurado
 
 ### Semana 1: Documentación y Estructura
@@ -38,36 +38,40 @@ Phase 8: Launch          │██████│ 2 semanas (Ago 2 - Ago 15, 202
 - [x] Documentar setup (SETUP.md)
 - [x] Documentar desarrollo (DEVELOPMENT.md)
 - [x] Documentar roadmap (ROADMAP.md)
-- [ ] Configurar CodeRabbit (.coderabbit.yaml)
-- [ ] Setup GitHub Actions básico (CI)
+- [x] Configurar CodeRabbit (.coderabbit.yaml)
+- [x] Setup GitHub Actions básico (CI)
 
 ### Semana 2: Monorepo y Servicios Base
 
-- [ ] Inicializar Nx workspace
+- [x] Inicializar Nx workspace
   ```bash
   npx create-nx-workspace@latest reputation-manager \
     --preset=apps \
     --packageManager=pnpm
   ```
-- [ ] Crear apps:
-  - [ ] `apps/web` (Next.js 15)
-  - [ ] `apps/api` (NestJS)
-  - [ ] `apps/worker` (NestJS)
-- [ ] Crear libs:
-  - [ ] `libs/database` (Prisma)
-  - [ ] `libs/shared-types`
-  - [ ] `libs/shared-utils`
-  - [ ] `libs/integrations` (stubs)
-- [ ] Setup Docker Compose (PostgreSQL + Redis)
-- [ ] Crear schema base de Prisma
-- [ ] Primera migración
-- [ ] Script de seed básico
+- [x] Crear apps:
+  - [x] `apps/web` (Next.js 15)
+  - [x] `apps/api` (NestJS)
+  - [x] `apps/worker` (NestJS)
+- [x] Crear libs:
+  - [x] `libs/database` (Prisma)
+  - [x] `libs/shared-types`
+  - [x] `libs/shared-utils`
+  - [x] `libs/integrations` (stubs)
+- [x] Setup Docker Compose (PostgreSQL + Redis)
+- [x] Crear schema base de Prisma
+- [x] Primera migración (6 migraciones creadas!)
+- [x] Script de seed básico
 
 **Deliverables**:
+
 - ✅ Repositorio con estructura completa
 - ✅ Documentación exhaustiva
-- 🎯 `pnpm dev` levanta todo correctamente
-- 🎯 Database con schema inicial
+- ✅ `pnpm dev` levanta todo correctamente
+- ✅ Database con schema inicial y 6 migraciones
+- ✅ CI/CD configurado con GitHub Actions
+- ✅ CodeRabbit configurado para PR reviews
+- ✅ Scripts de desarrollo listos
 
 ---
 
@@ -79,6 +83,7 @@ Phase 8: Launch          │██████│ 2 semanas (Ago 2 - Ago 15, 202
 ### Semana 1-2: Auth & Multi-tenancy
 
 **Backend**:
+
 - [ ] Implementar Better Auth
   - [ ] Email/password login
   - [ ] Google OAuth
@@ -99,6 +104,7 @@ Phase 8: Launch          │██████│ 2 semanas (Ago 2 - Ago 15, 202
   - [ ] `POST /auth/google`
 
 **Frontend**:
+
 - [ ] Setup Better Auth client
 - [ ] Login page
 - [ ] Register page
@@ -107,6 +113,7 @@ Phase 8: Launch          │██████│ 2 semanas (Ago 2 - Ago 15, 202
 - [ ] Google OAuth button
 
 **Tests**:
+
 - [ ] Auth service unit tests
 - [ ] Auth e2e tests
 - [ ] Guard tests
@@ -114,6 +121,7 @@ Phase 8: Launch          │██████│ 2 semanas (Ago 2 - Ago 15, 202
 ### Semana 3-4: Base UI & Workspace CRUD
 
 **Frontend**:
+
 - [ ] Setup shadcn/ui
 - [ ] Dashboard layout:
   - [ ] Sidebar navigation
@@ -129,11 +137,13 @@ Phase 8: Launch          │██████│ 2 semanas (Ago 2 - Ago 15, 202
   - [ ] Remove user
 
 **Backend**:
+
 - [ ] Workspace CRUD endpoints
 - [ ] User management endpoints
 - [ ] Email invitations (SendGrid stub)
 
 **Deliverables**:
+
 - 🎯 Login/Register funcional
 - 🎯 Dashboard base con navegación
 - 🎯 Multi-tenancy enforced en todos los endpoints
@@ -149,6 +159,7 @@ Phase 8: Launch          │██████│ 2 semanas (Ago 2 - Ago 15, 202
 ### Semana 1-2: Practices & Templates
 
 **Backend**:
+
 - [ ] Practice CRUD:
   - [ ] `POST /practices`
   - [ ] `GET /practices`
@@ -161,6 +172,7 @@ Phase 8: Launch          │██████│ 2 semanas (Ago 2 - Ago 15, 202
   - [ ] Template variables: `{name}`, `{doctor}`, `{practice}`
 
 **Frontend**:
+
 - [ ] Practices page:
   - [ ] List practices
   - [ ] Create practice form
@@ -173,6 +185,7 @@ Phase 8: Launch          │██████│ 2 semanas (Ago 2 - Ago 15, 202
   - [ ] Character counter
 
 **Tests**:
+
 - [ ] Practice service tests
 - [ ] Template service tests
 - [ ] Frontend form validation tests
@@ -180,6 +193,7 @@ Phase 8: Launch          │██████│ 2 semanas (Ago 2 - Ago 15, 202
 ### Semana 3-4: Campaigns & CSV Upload
 
 **Backend**:
+
 - [ ] Campaign CRUD:
   - [ ] `POST /campaigns`
   - [ ] `GET /campaigns`
@@ -194,6 +208,7 @@ Phase 8: Launch          │██████│ 2 semanas (Ago 2 - Ago 15, 202
   - [ ] Return validation errors
 
 **Frontend**:
+
 - [ ] Campaigns page:
   - [ ] Campaign list with stats
   - [ ] Create campaign modal
@@ -205,6 +220,7 @@ Phase 8: Launch          │██████│ 2 semanas (Ago 2 - Ago 15, 202
   - [ ] Campaign detail page
 
 **CSV Format**:
+
 ```csv
 name,phone,email,appointmentTime,hasConsent
 Juan Pérez,+593999999999,juan@email.com,2026-01-15T10:00:00,true
@@ -212,6 +228,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ```
 
 **Tests**:
+
 - [ ] CSV parser tests
 - [ ] Campaign service tests
 - [ ] CSV upload e2e test
@@ -219,6 +236,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Semana 5-6: Patients & Messages (Mock)
 
 **Backend**:
+
 - [ ] Patient endpoints:
   - [ ] `GET /patients` (by workspace)
   - [ ] `GET /campaigns/:id/patients`
@@ -232,6 +250,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Save to DB with `sentAt` timestamp
 
 **Frontend**:
+
 - [ ] Patients page:
   - [ ] Patient list with filters
   - [ ] Patient detail modal
@@ -243,6 +262,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Manual response input (testing)
 
 **BullMQ Setup**:
+
 - [ ] Configure BullMQ in worker
 - [ ] Job: `send-initial-message`
   - [ ] Schedule based on `appointmentTime + scheduledHoursAfter`
@@ -253,9 +273,10 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Enqueue followup
 - [ ] Job: `send-followup`
   - [ ] Mock send appropriate message
-- [ ] Bull Board UI: `http://localhost:3001/admin/queues`
+- [ ] Bull Board UI: `http://localhost:3000/admin/queues`
 
 **Deliverables**:
+
 - 🎯 Full campaign flow sin integraciones externas
 - 🎯 CSV upload funcional con validación
 - 🎯 Jobs procesándose en background
@@ -271,6 +292,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Semana 1: Twilio SMS
 
 **Backend**:
+
 - [ ] `libs/integrations/twilio`:
   - [ ] `TwilioService.sendSMS()`
   - [ ] Error handling
@@ -286,6 +308,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Trigger `handle-response` job
 
 **Testing**:
+
 - [ ] Send test SMS a tu número
 - [ ] Responder y verificar webhook
 - [ ] Test error handling
@@ -295,6 +318,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Semana 2: WhatsApp Business API
 
 **Backend**:
+
 - [ ] `libs/integrations/whatsapp`:
   - [ ] `WhatsAppService.sendMessage()`
   - [ ] Template messages (Meta requirement)
@@ -306,21 +330,25 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Channel preference per workspace (SMS vs WhatsApp)
 
 **Frontend**:
+
 - [ ] Workspace settings:
   - [ ] Toggle SMS/WhatsApp
   - [ ] WhatsApp Business account linking
 
 **Meta Approval**:
+
 - [ ] Submit app for review
 - [ ] Get message templates approved
 
 **Testing**:
+
 - [ ] Send test WhatsApp
 - [ ] Test conversation flow
 
 ### Semana 3: SendGrid Email
 
 **Backend**:
+
 - [ ] `libs/integrations/sendgrid`:
   - [ ] `EmailService.sendTransactional()`
   - [ ] Templates:
@@ -334,15 +362,18 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] On low credits (< 10)
 
 **Frontend**:
+
 - [ ] Email preview page (dev only)
 
 **Testing**:
+
 - [ ] Send test emails
 - [ ] Verify links work
 
 ### Semana 4: Google Places API
 
 **Backend**:
+
 - [ ] `libs/integrations/google`:
   - [ ] `GooglePlacesService.searchPlace()`
   - [ ] `GooglePlacesService.getReviewUrl()`
@@ -352,12 +383,14 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Generate review link
 
 **Frontend**:
+
 - [ ] Practice form:
   - [ ] Google Places autocomplete
   - [ ] Display review link
   - [ ] Test review link button
 
 **Deliverables**:
+
 - 🎯 SMS/WhatsApp enviándose realmente
 - 🎯 Webhooks procesando respuestas de pacientes
 - 🎯 Emails transaccionales funcionando
@@ -373,6 +406,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Semana 1-2: Core Metrics
 
 **Backend**:
+
 - [ ] Analytics endpoints:
   - [ ] `GET /analytics/workspace` - Overview metrics
   - [ ] `GET /analytics/campaigns/:id` - Campaign stats
@@ -388,6 +422,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Messages per day (last 30 days)
 
 **Frontend**:
+
 - [ ] Analytics page:
   - [ ] KPI cards (total sent, response rate, NPS)
   - [ ] Rating distribution chart (bar chart)
@@ -397,12 +432,14 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Filter by practice
 
 **Tests**:
+
 - [ ] Analytics calculation tests
 - [ ] Time series tests
 
 ### Semana 3: Reports & Exports
 
 **Backend**:
+
 - [ ] Export endpoints:
   - [ ] `GET /campaigns/:id/export` - CSV
   - [ ] `GET /analytics/report` - PDF
@@ -411,6 +448,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] PDF report with charts
 
 **Frontend**:
+
 - [ ] Export buttons:
   - [ ] Download campaign CSV
   - [ ] Download PDF report
@@ -419,12 +457,14 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Email recipients
 
 **Tests**:
+
 - [ ] CSV generation test
 - [ ] PDF generation test
 
 ### Semana 4: Advanced Analytics
 
 **Backend**:
+
 - [ ] Comparison analytics:
   - [ ] Practice vs practice
   - [ ] Campaign vs campaign
@@ -434,11 +474,13 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Response rate trends
 
 **Frontend**:
+
 - [ ] Comparison view
 - [ ] Cohort charts
 - [ ] Insights widget (AI suggestions)
 
 **Deliverables**:
+
 - 🎯 Dashboard completo con métricas en tiempo real
 - 🎯 Exports CSV y PDF funcionando
 - 🎯 Email reports semanales automáticos
@@ -453,6 +495,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Semana 1-2: Stripe Setup
 
 **Backend**:
+
 - [ ] `libs/integrations/stripe`:
   - [ ] `StripeService.createCustomer()`
   - [ ] `StripeService.createSubscription()`
@@ -472,12 +515,14 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] `POST /billing/cancel`
 
 **Stripe Products** (crear en dashboard):
+
 - [ ] FREE: $0/month, 50 messages
 - [ ] STARTER: $39/month, 500 messages
 - [ ] PROFESSIONAL: $129/month, 2000 messages
 - [ ] ENTERPRISE: Custom (contact sales)
 
 **Frontend**:
+
 - [ ] Pricing page (public)
 - [ ] Billing settings:
   - [ ] Current plan display
@@ -488,6 +533,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Invoices download
 
 **Tests**:
+
 - [ ] Stripe webhook tests
 - [ ] Subscription flow test
 - [ ] Credit deduction test
@@ -495,6 +541,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Semana 3: Credits System
 
 **Backend**:
+
 - [ ] Credit deduction logic:
   - [ ] Deduct on successful SMS send
   - [ ] Deduct on successful WhatsApp send
@@ -507,11 +554,13 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Rollover unused credits on plan change
 
 **Frontend**:
+
 - [ ] Low credits banner
 - [ ] Top-up modal
 - [ ] Usage tracking page
 
 **Tests**:
+
 - [ ] Credit deduction tests
 - [ ] Rollover tests
 - [ ] Insufficient credits handling
@@ -519,6 +568,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Semana 4: Invoicing & History
 
 **Backend**:
+
 - [ ] Invoice generation:
   - [ ] Auto-generate on subscription renewal
   - [ ] Manual invoice for top-ups
@@ -527,11 +577,13 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Store in `DailyUsage` table
 
 **Frontend**:
+
 - [ ] Usage history table
 - [ ] Invoice list
 - [ ] Download invoice PDF
 
 **Deliverables**:
+
 - 🎯 Stripe completamente integrado
 - 🎯 Usuarios pueden subscribirse y pagar
 - 🎯 Credits system funcional con límites
@@ -555,30 +607,35 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Semana 2: Performance
 
 **Backend**:
+
 - [ ] Add database indexes
 - [ ] Implement pagination everywhere
 - [ ] Cache frequent queries (Redis)
 - [ ] Optimize N+1 queries
 
 **Frontend**:
+
 - [ ] Code splitting
 - [ ] Image optimization
 - [ ] Lazy loading
 - [ ] TanStack Query caching
 
 **Tests**:
+
 - [ ] Load testing con k6
 - [ ] Performance benchmarks
 
 ### Semana 3: Error Handling & Logging
 
 **Backend**:
+
 - [ ] Sentry integration
 - [ ] Structured logging
 - [ ] Error boundaries
 - [ ] Retry logic for external APIs
 
 **Frontend**:
+
 - [ ] Error boundaries
 - [ ] Toast notifications
 - [ ] Loading states everywhere
@@ -595,6 +652,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Semana 5: Onboarding & Help
 
 **Frontend**:
+
 - [ ] Onboarding flow:
   - [ ] Welcome wizard
   - [ ] Create first practice
@@ -609,6 +667,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] "Try without signing up"
 
 **Deliverables**:
+
 - 🎯 App completamente responsive
 - 🎯 Performance optimizada (Lighthouse > 90)
 - 🎯 Error handling robusto
@@ -633,6 +692,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Semana 2-5: Active Testing
 
 **Week-by-week**:
+
 - [ ] **Week 1**: Onboard 2 testers
   - [ ] Call de onboarding
   - [ ] Setup accounts
@@ -651,12 +711,14 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Bug fixes
 
 **Beta Testers** (4 confirmados):
+
 1. Dr. [Nombre] - Medicina General - Quito
 2. Dr. [Nombre] - Odontología - Guayaquil
 3. Dr. [Nombre] - Cardiología - Quito
 4. Dr. [Nombre] - Dermatología - Cuenca
 
 **Feedback Channels**:
+
 - [ ] Weekly video calls
 - [ ] WhatsApp group
 - [ ] In-app feedback widget
@@ -671,12 +733,14 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 - [ ] Prepare launch materials
 
 **Success Metrics**:
+
 - [ ] 80%+ satisfaction score
 - [ ] < 5 critical bugs
 - [ ] All testers send at least 50 messages
 - [ ] At least 2 testers willing to pay
 
 **Deliverables**:
+
 - 🎯 4 doctores usando el producto activamente
 - 🎯 Feedback documentado y priorizado
 - 🎯 Bugs críticos resueltos
@@ -706,6 +770,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Backup strategy
 
 **Marketing**:
+
 - [ ] Landing page
 - [ ] Blog post (launch story)
 - [ ] Social media posts
@@ -715,6 +780,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Semana 2: Launch Week
 
 **Launch Day** (Ago 8, 2026):
+
 - [ ] 🚀 Abrir registros públicos
 - [ ] Publicar en Product Hunt
 - [ ] Publicar en redes sociales
@@ -722,6 +788,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 - [ ] Monitor errors/performance en vivo
 
 **Post-Launch**:
+
 - [ ] Daily monitoring primera semana
 - [ ] Responder feedback rápido
 - [ ] Fix hot bugs (< 4 horas)
@@ -729,6 +796,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 - [ ] Collect testimonials
 
 **Launch Goals**:
+
 - [ ] 10 registros primera semana
 - [ ] 5 conversiones a STARTER/PROFESSIONAL
 - [ ] 0 critical bugs
@@ -736,6 +804,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 - [ ] 99.9% uptime
 
 **Deliverables**:
+
 - 🎯 Producto en producción accesible públicamente
 - 🎯 Primeros clientes pagando
 - 🎯 Sistema estable y monitoreado
@@ -748,18 +817,21 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Immediate (Mes 1-2)
 
 **Features**:
+
 - [ ] Reminders automáticos (si no responde en 24h)
 - [ ] WhatsApp templates personalizables
 - [ ] Multi-language support (English)
 - [ ] API pública (para integraciones)
 
 **Growth**:
+
 - [ ] SEO optimization
 - [ ] Content marketing (blog)
 - [ ] Partnerships con clínicas grandes
 - [ ] Referral program
 
 **Support**:
+
 - [ ] Live chat (Intercom/Crisp)
 - [ ] Knowledge base
 - [ ] Video tutorials
@@ -768,6 +840,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Short-term (Mes 3-6)
 
 **Features**:
+
 - [ ] Mobile app (React Native)
 - [ ] Zapier integration
 - [ ] Slack notifications
@@ -776,6 +849,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 - [ ] Sentiment analysis de feedback
 
 **Scale**:
+
 - [ ] Multi-region support (Latam)
 - [ ] Enterprise features:
   - [ ] SSO (SAML)
@@ -786,6 +860,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Long-term (Mes 6-12)
 
 **Features**:
+
 - [ ] AI-powered response suggestions
 - [ ] Predictive analytics (qué pacientes probablemente responderán)
 - [ ] Integration con EMR systems (Electronic Medical Records)
@@ -793,6 +868,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 - [ ] Review generation para otras plataformas (Facebook, Yelp)
 
 **Scale**:
+
 - [ ] Expand a otros países Latam
 - [ ] Expand a otros verticales (restaurantes, hoteles, servicios)
 - [ ] White-label solution
@@ -804,6 +880,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Si el desarrollo se atrasa
 
 **Reducir scope**:
+
 1. Lanzar solo con SMS (no WhatsApp)
 2. Lanzar sin analytics avanzadas
 3. Lanzar sin mobile responsive (desktop first)
@@ -812,6 +889,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Si los beta testers no están satisfechos
 
 **Pivot options**:
+
 1. Cambiar a modelo "review generation only" (sin filtro)
 2. Cambiar a "feedback management" (sin SMS, solo forms)
 3. Cambiar target a otro vertical (restaurantes)
@@ -819,6 +897,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ### Si los costos de Twilio son muy altos
 
 **Alternatives**:
+
 1. Negociar volumen con Twilio
 2. Evaluar alternativas (Vonage, MessageBird)
 3. Ajustar pricing para cubrir costos
@@ -828,32 +907,35 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 
 ## Success Metrics por Phase
 
-| Phase | Key Metric | Target |
-|-------|-----------|--------|
-| Phase 0 | Documentation complete | ✅ 100% |
-| Phase 1 | Auth & UI working | Login + Dashboard |
-| Phase 2 | Core flow functional | CSV → Campaign → Mock Send |
-| Phase 3 | Integrations live | Real SMS/WhatsApp sent |
-| Phase 4 | Analytics accurate | NPS calculated correctly |
-| Phase 5 | First payment | 1 test payment successful |
-| Phase 6 | Lighthouse score | > 90 |
-| Phase 7 | Beta satisfaction | > 80% |
-| Phase 8 | Launch | 10 signups, 5 paying |
+| Phase   | Key Metric             | Target                     |
+| ------- | ---------------------- | -------------------------- |
+| Phase 0 | Documentation complete | ✅ 100%                    |
+| Phase 1 | Auth & UI working      | Login + Dashboard          |
+| Phase 2 | Core flow functional   | CSV → Campaign → Mock Send |
+| Phase 3 | Integrations live      | Real SMS/WhatsApp sent     |
+| Phase 4 | Analytics accurate     | NPS calculated correctly   |
+| Phase 5 | First payment          | 1 test payment successful  |
+| Phase 6 | Lighthouse score       | > 90                       |
+| Phase 7 | Beta satisfaction      | > 80%                      |
+| Phase 8 | Launch                 | 10 signups, 5 paying       |
 
 ---
 
 ## Team & Resources
 
 **Current Team**:
+
 - **1 Full-stack developer** (tú)
 - **4 Beta testers** (doctores confirmados)
 
 **Needed (opcional)**:
+
 - Designer (freelance, solo para landing page)
 - QA tester (freelance, antes de launch)
 - Legal advisor (para términos y compliance)
 
 **Time Commitment**:
+
 - Phase 0-2: 20-30 horas/semana
 - Phase 3-6: 30-40 horas/semana (core development)
 - Phase 7: 10-15 horas/semana (monitoring + fixes)
@@ -864,6 +946,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ## Budget Estimate
 
 **Development** (9 meses):
+
 - Hosting (Railway): $20-50/mes = **$180-450**
 - Domain: **$15/año**
 - Twilio (testing): $50 = **$50**
@@ -871,6 +954,7 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 - Total: **~$300**
 
 **Launch** (primer mes):
+
 - Hosting (production): $100/mes
 - Twilio (real usage): $100/mes
 - SendGrid: $15/mes
@@ -883,14 +967,14 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 
 ## Risk Assessment
 
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| Development delays | High | High | Reduce scope, extend timeline |
-| Beta testers drop out | Medium | High | Have 2-3 backup testers ready |
-| Twilio costs too high | Medium | Medium | Negotiate volume, adjust pricing |
-| Google policy violation | Low | High | Legal review, clear marketing |
-| Competition launches similar | Medium | Medium | Move fast, lock beta testers |
-| Technical issues at launch | High | High | Extensive testing, staging env |
+| Risk                         | Probability | Impact | Mitigation                       |
+| ---------------------------- | ----------- | ------ | -------------------------------- |
+| Development delays           | High        | High   | Reduce scope, extend timeline    |
+| Beta testers drop out        | Medium      | High   | Have 2-3 backup testers ready    |
+| Twilio costs too high        | Medium      | Medium | Negotiate volume, adjust pricing |
+| Google policy violation      | Low         | High   | Legal review, clear marketing    |
+| Competition launches similar | Medium      | Medium | Move fast, lock beta testers     |
+| Technical issues at launch   | High        | High   | Extensive testing, staging env   |
 
 ---
 

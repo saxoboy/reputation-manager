@@ -9,6 +9,23 @@ module.exports = {
       devtoolModuleFilenameTemplate: '[absolute-resource-path]',
     }),
   },
+  externalsPresets: { node: true },
+  externals: [
+    // Función personalizada para manejar externals
+    function ({ request }, callback) {
+      // NO externalizar librerías del workspace - bundlearlas
+      if (request && request.startsWith('@reputation-manager/')) {
+        console.log('[Webpack] BUNDLING workspace lib:', request);
+        return callback(); // undefined = include in bundle
+      }
+      // Externalizar todo lo demás (node_modules)
+      if (request && !request.startsWith('.') && !request.startsWith('/')) {
+        return callback(null, 'commonjs ' + request);
+      }
+      // Default behavior para relative imports
+      return callback();
+    },
+  ],
   plugins: [
     new NxAppWebpackPlugin({
       target: 'node',
@@ -18,7 +35,7 @@ module.exports = {
       assets: ['./src/assets'],
       optimization: false,
       outputHashing: 'none',
-      generatePackageJson: true,
+      generatePackageJson: false,
       sourceMaps: true,
     }),
   ],

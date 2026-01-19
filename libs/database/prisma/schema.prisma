@@ -1,17 +1,315 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../../../node_modules/.prisma/client"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
-// Modelo básico para empezar
-model Workspace {
+// ============================================
+// Auth Models (Better Auth)
+// ============================================
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  name          String?
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  accounts       Account[]
+  sessions       Session[]
+  workspaceUsers WorkspaceUser[]
+
+  @@index([email])
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String // The ID of the account as provided by the SSO or equal to userId for credential accounts
+  providerId            String // The ID of the provider (e.g., 'credential', 'google', etc.)
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?   @db.Text
+  password              String? // For email/password authentication
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model Session {
   id        String   @id @default(cuid())
-  name      String
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================
+// Multi-tenancy Models
+// ============================================
+
+enum UserRole {
+  OWNER
+  DOCTOR
+  RECEPTIONIST
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+enum MessageType {
+  INITIAL // Primer mensaje pidiendo rating 1-5
+  FOLLOWUP_HAPPY // Mensaje con link a Google (rating >= 4)
+  FOLLOWUP_UNHAPPY // Mensaje con link a formulario privado (rating <= 3)
+  REMINDER // Recordatorio si no responde
+}
+
+enum MessageChannel {
+  SMS
+  WHATSAPP
+  EMAIL
+}
+
+enum MessageStatus {
+  PENDING
+  SCHEDULED
+  SENT
+  DELIVERED
+  FAILED
+  REPLIED
+}
+
+model Workspace {
+  id                   String   @id @default(cuid())
+  name                 String
+  plan                 String   @default("FREE") // FREE, STARTER, PROFESSIONAL, ENTERPRISE
+  messageCredits       Int      @default(50)
+  stripeCustomerId     String?  @unique
+  stripeSubscriptionId String?  @unique
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  // Relations
+  users     WorkspaceUser[]
+  practices Practice[]
+  campaigns Campaign[]
+  patients  Patient[]
+  templates Template[]
+
+  @@index([plan])
+}
+
+model WorkspaceUser {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        UserRole @default(DOCTOR)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace        Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaignsCreated Campaign[]
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+}
+
+model Practice {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  name          String
+  address       String?
+  city          String?
+  phone         String?
+  email         String?
+  googlePlaceId String? // Para generar link de review
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  workspace Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  campaigns Campaign[]
+
+  @@index([workspaceId])
+  @@index([googlePlaceId])
+}
+
+// ============================================
+// Campaign & Patient Models
+// ============================================
+
+model Campaign {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  status      CampaignStatus @default(ACTIVE)
+
+  // Configuration
+  scheduledHoursAfter Int @default(2) // Horas después de la cita para enviar mensaje
+
+  // Multi-tenancy & Relations
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  practiceId String
+  practice   Practice @relation(fields: [practiceId], references: [id])
+
+  createdById String
+  createdBy   WorkspaceUser @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  patients Patient[]
+  messages Message[]
+
+  @@index([workspaceId])
+  @@index([practiceId])
+  @@index([createdById])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+}
+
+model Patient {
+  id String @id @default(cuid())
+
+  // Personal Info
+  name  String
+  phone String // Formato: +593XXXXXXXXX (Ecuador)
+  email String?
+
+  // Appointment
+  appointmentTime DateTime
+  appointmentType String? // "Consulta", "Limpieza", "Cirugía", etc.
+
+  // Compliance & Legal (CRÍTICO)
+  hasConsent    Boolean   @default(false) // MUST be true to send messages
+  optedOutAt    DateTime? // If not null, NEVER send messages
+  dataDeletedAt DateTime? // Soft delete for GDPR compliance
+
+  // Preferences
+  preferredChannel MessageChannel @default(SMS)
+  language         String         @default("es")
+
+  // Multi-tenancy & Relations
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  messages Message[]
+
+  @@index([workspaceId])
+  @@index([campaignId])
+  @@index([phone])
+  @@index([hasConsent])
+  @@index([optedOutAt])
+  @@index([dataDeletedAt])
+  @@index([appointmentTime])
+}
+
+// ============================================
+// Message Models
+// ============================================
+
+model Message {
+  id String @id @default(cuid())
+
+  // Message Details
+  type    MessageType
+  channel MessageChannel
+  status  MessageStatus  @default(PENDING)
+  content String         @db.Text
+
+  // Response Tracking
+  rating Int? // 1-5, NULL si no ha respondido
+
+  // Delivery Tracking
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  repliedAt   DateTime?
+
+  // External Integration
+  externalId String? // Twilio MessageSid o WhatsApp WAMID
+  error      String? @db.Text
+
+  // Cost Tracking
+  cost Decimal? @db.Decimal(10, 4)
+
+  // Multi-tenancy & Relations
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([patientId])
+  @@index([campaignId])
+  @@index([status])
+  @@index([type])
+  @@index([externalId])
+  @@index([sentAt])
+  @@index([rating])
+}
+
+model Template {
+  id   String      @id @default(cuid())
+  name String
+  type MessageType
+
+  // Template Content
+  content   String   @db.Text
+  variables String[] // Ejemplo: ["name", "doctor", "practice"]
+
+  // Multi-tenancy
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([workspaceId])
+  @@index([type])
 }
