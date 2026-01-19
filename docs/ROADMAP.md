@@ -78,76 +78,81 @@ Phase 8: Launch          │██████│ 2 semanas (Ago 2 - Ago 15, 202
 ## Phase 1: Foundation (4 semanas)
 
 **Fecha**: Dic 1 - Dic 31, 2025  
+**Estado**: ✅ **COMPLETADO** (Finalizado: Ene 19, 2026)  
 **Goal**: Autenticación, multi-tenancy, UI base funcional
 
 ### Semana 1-2: Auth & Multi-tenancy
 
 **Backend**:
 
-- [ ] Implementar Better Auth
-  - [ ] Email/password login
-  - [ ] Google OAuth
-  - [ ] Session management
-  - [ ] Refresh tokens
-- [ ] Guards:
-  - [ ] `AuthGuard` (require login)
-  - [ ] `WorkspaceGuard` (require workspace access)
-  - [ ] `RoleGuard` (OWNER, DOCTOR, RECEPTIONIST)
-- [ ] Decorators:
-  - [ ] `@CurrentUser()`
-  - [ ] `@CurrentWorkspace()`
-- [ ] Endpoints:
-  - [ ] `POST /auth/register`
-  - [ ] `POST /auth/login`
-  - [ ] `POST /auth/logout`
-  - [ ] `GET /auth/me`
-  - [ ] `POST /auth/google`
+- [x] Implementar Better Auth
+  - [x] Email/password login
+  - [x] Google OAuth
+  - [x] Session management
+  - [x] Refresh tokens
+- [x] Guards:
+  - [x] `AuthGuard` (require login)
+  - [x] `WorkspaceGuard` (require workspace access)
+  - [x] `RoleGuard` (OWNER, DOCTOR, RECEPTIONIST)
+- [x] Decorators:
+  - [x] `@CurrentUser()`
+  - [x] `@CurrentWorkspace()`
+- [x] Endpoints:
+  - [x] `POST /auth/register`
+  - [x] `POST /auth/login`
+  - [x] `POST /auth/logout`
+  - [x] `GET /auth/me`
+  - [x] `POST /auth/google`
 
 **Frontend**:
 
-- [ ] Setup Better Auth client
-- [ ] Login page
-- [ ] Register page
-- [ ] Protected layout wrapper
-- [ ] Auth context/hooks
-- [ ] Google OAuth button
+- [x] Setup Better Auth client
+- [x] Login page
+- [x] Register page
+- [x] Protected layout wrapper
+- [x] Auth context/hooks
+- [x] Google OAuth button
 
 **Tests**:
 
-- [ ] Auth service unit tests
-- [ ] Auth e2e tests
-- [ ] Guard tests
+- [x] Auth service unit tests
+- [x] Auth e2e tests
+- [x] Guard tests
 
 ### Semana 3-4: Base UI & Workspace CRUD
 
 **Frontend**:
 
-- [ ] Setup shadcn/ui
-- [ ] Dashboard layout:
-  - [ ] Sidebar navigation
-  - [ ] Header with user menu
-  - [ ] Breadcrumbs
-- [ ] Workspace management:
-  - [ ] Create workspace flow (onboarding)
-  - [ ] Workspace settings page
-  - [ ] Invite users (básico)
-- [ ] User management:
-  - [ ] User list
-  - [ ] Edit user role
-  - [ ] Remove user
+- [x] Setup shadcn/ui
+- [x] Dashboard layout:
+  - [x] Sidebar navigation
+  - [x] Header with user menu
+  - [x] Breadcrumbs
+- [x] Workspace management:
+  - [x] Create workspace flow (onboarding)
+  - [x] Workspace settings page
+  - [x] Invite users (básico)
+- [x] User management:
+  - [x] User list
+  - [x] Edit user role
+  - [x] Remove user
 
 **Backend**:
 
-- [ ] Workspace CRUD endpoints
-- [ ] User management endpoints
-- [ ] Email invitations (SendGrid stub)
+- [x] Workspace CRUD endpoints
+- [x] User management endpoints
+- [x] Email invitations (SendGrid)
 
 **Deliverables**:
 
-- 🎯 Login/Register funcional
-- 🎯 Dashboard base con navegación
-- 🎯 Multi-tenancy enforced en todos los endpoints
-- 🎯 Al menos 20 tests pasando
+- ✅ Login/Register funcional con Google OAuth
+- ✅ Dashboard base con navegación completa
+- ✅ Multi-tenancy enforced en todos los endpoints
+- ✅ 30+ tests pasando (unit + e2e)
+- ✅ Onboarding flow para nuevos usuarios
+- ✅ Settings page completa
+- ✅ User management UI funcional
+- ✅ SendGrid integrado para invitaciones
 
 ---
 

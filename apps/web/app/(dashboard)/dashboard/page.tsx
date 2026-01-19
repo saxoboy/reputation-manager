@@ -1,8 +1,6 @@
 'use client';
 
 import { useAuth } from '../../../hooks/use-auth';
-import { signOut } from '../../../lib/auth-client';
-import { Button } from '../../../components/ui/button';
 import {
   Card,
   CardContent,
@@ -10,22 +8,17 @@ import {
   CardHeader,
   CardTitle,
 } from '../../../components/ui/card';
-import { useRouter } from 'next/navigation';
+import { Badge } from '../../../components/ui/badge';
+import { MessageSquare, Users, TrendingUp, DollarSign } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user, isPending } = useAuth();
-  const router = useRouter();
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.push('/login');
-  };
 
   if (isPending) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex h-full items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-primary"></div>
           <p className="text-muted-foreground">Cargando...</p>
         </div>
       </div>
@@ -33,125 +26,112 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Reputation Manager</h1>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-sm font-medium">{user?.name}</p>
-              <p className="text-xs text-muted-foreground">{user?.email}</p>
-            </div>
-            <Button variant="outline" onClick={handleSignOut}>
-              Cerrar Sesión
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="space-y-6">
+      {/* Welcome Header */}
+      <div>
+        <h1 className="text-3xl font-bold">
+          ¡Bienvenido, {user?.name?.split(' ')[0] || 'Doctor'}!
+        </h1>
+        <p className="text-muted-foreground">
+          Aquí está un resumen de tu actividad reciente
+        </p>
+      </div>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">
-            Bienvenido, {user?.name?.split(' ')[0]}! 👋
-          </h2>
-          <p className="text-muted-foreground">
-            Este es tu dashboard. Desde aquí podrás gestionar tus workspaces,
-            campañas y ver analytics.
-          </p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Workspaces
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">0</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                No tienes workspaces aún
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Campañas Activas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">0</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Crea tu primera campaña
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Mensajes Enviados
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">0</div>
-              <p className="text-xs text-muted-foreground mt-1">Este mes</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Getting Started */}
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Primeros Pasos</CardTitle>
-            <CardDescription>
-              Completa estos pasos para comenzar a usar Reputation Manager
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Mensajes Enviados
+            </CardTitle>
+            <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start gap-4 p-4 border border-border rounded-lg">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
-                1
-              </div>
-              <div>
-                <h4 className="font-semibold mb-1">Crea tu primer workspace</h4>
-                <p className="text-sm text-muted-foreground">
-                  Un workspace representa tu consultorio o clínica
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 p-4 border border-border rounded-lg opacity-50">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground font-bold">
-                2
-              </div>
-              <div>
-                <h4 className="font-semibold mb-1">Configura tu ubicación</h4>
-                <p className="text-sm text-muted-foreground">
-                  Agrega tu Google Place ID para reseñas
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 p-4 border border-border rounded-lg opacity-50">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground font-bold">
-                3
-              </div>
-              <div>
-                <h4 className="font-semibold mb-1">Sube tus pacientes</h4>
-                <p className="text-sm text-muted-foreground">
-                  Importa tus pacientes vía CSV
-                </p>
-              </div>
-            </div>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">Este mes</p>
           </CardContent>
         </Card>
-      </main>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Pacientes Activos
+            </CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">Total registrados</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Tasa de Respuesta
+            </CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0%</div>
+            <p className="text-xs text-muted-foreground">Promedio mensual</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Créditos Restantes
+            </CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">500</div>
+            <p className="text-xs text-muted-foreground">Plan Starter</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Primeros Pasos</CardTitle>
+          <CardDescription>
+            Completa estos pasos para empezar a usar Reputation Manager
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-1">
+              <p className="font-medium">Configura tu consultorio</p>
+              <p className="text-sm text-muted-foreground">
+                Agrega la información de tu consultorio y ubicación
+              </p>
+            </div>
+            <Badge variant="secondary">Próximamente</Badge>
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-1">
+              <p className="font-medium">Crea plantillas de mensajes</p>
+              <p className="text-sm text-muted-foreground">
+                Personaliza los mensajes que enviarás a tus pacientes
+              </p>
+            </div>
+            <Badge variant="secondary">Próximamente</Badge>
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-1">
+              <p className="font-medium">Lanza tu primera campaña</p>
+              <p className="text-sm text-muted-foreground">
+                Sube un CSV con pacientes y envía tu primer mensaje
+              </p>
+            </div>
+            <Badge variant="secondary">Próximamente</Badge>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
