@@ -1,1 +1,1 @@
-export * from './lib/integrations';
+export * from './lib/sendgrid.service';
