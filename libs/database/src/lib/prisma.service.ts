@@ -1,5 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 
 /**
  * PrismaService - Servicio de Prisma para NestJS
@@ -19,7 +21,16 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
+    // Crear adapter para PostgreSQL
+    const connectionString =
+      process.env['DATABASE_URL'] ||
+      'postgresql://postgres:postgres@localhost:5432/reputation_manager_dev?schema=public';
+
+    const pool = new Pool({ connectionString });
+    const adapter = new PrismaPg(pool);
+
     super({
+      adapter,
       log:
         process.env['NODE_ENV'] === 'development'
           ? ['query', 'error', 'warn']
