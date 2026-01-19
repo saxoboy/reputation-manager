@@ -7,6 +7,8 @@ import { auth } from '../auth/auth.config';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { PracticesModule } from '../practices/practices.module';
 import { WorkspaceUsersModule } from '../workspace-users/workspace-users.module';
+import { CampaignsModule } from '../campaigns/campaigns.module';
+import { TemplatesModule } from '../templates/templates.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { WorkspaceUsersModule } from '../workspace-users/workspace-users.module'
     WorkspacesModule,
     PracticesModule,
     WorkspaceUsersModule,
+    CampaignsModule,
+    TemplatesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
