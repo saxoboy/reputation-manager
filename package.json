@@ -26,6 +26,11 @@
     "prisma:validate": "prisma validate --schema=libs/database/prisma/schema.prisma"
   },
   "private": true,
+  "pnpm": {
+    "overrides": {
+      "hono": "^4.11.4"
+    }
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@nestjs/schematics": "^11.0.9",
