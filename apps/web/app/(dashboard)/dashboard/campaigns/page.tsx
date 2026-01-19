@@ -12,9 +12,9 @@ import { AlertCircle } from 'lucide-react';
 const CreateCampaignDialog = dynamicImport(
   () =>
     import('../../../../components/campaigns/create-campaign-dialog').then(
-      (mod) => mod.CreateCampaignDialog
+      (mod) => mod.CreateCampaignDialog,
     ),
-  { ssr: false }
+  { ssr: false },
 );
 
 // Disable SSR for this page to avoid Radix UI + React 19 prerender issues
@@ -78,9 +78,11 @@ export default function CampaignsPage() {
           </p>
         </div>
 
-        <CreateCampaignDialog onCreate={() => {
-          // Campaign creation handled by React Query mutation
-        }} />
+        <CreateCampaignDialog
+          onCreate={() => {
+            // Campaign creation handled by React Query mutation
+          }}
+        />
       </div>
 
       <div className="grid gap-6">

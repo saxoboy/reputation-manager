@@ -18,9 +18,9 @@ import type { MessageTemplate } from '../../../../services/template.service';
 const TemplateDialog = dynamicImport(
   () =>
     import('../../../../components/templates/template-dialog').then(
-      (mod) => mod.TemplateDialog
+      (mod) => mod.TemplateDialog,
     ),
-  { ssr: false }
+  { ssr: false },
 );
 
 // Disable SSR for Radix UI compatibility
@@ -62,7 +62,9 @@ export default function TemplatesPage() {
     ...template,
     isDefault: false as const, // TODO: Add isDefault field to backend
     updatedAt: new Date(template.updatedAt).toISOString().split('T')[0],
-  })) as Array<typeof templatesData[0] & { isDefault?: boolean; updatedAt: string }>;
+  })) as Array<
+    (typeof templatesData)[0] & { isDefault?: boolean; updatedAt: string }
+  >;
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);

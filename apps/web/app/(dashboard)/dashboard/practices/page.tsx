@@ -32,7 +32,7 @@ export default function PracticesPage() {
   const [editingPractice, setEditingPractice] = useState<Practice | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [practiceToDelete, setPracticeToDelete] = useState<Practice | null>(
-    null
+    null,
   );
 
   const handleOpenCreateDialog = () => {
