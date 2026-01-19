@@ -41,12 +41,12 @@ export class WorkspaceUsersController {
   async invite(
     @CurrentWorkspace('id') workspaceId: string,
     @CurrentUser('id') userId: string,
-    @Body() inviteUserDto: InviteUserDto
+    @Body() inviteUserDto: InviteUserDto,
   ) {
     return this.workspaceUsersService.invite(
       workspaceId,
       userId,
-      inviteUserDto
+      inviteUserDto,
     );
   }
 
@@ -61,13 +61,13 @@ export class WorkspaceUsersController {
     @CurrentWorkspace('id') workspaceId: string,
     @Param('userId') targetUserId: string,
     @CurrentUser('id') requesterId: string,
-    @Body() updateUserRoleDto: UpdateUserRoleDto
+    @Body() updateUserRoleDto: UpdateUserRoleDto,
   ) {
     return this.workspaceUsersService.updateRole(
       workspaceId,
       targetUserId,
       requesterId,
-      updateUserRoleDto
+      updateUserRoleDto,
     );
   }
 
@@ -82,12 +82,12 @@ export class WorkspaceUsersController {
   async remove(
     @CurrentWorkspace('id') workspaceId: string,
     @Param('userId') targetUserId: string,
-    @CurrentUser('id') requesterId: string
+    @CurrentUser('id') requesterId: string,
   ) {
     return this.workspaceUsersService.remove(
       workspaceId,
       targetUserId,
-      requesterId
+      requesterId,
     );
   }
 }

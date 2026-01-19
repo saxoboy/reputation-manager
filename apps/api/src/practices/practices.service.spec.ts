@@ -123,7 +123,7 @@ describe('PracticesService', () => {
       mockPrisma.practice.findUnique.mockResolvedValue(null);
 
       await expect(service.findOne('practice-999', 'ws-1')).rejects.toThrow(
-        'Práctica no encontrada'
+        'Práctica no encontrada',
       );
     });
   });
@@ -163,7 +163,7 @@ describe('PracticesService', () => {
       mockPrisma.practice.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.update('practice-1', 'ws-wrong', { name: 'Test' })
+        service.update('practice-1', 'ws-wrong', { name: 'Test' }),
       ).rejects.toThrow('Práctica no encontrada');
     });
   });
@@ -190,7 +190,7 @@ describe('PracticesService', () => {
       mockPrisma.practice.findUnique.mockResolvedValue(null);
 
       await expect(service.remove('practice-1', 'ws-wrong')).rejects.toThrow(
-        'Práctica no encontrada'
+        'Práctica no encontrada',
       );
     });
   });

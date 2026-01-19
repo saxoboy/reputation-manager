@@ -39,7 +39,7 @@ export class PracticesController {
   @Roles(UserRole.OWNER, UserRole.DOCTOR)
   async create(
     @CurrentWorkspace('id') workspaceId: string,
-    @Body() createPracticeDto: CreatePracticeDto
+    @Body() createPracticeDto: CreatePracticeDto,
   ) {
     return this.practicesService.create(workspaceId, createPracticeDto);
   }
@@ -51,7 +51,7 @@ export class PracticesController {
   @Get(':id')
   async findOne(
     @Param('id') id: string,
-    @CurrentWorkspace('id') workspaceId: string
+    @CurrentWorkspace('id') workspaceId: string,
   ) {
     return this.practicesService.findOne(id, workspaceId);
   }
@@ -66,7 +66,7 @@ export class PracticesController {
   async update(
     @Param('id') id: string,
     @CurrentWorkspace('id') workspaceId: string,
-    @Body() updatePracticeDto: UpdatePracticeDto
+    @Body() updatePracticeDto: UpdatePracticeDto,
   ) {
     return this.practicesService.update(id, workspaceId, updatePracticeDto);
   }
@@ -80,7 +80,7 @@ export class PracticesController {
   @Roles(UserRole.OWNER)
   async remove(
     @Param('id') id: string,
-    @CurrentWorkspace('id') workspaceId: string
+    @CurrentWorkspace('id') workspaceId: string,
   ) {
     return this.practicesService.remove(id, workspaceId);
   }

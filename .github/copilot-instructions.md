@@ -362,7 +362,7 @@ export const CreateCampaignSchema = z.object({
         email: z.string().email().optional(),
         appointmentTime: z.string().datetime(),
         hasConsent: z.boolean(),
-      })
+      }),
     )
     .min(1),
 });

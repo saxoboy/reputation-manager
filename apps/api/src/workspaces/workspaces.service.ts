@@ -128,7 +128,7 @@ export class WorkspacesService {
 
     if (workspaceUser.role !== UserRole.OWNER) {
       throw new ForbiddenException(
-        'Solo el OWNER puede actualizar el workspace'
+        'Solo el OWNER puede actualizar el workspace',
       );
     }
 
@@ -183,7 +183,7 @@ export class WorkspacesService {
 
     if (usersCount > 1) {
       throw new ConflictException(
-        'No puedes eliminar un workspace con otros usuarios. Remuévelos primero.'
+        'No puedes eliminar un workspace con otros usuarios. Remuévelos primero.',
       );
     }
 

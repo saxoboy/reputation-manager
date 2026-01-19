@@ -58,7 +58,7 @@ export class PracticesService {
   async update(
     practiceId: string,
     workspaceId: string,
-    dto: UpdatePracticeDto
+    dto: UpdatePracticeDto,
   ) {
     // Primero verificar que exista y pertenezca al workspace
     await this.findOne(practiceId, workspaceId);

@@ -50,7 +50,7 @@ describe('WorkspaceGuard', () => {
     };
 
     mockPrismaService.workspaceUser.findUnique.mockResolvedValue(
-      mockWorkspaceUser
+      mockWorkspaceUser,
     );
 
     const context = {
@@ -81,7 +81,7 @@ describe('WorkspaceGuard', () => {
     } as ExecutionContext;
 
     await expect(guard.canActivate(context)).rejects.toThrow(
-      ForbiddenException
+      ForbiddenException,
     );
   });
 
@@ -98,7 +98,7 @@ describe('WorkspaceGuard', () => {
     } as ExecutionContext;
 
     await expect(guard.canActivate(context)).rejects.toThrow(
-      ForbiddenException
+      ForbiddenException,
     );
   });
 });

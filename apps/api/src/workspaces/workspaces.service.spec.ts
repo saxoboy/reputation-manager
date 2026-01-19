@@ -111,7 +111,7 @@ describe('WorkspacesService', () => {
             plan: 'FREE',
             messageCredits: 50,
           }),
-        })
+        }),
       );
     });
   });
@@ -144,7 +144,7 @@ describe('WorkspacesService', () => {
       mockPrisma.workspace.findUnique.mockResolvedValue(null);
 
       await expect(service.findOne('ws-999', 'user-123')).rejects.toThrow(
-        'Workspace no encontrado'
+        'Workspace no encontrado',
       );
     });
   });
@@ -179,7 +179,7 @@ describe('WorkspacesService', () => {
       });
 
       await expect(
-        service.update('ws-1', 'user-123', { name: 'Test' })
+        service.update('ws-1', 'user-123', { name: 'Test' }),
       ).rejects.toThrow('Solo el OWNER puede actualizar el workspace');
     });
   });
@@ -208,7 +208,7 @@ describe('WorkspacesService', () => {
       });
 
       await expect(service.remove('ws-1', 'user-123')).rejects.toThrow(
-        'Solo el OWNER puede eliminar el workspace'
+        'Solo el OWNER puede eliminar el workspace',
       );
     });
 
@@ -219,7 +219,7 @@ describe('WorkspacesService', () => {
       mockPrisma.workspaceUser.count.mockResolvedValue(2); // 2 OWNERs
 
       await expect(service.remove('ws-1', 'user-123')).rejects.toThrow(
-        'No puedes eliminar un workspace con otros usuarios'
+        'No puedes eliminar un workspace con otros usuarios',
       );
     });
   });

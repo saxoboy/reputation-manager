@@ -16,5 +16,5 @@ export const CurrentRole = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): UserRole | null => {
     const request = ctx.switchToHttp().getRequest();
     return request.workspaceRole || null;
-  }
+  },
 );

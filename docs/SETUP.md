@@ -482,7 +482,6 @@ Copia el webhook secret → `STRIPE_WEBHOOK_SECRET`
 ## Siguientes Pasos
 
 1. **Lee la documentación**:
-
    - [DEVELOPMENT.md](./DEVELOPMENT.md) - Workflows diarios
    - [DATABASE.md](./DATABASE.md) - Schema y queries
    - [ARCHITECTURE.md](../ARCHITECTURE.md) - Arquitectura completa

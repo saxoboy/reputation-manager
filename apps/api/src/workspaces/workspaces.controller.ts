@@ -34,7 +34,7 @@ export class WorkspacesController {
   @Post()
   async create(
     @CurrentUser('id') userId: string,
-    @Body() createWorkspaceDto: CreateWorkspaceDto
+    @Body() createWorkspaceDto: CreateWorkspaceDto,
   ) {
     return this.workspacesService.create(userId, createWorkspaceDto);
   }
@@ -56,7 +56,7 @@ export class WorkspacesController {
   async update(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
-    @Body() updateWorkspaceDto: UpdateWorkspaceDto
+    @Body() updateWorkspaceDto: UpdateWorkspaceDto,
   ) {
     return this.workspacesService.update(id, userId, updateWorkspaceDto);
   }

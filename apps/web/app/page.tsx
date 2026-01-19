@@ -34,7 +34,7 @@ export default function Index() {
               className={cn(
                 'text-5xl font-bold mb-4',
                 'bg-gradient-to-r from-primary to-blue-600',
-                'bg-clip-text text-transparent'
+                'bg-clip-text text-transparent',
               )}
             >
               Reputation Manager
@@ -63,7 +63,7 @@ export default function Index() {
               className={cn(
                 'p-6 rounded-lg border border-border',
                 'bg-card text-card-foreground',
-                'hover:shadow-lg transition-shadow'
+                'hover:shadow-lg transition-shadow',
               )}
             >
               <h3 className="font-semibold text-lg mb-2">
@@ -79,7 +79,7 @@ export default function Index() {
               className={cn(
                 'p-6 rounded-lg border border-border',
                 'bg-card text-card-foreground',
-                'hover:shadow-lg transition-shadow'
+                'hover:shadow-lg transition-shadow',
               )}
             >
               <h3 className="font-semibold text-lg mb-2">📊 Analytics</h3>
@@ -92,7 +92,7 @@ export default function Index() {
               className={cn(
                 'p-6 rounded-lg border border-border',
                 'bg-card text-card-foreground',
-                'hover:shadow-lg transition-shadow'
+                'hover:shadow-lg transition-shadow',
               )}
             >
               <h3 className="font-semibold text-lg mb-2">⚡ Automatización</h3>
@@ -132,7 +132,7 @@ export default function Index() {
                 'inline-flex items-center gap-2',
                 'px-4 py-2 rounded-full',
                 'bg-primary/10 text-primary',
-                'border border-primary/20'
+                'border border-primary/20',
               )}
             >
               <span className="relative flex h-3 w-3">

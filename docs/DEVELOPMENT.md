@@ -491,7 +491,7 @@ describe('SendReminderProcessor', () => {
     expect(twilioService.sendSMS).toHaveBeenCalledWith(
       expect.objectContaining({
         to: '+593999999999',
-      })
+      }),
     );
   });
 

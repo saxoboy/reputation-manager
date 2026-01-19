@@ -173,7 +173,7 @@ describe('WorkspaceUsersService', () => {
         service.invite('ws-1', 'user-doctor', {
           email: 'owner@example.com',
           role: 'OWNER',
-        })
+        }),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -187,7 +187,7 @@ describe('WorkspaceUsersService', () => {
         service.invite('ws-1', 'user-owner', {
           email: 'notfound@example.com',
           role: 'DOCTOR',
-        })
+        }),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -207,7 +207,7 @@ describe('WorkspaceUsersService', () => {
         service.invite('ws-1', 'user-owner', {
           email: 'exists@example.com',
           role: 'DOCTOR',
-        })
+        }),
       ).rejects.toThrow(ConflictException);
     });
   });
@@ -236,7 +236,7 @@ describe('WorkspaceUsersService', () => {
         workspaceId,
         requesterId,
         targetUserId,
-        dto
+        dto,
       );
 
       expect(result).toBeDefined();
@@ -250,7 +250,7 @@ describe('WorkspaceUsersService', () => {
       await expect(
         service.updateRole('ws-1', 'user-doctor', 'user-target', {
           role: 'RECEPTIONIST',
-        })
+        }),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -270,7 +270,7 @@ describe('WorkspaceUsersService', () => {
       await expect(
         service.updateRole(workspaceId, requesterId, targetUserId, {
           role: 'DOCTOR',
-        })
+        }),
       ).rejects.toThrow(ConflictException);
     });
   });
@@ -332,7 +332,7 @@ describe('WorkspaceUsersService', () => {
       mockPrisma.workspaceUser.count.mockResolvedValue(1); // Solo 1 OWNER
 
       await expect(service.remove('ws-1', userId, userId)).rejects.toThrow(
-        ConflictException
+        ConflictException,
       );
     });
 
@@ -345,7 +345,7 @@ describe('WorkspaceUsersService', () => {
       });
 
       await expect(
-        service.remove('ws-1', 'user-doctor', 'user-owner')
+        service.remove('ws-1', 'user-doctor', 'user-owner'),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -358,7 +358,7 @@ describe('WorkspaceUsersService', () => {
       });
 
       await expect(
-        service.remove('ws-1', 'user-receptionist', 'user-doctor')
+        service.remove('ws-1', 'user-receptionist', 'user-doctor'),
       ).rejects.toThrow(ForbiddenException);
     });
   });

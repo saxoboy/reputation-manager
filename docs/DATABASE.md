@@ -618,7 +618,7 @@ campaigns.map((campaign) => ({
       campaign.patients
         .flatMap((p) => p.messages)
         .filter((m) => m.rating !== null)
-        .map((m) => m.rating)
+        .map((m) => m.rating),
     ),
   },
 }));
@@ -734,7 +734,7 @@ async function handlePatientReply(messageId: string, rating: number) {
     },
     {
       delay: 1000, // 1 segundo después
-    }
+    },
   );
 }
 ```

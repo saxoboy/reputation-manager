@@ -28,7 +28,7 @@ export class WorkspaceGuard implements CanActivate {
 
     if (!user) {
       throw new ForbiddenException(
-        'AuthGuard debe ejecutarse antes de WorkspaceGuard'
+        'AuthGuard debe ejecutarse antes de WorkspaceGuard',
       );
     }
 

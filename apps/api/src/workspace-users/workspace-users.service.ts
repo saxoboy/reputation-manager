@@ -62,7 +62,7 @@ export class WorkspaceUsersService {
       (inviter.role !== UserRole.OWNER && inviter.role !== UserRole.DOCTOR)
     ) {
       throw new ForbiddenException(
-        'Solo OWNER y DOCTOR pueden invitar usuarios'
+        'Solo OWNER y DOCTOR pueden invitar usuarios',
       );
     }
 
@@ -78,7 +78,7 @@ export class WorkspaceUsersService {
 
     if (!user) {
       throw new NotFoundException(
-        `Usuario con email ${dto.email} no encontrado. Debe registrarse primero.`
+        `Usuario con email ${dto.email} no encontrado. Debe registrarse primero.`,
       );
     }
 
@@ -131,7 +131,7 @@ export class WorkspaceUsersService {
     workspaceId: string,
     targetUserId: string,
     requesterId: string,
-    dto: UpdateUserRoleDto
+    dto: UpdateUserRoleDto,
   ) {
     // Verificar que el requester sea OWNER
     const requester = await this.prisma.workspaceUser.findUnique({
@@ -181,7 +181,7 @@ export class WorkspaceUsersService {
 
       if (ownersCount === 1) {
         throw new ConflictException(
-          'No puedes cambiar tu rol siendo el único OWNER. Asigna otro OWNER primero.'
+          'No puedes cambiar tu rol siendo el único OWNER. Asigna otro OWNER primero.',
         );
       }
     }
@@ -258,7 +258,7 @@ export class WorkspaceUsersService {
 
     if (!isSelf && !isOwner && !(isDoctor && targetIsReceptionist)) {
       throw new ForbiddenException(
-        'No tienes permisos para remover este usuario'
+        'No tienes permisos para remover este usuario',
       );
     }
 
@@ -273,7 +273,7 @@ export class WorkspaceUsersService {
 
       if (ownersCount === 1) {
         throw new ConflictException(
-          'No puedes salir siendo el único OWNER. Asigna otro OWNER primero o elimina el workspace.'
+          'No puedes salir siendo el único OWNER. Asigna otro OWNER primero o elimina el workspace.',
         );
       }
     }

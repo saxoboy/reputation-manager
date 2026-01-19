@@ -30,7 +30,7 @@ export class RoleGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
       ROLES_KEY,
-      [context.getHandler(), context.getClass()]
+      [context.getHandler(), context.getClass()],
     );
 
     if (!requiredRoles || requiredRoles.length === 0) {
@@ -42,7 +42,7 @@ export class RoleGuard implements CanActivate {
 
     if (!userRole) {
       throw new ForbiddenException(
-        'WorkspaceGuard debe ejecutarse antes de RoleGuard'
+        'WorkspaceGuard debe ejecutarse antes de RoleGuard',
       );
     }
 
@@ -50,7 +50,7 @@ export class RoleGuard implements CanActivate {
 
     if (!hasRole) {
       throw new ForbiddenException(
-        `Se requiere uno de los siguientes roles: ${requiredRoles.join(', ')}`
+        `Se requiere uno de los siguientes roles: ${requiredRoles.join(', ')}`,
       );
     }
 

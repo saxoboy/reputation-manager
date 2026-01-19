@@ -41,7 +41,6 @@
 #### Workflows Creados
 
 1. **[ci.yml](.github/workflows/ci.yml)** - Pipeline principal
-
    - ✅ PostgreSQL y Redis como servicios
    - ✅ Caché de pnpm
    - ✅ Prisma generate + migrations
@@ -51,7 +50,6 @@
    - ✅ Integración con Codecov (opcional)
 
 2. **[pr.yml](.github/workflows/pr.yml)** - Checks de PRs
-
    - ✅ Nx affected (solo cambios)
    - ✅ Validación de Prisma schema
    - ✅ Format check
@@ -154,7 +152,6 @@ pnpm build            # ✅ Build de todo
 ### Prioridad Inmediata
 
 1. **Auth & Multi-tenancy** (Semanas 1-2)
-
    - Implementar Better Auth
    - Guards y decoradores
    - Endpoints de autenticación

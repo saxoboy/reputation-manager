@@ -292,7 +292,10 @@ apps/api/src/
 @Controller('workspaces/:workspaceId/campaigns')
 @UseGuards(WorkspaceGuard, RolesGuard)
 export class CampaignsController {
-  constructor(private readonly campaignsService: CampaignsService, private readonly queue: Queue) {}
+  constructor(
+    private readonly campaignsService: CampaignsService,
+    private readonly queue: Queue,
+  ) {}
 
   @Post()
   @Roles('owner', 'doctor')
@@ -318,7 +321,7 @@ export class CampaignsController {
           campaignId: campaign.id,
           workspaceId,
         },
-        { delay }
+        { delay },
       );
     }
 
@@ -389,7 +392,13 @@ apps/worker/src/
 ```typescript
 @Processor('send-initial-message')
 export class SendInitialMessageProcessor {
-  constructor(private readonly prisma: PrismaService, private readonly twilioService: TwilioService, private readonly whatsappService: WhatsAppService, private readonly billingService: BillingService, private readonly templateService: MessageTemplateService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly twilioService: TwilioService,
+    private readonly whatsappService: WhatsAppService,
+    private readonly billingService: BillingService,
+    private readonly templateService: MessageTemplateService,
+  ) {}
 
   @Process()
   async handle(job: Job<SendInitialMessageJob>) {
@@ -1681,7 +1690,11 @@ timer();
 ```typescript
 @Controller('health')
 export class HealthController {
-  constructor(private prisma: PrismaService, private redis: Redis, private twilioService: TwilioService) {}
+  constructor(
+    private prisma: PrismaService,
+    private redis: Redis,
+    private twilioService: TwilioService,
+  ) {}
 
   @Get()
   async check() {

@@ -16,7 +16,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    })
+    }),
   );
 
   const port = process.env.PORT || process.env.API_PORT || 3000;

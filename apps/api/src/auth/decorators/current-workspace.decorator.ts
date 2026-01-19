@@ -28,5 +28,5 @@ export const CurrentWorkspace = createParamDecorator(
     }
 
     return data ? workspace[data] : workspace;
-  }
+  },
 );
