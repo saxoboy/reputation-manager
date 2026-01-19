@@ -5,7 +5,8 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '@reputation-manager/database';
-import { CreateCampaignDto, UpdateCampaignDto } from './dto';
+import { CreateCampaignDto, UpdateCampaignDto, UploadCsvDto } from './dto';
+import { parsePatientsCSV } from '@reputation-manager/shared-utils';
 
 @Injectable()
 export class CampaignsService {
@@ -176,17 +177,61 @@ export class CampaignsService {
   }
 
   /**
-   * Upload CSV de pacientes (placeholder - implementar parsing)
+   * Upload CSV de pacientes y crear pacientes en bulk
    */
-  async uploadCsv(campaignId: string, workspaceId: string) {
-    // Verificar que la campaña existe
-    await this.findOne(campaignId, workspaceId);
+  async uploadCsv(
+    campaignId: string,
+    workspaceId: string,
+    uploadDto: UploadCsvDto,
+  ) {
+    // Verificar que la campaña existe y pertenece al workspace
+    const campaign = await this.findOne(campaignId, workspaceId);
 
-    // TODO: Implementar parsing de CSV
-    // TODO: Recibir archivo como parámetro cuando se implemente
-    // Por ahora retornamos un placeholder
-    throw new BadRequestException(
-      'Upload de CSV aún no implementado - próximamente',
+    // Parsear CSV
+    const parseResult = parsePatientsCSV(uploadDto.csvContent, {
+      skipHeader: true,
+      delimiter: uploadDto.delimiter || ',',
+    });
+
+    // Si hay errores críticos (no se pudo parsear), lanzar excepción
+    if (parseResult.errors.length > 0 && parseResult.validRows === 0) {
+      throw new BadRequestException({
+        message: 'El archivo CSV contiene errores y no se pudo procesar',
+        errors: parseResult.errors,
+        totalRows: parseResult.totalRows,
+        validRows: parseResult.validRows,
+        invalidRows: parseResult.invalidRows,
+      });
+    }
+
+    // Crear pacientes válidos en bulk
+    const createdPatients = await this.prisma.$transaction(
+      parseResult.patients.map((patient) =>
+        this.prisma.patient.create({
+          data: {
+            name: patient.name,
+            phone: patient.phone,
+            email: patient.email,
+            appointmentTime: patient.appointmentTime,
+            appointmentType: patient.appointmentType,
+            hasConsent: patient.hasConsent,
+            campaignId,
+            workspaceId,
+          },
+        }),
+      ),
     );
+
+    return {
+      message: 'CSV procesado exitosamente',
+      summary: {
+        totalRows: parseResult.totalRows,
+        validRows: parseResult.validRows,
+        invalidRows: parseResult.invalidRows,
+        patientsCreated: createdPatients.length,
+      },
+      patients: createdPatients,
+      errors: parseResult.errors.length > 0 ? parseResult.errors : undefined,
+    };
   }
 }
