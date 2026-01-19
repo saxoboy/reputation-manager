@@ -12,11 +12,19 @@ import {
   Settings,
   FileText,
   CreditCard,
+  LucideIcon
 } from 'lucide-react';
 import { Separator } from '../ui/separator';
 import { Badge } from '../ui/badge';
 
-const navigation = [
+interface NavItem {
+  name: string;
+  href: string;
+  icon: LucideIcon;
+  badge?: string;
+}
+
+const navigation: NavItem[] = [
   {
     name: 'Dashboard',
     href: '/dashboard',
@@ -26,29 +34,30 @@ const navigation = [
     name: 'Campañas',
     href: '/dashboard/campaigns',
     icon: MessageSquare,
-    badge: 'Próximamente',
   },
   {
     name: 'Pacientes',
     href: '/dashboard/patients',
     icon: Users,
-    badge: 'Próximamente',
   },
   {
     name: 'Consultorios',
     href: '/dashboard/practices',
     icon: Building2,
-    badge: 'Próximamente',
   },
   {
     name: 'Plantillas',
     href: '/dashboard/templates',
     icon: FileText,
-    badge: 'Próximamente',
+  },
+  {
+    name: 'Usuarios',
+    href: '/dashboard/users',
+    icon: Users,
   },
 ];
 
-const secondaryNavigation = [
+const secondaryNavigation: NavItem[] = [
   {
     name: 'Analytics',
     href: '/dashboard/analytics',
