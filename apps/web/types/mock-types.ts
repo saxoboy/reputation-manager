@@ -60,6 +60,9 @@ export interface Template {
   variables: string[];
   isDefault?: boolean;
   updatedAt: string;
+  // Campos del backend (opcionales para retrocompatibilidad)
+  workspaceId?: string;
+  createdAt?: string;
 }
 
 export type UserRole = 'OWNER' | 'DOCTOR' | 'RECEPTIONIST';

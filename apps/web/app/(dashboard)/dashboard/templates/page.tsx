@@ -1,14 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import { Button } from '../../../../components/ui/button';
-import { Plus } from 'lucide-react';
-import { toast } from 'sonner';
-import { Template } from '../../../../types/mock-types';
+import { Skeleton } from '../../../../components/ui/skeleton';
+import { Alert, AlertDescription } from '../../../../components/ui/alert';
+import { Plus, AlertCircle } from 'lucide-react';
+import { useWorkspace } from '../../../../hooks/use-workspace';
+import {
+  useTemplates,
+  useDeleteTemplate,
+  useDuplicateTemplate,
+} from '../../../../hooks/use-templates';
 import { TemplatesList } from '../../../../components/templates/templates-list';
+import type { MessageTemplate } from '../../../../services/template.service';
 
-const TemplateDialog = dynamic(
+const TemplateDialog = dynamicImport(
   () =>
     import('../../../../components/templates/template-dialog').then(
       (mod) => mod.TemplateDialog,
@@ -16,107 +23,83 @@ const TemplateDialog = dynamic(
   { ssr: false },
 );
 
-// Mock Data
-const MOCK_TEMPLATES: Template[] = [
-  {
-    id: '1',
-    name: 'Solicitud Estándar',
-    type: 'INITIAL',
-    content:
-      'Hola {nombre}, gracias por visitar a Dr. {doctor} en {consultorio}. ¿Podrías regalarnos 30 segundos para calificar tu experiencia? Responde con un número del 1 al 5.',
-    variables: ['{nombre}', '{doctor}', '{consultorio}'],
-    isDefault: true,
-    updatedAt: '2025-02-15',
-  },
-  {
-    id: '2',
-    name: 'Seguimiento Feliz',
-    type: 'FOLLOWUP_HAPPY',
-    content:
-      '¡Nos alegra que hayas tenido una buena experiencia! Nos ayudaría mucho si compartes tu opinión en Google: {link}',
-    variables: ['{link}'],
-    isDefault: true,
-    updatedAt: '2025-02-14',
-  },
-  {
-    id: '3',
-    name: 'Seguimiento Descontento',
-    type: 'FOLLOWUP_UNHAPPY',
-    content:
-      'Lamentamos que tu visita no haya sido perfecta. Por favor cuéntanos qué podemos mejorar en este formulario privado: {link}',
-    variables: ['{link}'],
-    isDefault: true,
-    updatedAt: '2025-02-13',
-  },
-];
+// Disable SSR for Radix UI compatibility
+export const dynamic = 'force-dynamic';
 
 export default function TemplatesPage() {
-  const [templates, setTemplates] = useState<Template[]>(MOCK_TEMPLATES);
+  const { workspace, loading: workspaceLoading } = useWorkspace();
+  const workspaceId = workspace?.id || '';
+
+  const {
+    data: templatesData = [],
+    isLoading: templatesLoading,
+    error,
+  } = useTemplates(workspaceId);
+
+  const deleteMutation = useDeleteTemplate(workspaceId);
+  const duplicateMutation = useDuplicateTemplate(workspaceId);
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
+  const [editingTemplate, setEditingTemplate] =
+    useState<MessageTemplate | null>(null);
 
-  const handleCreate = (
-    newTemplate: Omit<Template, 'id' | 'updatedAt' | 'variables'>,
-  ) => {
-    const template: Template = {
-      ...newTemplate,
-      id: Math.random().toString(36).substr(2, 9),
-      updatedAt: new Date().toISOString().split('T')[0],
-      isDefault: false,
-      variables:
-        newTemplate.content.match(/{[^}]+}/g)?.map((v) => v.toString()) || [],
-    };
-    setTemplates([...templates, template]);
-    toast.success('Plantilla creada', {
-      description: 'La nueva plantilla ha sido guardada correctamente.',
-    });
-  };
+  const isLoading = workspaceLoading || templatesLoading;
 
-  const handleUpdate = (
-    updatedData: Omit<Template, 'id' | 'updatedAt' | 'variables'>,
-  ) => {
-    if (!editingTemplate) return;
-    setTemplates(
-      templates.map((t) =>
-        t.id === editingTemplate.id
-          ? {
-              ...t,
-              ...updatedData,
-              updatedAt: new Date().toISOString().split('T')[0],
-              variables:
-                updatedData.content
-                  .match(/{[^}]+}/g)
-                  ?.map((v) => v.toString()) || [],
-            }
-          : t,
-      ),
+  // No renderizar nada hasta tener workspace
+  if (!workspace && !workspaceLoading) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          No se pudo cargar el espacio de trabajo.
+        </AlertDescription>
+      </Alert>
     );
-    toast.success('Plantilla actualizada', {
-      description: 'Los cambios han sido guardados.',
-    });
-    setEditingTemplate(null);
-  };
+  }
 
-  const handleDuplicate = (template: Template) => {
-    const newTemplate = {
-      ...template,
-      id: Math.random().toString(36).substr(2, 9),
-      name: `${template.name} (Copia)`,
-      isDefault: false,
-      updatedAt: new Date().toISOString().split('T')[0],
-    };
-    setTemplates([...templates, newTemplate]);
-    toast.success('Plantilla duplicada', {
-      description: 'Se ha creado una copia de la plantilla.',
-    });
-  };
+  // Transform backend data to match component expectations
+  const templates = templatesData.map((template) => ({
+    ...template,
+    isDefault: false as const, // TODO: Add isDefault field to backend
+    updatedAt: new Date(template.updatedAt).toISOString().split('T')[0],
+  })) as Array<
+    (typeof templatesData)[0] & { isDefault?: boolean; updatedAt: string }
+  >;
 
   const handleDelete = (id: string) => {
-    setTemplates(templates.filter((t) => t.id !== id));
-    toast.success('Plantilla eliminada', {
-      description: 'La plantilla ha sido eliminada permanentemente.',
-    });
+    deleteMutation.mutate(id);
   };
+
+  const handleDuplicate = (template: { id: string; workspaceId?: string }) => {
+    // useDuplicateTemplate solo necesita el ID
+    duplicateMutation.mutate(template.id);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="mt-2 h-4 w-96" />
+          </div>
+          <Skeleton className="h-10 w-40" />
+        </div>
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Error al cargar las plantillas. Por favor, intenta de nuevo.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -135,7 +118,7 @@ export default function TemplatesPage() {
       <TemplatesList
         templates={templates}
         onEdit={(template) => {
-          setEditingTemplate(template);
+          setEditingTemplate(template as unknown as MessageTemplate);
           setIsCreateOpen(true);
         }}
         onDelete={handleDelete}
@@ -144,12 +127,15 @@ export default function TemplatesPage() {
 
       <TemplateDialog
         open={isCreateOpen}
-        onOpenChange={(open) => {
+        onOpenChange={(open: boolean) => {
           setIsCreateOpen(open);
           if (!open) setEditingTemplate(null);
         }}
         templateToEdit={editingTemplate}
-        onSave={editingTemplate ? handleUpdate : handleCreate}
+        onSave={() => {
+          setIsCreateOpen(false);
+          setEditingTemplate(null);
+        }}
       />
     </div>
   );
