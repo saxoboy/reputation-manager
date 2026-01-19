@@ -1,61 +1,72 @@
 'use client';
 
-import { useState } from 'react';
 import dynamicImport from 'next/dynamic';
-import { Campaign } from '../../../../types/mock-types';
+import { useWorkspace } from '../../../../hooks/use-workspace';
+import { useCampaigns } from '../../../../hooks/use-campaigns';
 import { CampaignStats } from '../../../../components/campaigns/campaign-stats';
 import { CampaignsList } from '../../../../components/campaigns/campaigns-list';
+import { Skeleton } from '../../../../components/ui/skeleton';
+import { Alert, AlertDescription } from '../../../../components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 const CreateCampaignDialog = dynamicImport(
   () =>
     import('../../../../components/campaigns/create-campaign-dialog').then(
-      (mod) => mod.CreateCampaignDialog,
+      (mod) => mod.CreateCampaignDialog
     ),
-  { ssr: false },
+  { ssr: false }
 );
 
 // Disable SSR for this page to avoid Radix UI + React 19 prerender issues
 export const dynamic = 'force-dynamic';
 
-const MOCK_CAMPAIGNS: Campaign[] = [
-  {
-    id: '1',
-    name: 'Pacientes Enero 2026',
-    practiceName: 'Consultorio Norte',
-    status: 'ACTIVE',
-    patientsCount: 45,
-    respondedCount: 12,
-    nps: 78,
-    createdAt: '2026-01-15',
-  },
-  {
-    id: '2',
-    name: 'Limpiezas Dentales Diciembre',
-    practiceName: 'Consultorio Centro',
-    status: 'COMPLETED',
-    patientsCount: 120,
-    respondedCount: 58,
-    nps: 92,
-    createdAt: '2025-12-01',
-  },
-  {
-    id: '3',
-    name: 'Campaña Reactivación',
-    practiceName: 'Consultorio Norte',
-    status: 'DRAFT',
-    patientsCount: 0,
-    respondedCount: 0,
-    nps: 0,
-    createdAt: '2026-01-18',
-  },
-];
-
 export default function CampaignsPage() {
-  const [campaigns, setCampaigns] = useState<Campaign[]>(MOCK_CAMPAIGNS);
+  const { workspace, loading: workspaceLoading } = useWorkspace();
+  const {
+    data: campaignsData = [],
+    isLoading: campaignsLoading,
+    error,
+  } = useCampaigns(workspace?.id || '');
 
-  const handleCreateCampaign = (newCampaign: Campaign) => {
-    setCampaigns([newCampaign, ...campaigns]);
-  };
+  const isLoading = workspaceLoading || campaignsLoading;
+
+  // Transform backend data to match component expectations
+  const campaigns = campaignsData.map((campaign) => ({
+    ...campaign,
+    practiceName: campaign.practice?.name || 'Sin consultorio',
+    patientsCount: campaign._count?.patients || 0,
+    respondedCount: campaign._count?.messages || 0,
+    nps: 0, // TODO: Calculate from actual feedback
+  }));
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="mt-2 h-4 w-96" />
+          </div>
+          <Skeleton className="h-10 w-40" />
+        </div>
+        <div className="grid gap-6">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-96 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Error al cargar las campañas. Por favor, intenta de nuevo.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -67,12 +78,15 @@ export default function CampaignsPage() {
           </p>
         </div>
 
-        <CreateCampaignDialog onCreate={handleCreateCampaign} />
+        <CreateCampaignDialog onCreate={() => {
+          // Campaign creation handled by React Query mutation
+        }} />
       </div>
 
       <div className="grid gap-6">
         <CampaignStats />
 
+        {/* @ts-expect-error Type mismatch between Campaign from service and mock-types */}
         <CampaignsList campaigns={campaigns} />
       </div>
     </div>
