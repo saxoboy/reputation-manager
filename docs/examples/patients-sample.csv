@@ -1,0 +1,6 @@
+name,phone,email,appointmentTime,appointmentType,hasConsent
+Juan Pérez,+593999999999,juan.perez@email.com,2026-01-20T10:00:00,Consulta General,true
+María López,0988888888,maria.lopez@email.com,2026-01-20T11:30:00,Limpieza Dental,true
+Carlos Rodríguez,+593977777777,carlos.r@email.com,2026-01-20T14:00:00,Control Mensual,true
+Ana García,0966666666,ana.garcia@email.com,2026-01-20T15:30:00,Radiografías,true
+Pedro Martínez,+593955555555,pedro.m@email.com,2026-01-21T09:00:00,Consulta,true

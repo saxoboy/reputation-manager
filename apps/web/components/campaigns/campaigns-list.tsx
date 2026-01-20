@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -17,14 +19,25 @@ import {
 } from '../ui/table';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { Building2 } from 'lucide-react';
+import { Building2, Upload } from 'lucide-react';
 import { Campaign, CampaignStatus } from '../../types/mock-types';
+import { CsvUploadDialog } from './csv-upload-dialog';
 
 interface CampaignsListProps {
   campaigns: Campaign[];
+  workspaceId: string;
 }
 
-export function CampaignsList({ campaigns }: CampaignsListProps) {
+export function CampaignsList({ campaigns, workspaceId }: CampaignsListProps) {
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
+    null,
+  );
+
+  const handleOpenUpload = (campaign: Campaign) => {
+    setSelectedCampaign(campaign);
+    setUploadDialogOpen(true);
+  };
   const getStatusBadge = (status: CampaignStatus) => {
     const variants: Record<
       CampaignStatus,
@@ -110,15 +123,39 @@ export function CampaignsList({ campaigns }: CampaignsListProps) {
                 <TableCell className="text-muted-foreground text-sm">
                   {campaign.createdAt}
                 </TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="sm">
-                    Ver Detalles
+                <TableCell className="text-right space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleOpenUpload(campaign)}
+                  >
+                    <Upload className="h-4 w-4 mr-1" />
+                    Importar CSV
+                  </Button>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href={`/dashboard/campaigns/${campaign.id}`}>
+                      Ver Detalles
+                    </Link>
                   </Button>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
+
+        {selectedCampaign && (
+          <CsvUploadDialog
+            open={uploadDialogOpen}
+            onOpenChange={setUploadDialogOpen}
+            campaignId={selectedCampaign.id}
+            workspaceId={workspaceId}
+            campaignName={selectedCampaign.name}
+            onUploadSuccess={() => {
+              // Refrescar lista de campaigns
+              window.location.reload();
+            }}
+          />
+        )}
       </CardContent>
     </Card>
   );

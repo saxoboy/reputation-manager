@@ -1,84 +1,61 @@
 'use client';
 
-import { useState } from 'react';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from '../../../../components/ui/card';
-import { Input } from '../../../../components/ui/input';
-import { Search } from 'lucide-react';
-import { Patient } from '../../../../types/mock-types';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { PatientsList } from '../../../../components/patients/patients-list';
 import { CreatePatientDialog } from '../../../../components/patients/create-patient-dialog';
-
-const MOCK_PATIENTS: Patient[] = [
-  {
-    id: '1',
-    name: 'Juan Pérez',
-    phone: '+593 99 123 4567',
-    email: 'juan.perez@email.com',
-    lastVisit: '2026-01-18',
-    campaign: 'Pacientes Enero 2026',
-    status: 'RESPONDED',
-    rating: 5,
-  },
-  {
-    id: '2',
-    name: 'María García',
-    phone: '+593 98 765 4321',
-    email: null,
-    lastVisit: '2026-01-18',
-    campaign: 'Pacientes Enero 2026',
-    status: 'SENT',
-  },
-  {
-    id: '3',
-    name: 'Carlos López',
-    phone: '+593 99 111 2222',
-    email: 'carlos.l@email.com',
-    lastVisit: '2026-01-15',
-    campaign: 'Pacientes Enero 2026',
-    status: 'RESPONDED',
-    rating: 2,
-  },
-  {
-    id: '4',
-    name: 'Ana Martinez',
-    phone: '+593 97 888 9999',
-    email: 'ana.m@email.com',
-    lastVisit: '2025-12-20',
-    campaign: 'Limpiezas Dentales Diciembre',
-    status: 'OPT_OUT',
-  },
-  {
-    id: '5',
-    name: 'Roberto Torres',
-    phone: '+593 96 333 4444',
-    email: null,
-    lastVisit: '2026-01-19',
-    campaign: 'Individual',
-    status: 'PENDING',
-  },
-];
+import { usePatients, useCreatePatient } from '../../../../hooks/use-patients';
+import { useWorkspace } from '../../../../hooks/use-workspace';
+import { toast } from 'sonner';
+import { CreatePatientDto } from '../../../../services/patient.service';
+import { Alert, AlertDescription } from '../../../../components/ui/alert';
 
 export default function PatientsPage() {
-  const [patients, setPatients] = useState<Patient[]>(MOCK_PATIENTS);
-  const [searchQuery, setSearchQuery] = useState('');
+  const { workspace, loading: workspaceLoading } = useWorkspace();
+  const workspaceId = workspace?.id || '';
 
-  // Filter logic
-  const filteredPatients = patients.filter(
-    (patient) =>
-      patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      patient.phone.includes(searchQuery) ||
-      (patient.email &&
-        patient.email.toLowerCase().includes(searchQuery.toLowerCase())),
-  );
+  const {
+    data: patients,
+    isLoading: patientsLoading,
+    error,
+  } = usePatients(workspaceId);
+  const createPatientMutation = useCreatePatient(workspaceId);
 
-  const handleCreatePatient = (newPatient: Patient) => {
-    setPatients([newPatient, ...patients]);
+  const isLoading = workspaceLoading || patientsLoading;
+
+  const handleCreatePatient = async (data: CreatePatientDto) => {
+    try {
+      await createPatientMutation.mutateAsync(data);
+      toast.success('Paciente creado exitosamente');
+    } catch (err) {
+      console.error(err);
+      // El hook ya maneja el toast de error generalmente
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Error al cargar pacientes. Por favor, intenta de nuevo.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -90,26 +67,18 @@ export default function PatientsPage() {
           </p>
         </div>
 
-        <CreatePatientDialog onCreate={handleCreatePatient} />
+        <CreatePatientDialog
+          onCreate={handleCreatePatient}
+          workspaceId={workspaceId}
+        />
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Listado de Pacientes</CardTitle>
-          <div className="flex items-center space-x-2">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nombre, teléfono..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8"
-              />
-            </div>
-          </div>
         </CardHeader>
         <CardContent>
-          <PatientsList patients={filteredPatients} />
+          <PatientsList initialPatients={patients || []} />
         </CardContent>
       </Card>
     </div>

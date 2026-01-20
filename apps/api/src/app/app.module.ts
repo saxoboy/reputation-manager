@@ -9,6 +9,8 @@ import { PracticesModule } from '../practices/practices.module';
 import { WorkspaceUsersModule } from '../workspace-users/workspace-users.module';
 import { CampaignsModule } from '../campaigns/campaigns.module';
 import { TemplatesModule } from '../templates/templates.module';
+import { PatientsModule } from '../patients/patients.module';
+import { MessagesModule } from '../messages/messages.module';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { TemplatesModule } from '../templates/templates.module';
     WorkspaceUsersModule,
     CampaignsModule,
     TemplatesModule,
+    PatientsModule,
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

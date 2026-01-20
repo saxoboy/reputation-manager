@@ -7,11 +7,9 @@ import {
   Body,
   Param,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { CampaignsService } from './campaigns.service';
-import { CreateCampaignDto, UpdateCampaignDto } from './dto';
+import { CreateCampaignDto, UpdateCampaignDto, UploadCsvDto } from './dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { WorkspaceGuard } from '../auth/guards/workspace.guard';
 import { RoleGuard, Roles } from '../auth/guards/role.guard';
@@ -91,17 +89,16 @@ export class CampaignsController {
 
   /**
    * POST /workspaces/:workspaceId/campaigns/:id/upload
-   * Upload CSV de pacientes
+   * Upload CSV de pacientes para una campaña
    */
   @Post(':id/upload')
   @UseGuards(RoleGuard)
   @Roles(UserRole.OWNER, UserRole.DOCTOR)
-  @UseInterceptors(FileInterceptor('file'))
   async uploadCsv(
     @CurrentWorkspace('id') workspaceId: string,
     @Param('id') id: string,
+    @Body() uploadDto: UploadCsvDto,
   ) {
-    // TODO: Implementar cuando se necesite el archivo
-    return this.campaignsService.uploadCsv(id, workspaceId);
+    return this.campaignsService.uploadCsv(id, workspaceId, uploadDto);
   }
 }

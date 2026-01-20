@@ -37,6 +37,7 @@ export default function CampaignsPage() {
     patientsCount: campaign._count?.patients || 0,
     respondedCount: campaign._count?.messages || 0,
     nps: 0, // TODO: Calculate from actual feedback
+    status: campaign.status as any,
   }));
 
   if (isLoading) {
@@ -87,9 +88,10 @@ export default function CampaignsPage() {
 
       <div className="grid gap-6">
         <CampaignStats />
-
-        {/* @ts-expect-error Type mismatch between Campaign from service and mock-types */}
-        <CampaignsList campaigns={campaigns} />
+        <CampaignsList
+          campaigns={campaigns}
+          workspaceId={workspace?.id || ''}
+        />
       </div>
     </div>
   );

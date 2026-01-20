@@ -1,5 +1,15 @@
 export type CampaignStatus = 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'COMPLETED';
 
+export type MessageStatus =
+  | 'PENDING'
+  | 'SCHEDULED'
+  | 'SENT'
+  | 'DELIVERED'
+  | 'FAILED'
+  | 'REPLIED';
+
+export type MessageChannel = 'SMS' | 'WHATSAPP' | 'EMAIL';
+
 export interface Campaign {
   id: string;
   name: string;

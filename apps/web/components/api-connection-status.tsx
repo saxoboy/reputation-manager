@@ -1,15 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { AlertCircle, CheckCircle2, Loader2, XCircle } from 'lucide-react';
 
 type ConnectionStatus = 'connecting' | 'connected' | 'error' | 'disconnected';
 
 export function ApiConnectionStatus() {
+  const pathname = usePathname();
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
+    // Si no estamos en el dashboard, no verificar conexión para evitar ruido
+    if (!pathname?.includes('/dashboard')) {
+      return;
+    }
+
     const checkConnection = async () => {
       try {
         const apiUrl =
@@ -25,8 +32,15 @@ export function ApiConnectionStatus() {
           setStatus('connected');
           setMessage('API conectado correctamente');
         } else {
-          setStatus('error');
-          setMessage(`Error: ${response.status} ${response.statusText}`);
+          // Si es 401 (Unauthorized), significa que el servidor respondió pero requiere auth.
+          // Para fines de health check, esto cuenta como "conectado".
+          if (response.status === 401) {
+            setStatus('connected');
+            setMessage('API conectado correctamente');
+          } else {
+            setStatus('error');
+            setMessage(`Error: ${response.status} ${response.statusText}`);
+          }
         }
       } catch (error) {
         setStatus('disconnected');
@@ -44,8 +58,8 @@ export function ApiConnectionStatus() {
     return () => clearInterval(interval);
   }, []);
 
-  // Solo mostrar si hay error
-  if (status === 'connected') return null;
+  // Solo mostrar si hay error y estamos en dashboard
+  if (status === 'connected' || !pathname?.includes('/dashboard')) return null;
 
   const icons = {
     connecting: <Loader2 className="h-4 w-4 animate-spin" />,
