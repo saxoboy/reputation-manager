@@ -21,18 +21,23 @@ export interface UpdatePracticeDto {
 
 export const practiceService = {
   async getAll(workspaceId: string): Promise<Practice[]> {
-    return apiClient.get<Practice[]>(`/practices/${workspaceId}`);
+    return apiClient.get<Practice[]>(`/workspaces/${workspaceId}/practices`);
   },
 
   async getById(workspaceId: string, id: string): Promise<Practice> {
-    return apiClient.get<Practice>(`/practices/${workspaceId}/${id}`);
+    return apiClient.get<Practice>(
+      `/workspaces/${workspaceId}/practices/${id}`,
+    );
   },
 
   async create(
     workspaceId: string,
     data: CreatePracticeDto,
   ): Promise<Practice> {
-    return apiClient.post<Practice>(`/practices/${workspaceId}`, data);
+    return apiClient.post<Practice>(
+      `/workspaces/${workspaceId}/practices`,
+      data,
+    );
   },
 
   async update(
@@ -40,10 +45,13 @@ export const practiceService = {
     id: string,
     data: UpdatePracticeDto,
   ): Promise<Practice> {
-    return apiClient.put<Practice>(`/practices/${workspaceId}/${id}`, data);
+    return apiClient.put<Practice>(
+      `/workspaces/${workspaceId}/practices/${id}`,
+      data,
+    );
   },
 
   async delete(workspaceId: string, id: string): Promise<void> {
-    return apiClient.delete<void>(`/practices/${workspaceId}/${id}`);
+    return apiClient.delete<void>(`/workspaces/${workspaceId}/practices/${id}`);
   },
 };

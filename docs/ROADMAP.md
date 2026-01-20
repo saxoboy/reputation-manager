@@ -159,70 +159,71 @@ Phase 8: Launch          │██████│ 2 semanas (Ago 2 - Ago 15, 202
 ## Phase 2: Core Features (6 semanas)
 
 **Fecha**: Ene 1 - Feb 15, 2026  
+**Estado**: ✅ **COMPLETADO** (Finalizado: Ene 20, 2026)  
 **Goal**: Flujo completo de campaigns, patients, messages sin integraciones reales
 
 ### Semana 1-2: Practices & Templates
 
 **Backend**:
 
-- [ ] Practice CRUD:
-  - [ ] `POST /practices`
-  - [ ] `GET /practices`
-  - [ ] `GET /practices/:id`
-  - [ ] `PUT /practices/:id`
-  - [ ] `DELETE /practices/:id`
-- [ ] Template CRUD:
-  - [ ] `POST /templates`
-  - [ ] `GET /templates`
-  - [ ] Template variables: `{name}`, `{doctor}`, `{practice}`
+- [x] Practice CRUD:
+  - [x] `POST /practices`
+  - [x] `GET /practices`
+  - [x] `GET /practices/:id`
+  - [x] `PUT /practices/:id`
+  - [x] `DELETE /practices/:id`
+- [x] Template CRUD:
+  - [x] `POST /templates`
+  - [x] `GET /templates`
+  - [x] Template variables: `{name}`, `{doctor}`, `{practice}`
 
 **Frontend**:
 
-- [ ] Practices page:
-  - [ ] List practices
-  - [ ] Create practice form
-  - [ ] Edit practice
-  - [ ] Delete practice (with confirmation)
-- [ ] Templates page:
-  - [ ] List templates by type
-  - [ ] Create template
-  - [ ] Template preview con variables
-  - [ ] Character counter
+- [x] Practices page:
+  - [x] List practices
+  - [x] Create practice form
+  - [x] Edit practice
+  - [x] Delete practice (with confirmation)
+- [x] Templates page:
+  - [x] List templates by type
+  - [x] Create template
+  - [x] Template preview con variables
+  - [x] Character counter
 
 **Tests**:
 
-- [ ] Practice service tests
-- [ ] Template service tests
-- [ ] Frontend form validation tests
+- [x] Practice service tests
+- [x] Template service tests
+- [x] Frontend form validation tests
 
 ### Semana 3-4: Campaigns & CSV Upload
 
 **Backend**:
 
-- [ ] Campaign CRUD:
-  - [ ] `POST /campaigns`
-  - [ ] `GET /campaigns`
-  - [ ] `GET /campaigns/:id`
-  - [ ] `PUT /campaigns/:id`
-  - [ ] `DELETE /campaigns/:id`
-- [ ] CSV processing:
-  - [ ] Validate CSV structure
-  - [ ] Parse patient data
-  - [ ] Validate phones (Ecuador format)
-  - [ ] Create patients in bulk
-  - [ ] Return validation errors
+- [x] Campaign CRUD:
+  - [x] `POST /campaigns`
+  - [x] `GET /campaigns`
+  - [x] `GET /campaigns/:id`
+  - [x] `PUT /campaigns/:id`
+  - [x] `DELETE /campaigns/:id`
+- [x] CSV processing:
+  - [x] Validate CSV structure
+  - [x] Parse patient data
+  - [x] Validate phones (Ecuador format)
+  - [x] Create patients in bulk
+  - [x] Return validation errors
 
 **Frontend**:
 
-- [ ] Campaigns page:
-  - [ ] Campaign list with stats
-  - [ ] Create campaign modal
-  - [ ] CSV upload component:
-    - [ ] Drag & drop
-    - [ ] File validation
-    - [ ] Preview table
-    - [ ] Error highlighting
-  - [ ] Campaign detail page
+- [x] Campaigns page:
+  - [x] Campaign list with stats
+  - [x] Create campaign modal
+  - [x] CSV upload component:
+    - [x] Drag & drop
+    - [x] File validation
+    - [x] Preview table
+    - [x] Error highlighting
+  - [x] Campaign detail page
 
 **CSV Format**:
 
@@ -234,58 +235,60 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 
 **Tests**:
 
-- [ ] CSV parser tests
-- [ ] Campaign service tests
-- [ ] CSV upload e2e test
+- [x] CSV parser tests
+- [x] Campaign service tests
+- [x] CSV upload e2e test
 
 ### Semana 5-6: Patients & Messages (Mock)
 
 **Backend**:
 
-- [ ] Patient endpoints:
-  - [ ] `GET /patients` (by workspace)
-  - [ ] `GET /campaigns/:id/patients`
-  - [ ] `PUT /patients/:id` (update contact info)
-  - [ ] `DELETE /patients/:id` (soft delete)
-- [ ] Message endpoints:
-  - [ ] `GET /campaigns/:id/messages`
-  - [ ] `POST /messages/:id/response` (simulate patient response)
-- [ ] Mock message sending (sin Twilio aún):
-  - [ ] Log to console
-  - [ ] Save to DB with `sentAt` timestamp
+- [x] Patient endpoints:
+  - [x] `GET /patients` (by workspace)
+  - [x] `GET /campaigns/:id/patients`
+  - [x] `PUT /patients/:id` (update contact info)
+  - [x] `DELETE /patients/:id` (soft delete)
+- [x] Message endpoints:
+  - [x] `GET /campaigns/:id/messages`
+  - [x] `POST /messages/:id/response` (simulate patient response)
+- [x] Mock message sending (sin Twilio aún):
+  - [x] Log to console
+  - [x] Save to DB with `sentAt` timestamp
 
 **Frontend**:
 
-- [ ] Patients page:
-  - [ ] Patient list with filters
-  - [ ] Patient detail modal
-  - [ ] Edit patient
-- [ ] Campaign detail:
-  - [ ] Patient list in campaign
-  - [ ] Message timeline
-  - [ ] Simulate send button (testing)
-  - [ ] Manual response input (testing)
+- [x] Patients page:
+  - [x] Patient list with filters
+  - [x] Patient detail modal
+  - [x] Edit patient
+- [x] Campaign detail:
+  - [x] Patient list in campaign
+  - [x] Message timeline
+  - [x] Simulate send button (testing)
+  - [x] Manual response input (testing)
 
 **BullMQ Setup**:
 
-- [ ] Configure BullMQ in worker
-- [ ] Job: `send-initial-message`
-  - [ ] Schedule based on `appointmentTime + scheduledHoursAfter`
-  - [ ] Mock send (log)
-- [ ] Job: `handle-response`
-  - [ ] Parse rating (1-5)
-  - [ ] Determine happy/unhappy
-  - [ ] Enqueue followup
-- [ ] Job: `send-followup`
-  - [ ] Mock send appropriate message
-- [ ] Bull Board UI: `http://localhost:3000/admin/queues`
+- [x] Configure BullMQ in worker
+- [x] Job: `send-initial-message`
+  - [x] Schedule based on `appointmentTime + scheduledHoursAfter`
+  - [x] Mock send (log)
+- [x] Job: `handle-response`
+  - [x] Parse rating (1-5)
+  - [x] Determine happy/unhappy
+  - [x] Enqueue followup
+- [x] Job: `send-followup`
+  - [x] Mock send appropriate message
+- [x] Bull Board UI: `http://localhost:3000/admin/queues`
 
 **Deliverables**:
 
-- 🎯 Full campaign flow sin integraciones externas
-- 🎯 CSV upload funcional con validación
-- 🎯 Jobs procesándose en background
-- 🎯 ~50 tests pasando
+- ✅ Full campaign flow sin integraciones externas
+- ✅ CSV upload funcional con validación
+- ✅ Jobs procesándose en background
+- ✅ Multi-tenancy completamente implementado
+- ✅ Auth con Google OAuth funcionando
+- ✅ Dashboard completo con todas las páginas principales
 
 ---
 

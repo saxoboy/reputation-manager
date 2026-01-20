@@ -42,14 +42,12 @@ export interface UpdateCampaignDto {
 
 export const campaignService = {
   async getAll(workspaceId: string): Promise<Campaign[]> {
-    return apiClient.get<Campaign[]>(
-      `/api/workspaces/${workspaceId}/campaigns`,
-    );
+    return apiClient.get<Campaign[]>(`/workspaces/${workspaceId}/campaigns`);
   },
 
   async getById(workspaceId: string, id: string): Promise<Campaign> {
     return apiClient.get<Campaign>(
-      `/api/workspaces/${workspaceId}/campaigns/${id}`,
+      `/workspaces/${workspaceId}/campaigns/${id}`,
     );
   },
 
@@ -58,7 +56,7 @@ export const campaignService = {
     data: CreateCampaignDto,
   ): Promise<Campaign> {
     return apiClient.post<Campaign>(
-      `/api/workspaces/${workspaceId}/campaigns`,
+      `/workspaces/${workspaceId}/campaigns`,
       data,
     );
   },
@@ -69,15 +67,13 @@ export const campaignService = {
     data: UpdateCampaignDto,
   ): Promise<Campaign> {
     return apiClient.put<Campaign>(
-      `/api/workspaces/${workspaceId}/campaigns/${id}`,
+      `/workspaces/${workspaceId}/campaigns/${id}`,
       data,
     );
   },
 
   async delete(workspaceId: string, id: string): Promise<void> {
-    return apiClient.delete<void>(
-      `/api/workspaces/${workspaceId}/campaigns/${id}`,
-    );
+    return apiClient.delete<void>(`/workspaces/${workspaceId}/campaigns/${id}`);
   },
 
   async uploadCsv(
@@ -89,7 +85,7 @@ export const campaignService = {
     formData.append('file', file);
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/workspaces/${workspaceId}/campaigns/${campaignId}/upload`,
+      `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/campaigns/${campaignId}/upload`,
       {
         method: 'POST',
         body: formData,
