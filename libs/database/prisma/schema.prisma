@@ -138,6 +138,7 @@ model Workspace {
   campaigns Campaign[]
   patients  Patient[]
   templates Template[]
+  messages  Message[]
 
   @@index([plan])
 }
@@ -272,7 +273,8 @@ model Message {
   content String         @db.Text
 
   // Response Tracking
-  rating Int? // 1-5, NULL si no ha respondido
+  rating   Int?    // 1-5, NULL si no ha respondido
+  feedback String? @db.Text // Feedback text from unhappy patients
 
   // Delivery Tracking
   sentAt      DateTime?
@@ -286,7 +288,14 @@ model Message {
   // Cost Tracking
   cost Decimal? @db.Decimal(10, 4)
 
+  // Template Relation (optional)
+  templateId String?
+  template   Template? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
   // Multi-tenancy & Relations
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   patientId String
   patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
@@ -296,8 +305,10 @@ model Message {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([workspaceId])
   @@index([patientId])
   @@index([campaignId])
+  @@index([templateId])
   @@index([status])
   @@index([type])
   @@index([externalId])
@@ -317,6 +328,9 @@ model Template {
   // Multi-tenancy
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Relations
+  messages Message[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
