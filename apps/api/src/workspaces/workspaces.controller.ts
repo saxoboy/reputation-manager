@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   UseGuards,
+  NotFoundException,
 } from '@nestjs/common';
 import { WorkspacesService } from './workspaces.service';
 import { CreateWorkspaceDto, UpdateWorkspaceDto } from './dto';
@@ -37,6 +38,23 @@ export class WorkspacesController {
     @Body() createWorkspaceDto: CreateWorkspaceDto,
   ) {
     return this.workspacesService.create(userId, createWorkspaceDto);
+  }
+
+  /**
+   * GET /workspaces/current
+   * Obtener el workspace actual (el primero/último usado)
+   * IMPORTANTE: Debe ir ANTES de :id para no ser interpretado como un ID
+   */
+  @Get('current')
+  async findCurrent(@CurrentUser('id') userId: string) {
+    const workspaces = await this.workspacesService.findUserWorkspaces(userId);
+    if (!workspaces || workspaces.length === 0) {
+      throw new NotFoundException(
+        'No se encontraron workspaces para este usuario',
+      );
+    }
+    // Devolver el primero (más reciente según la query en service)
+    return workspaces[0];
   }
 
   /**

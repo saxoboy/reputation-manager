@@ -12,6 +12,7 @@ import {
 } from '../ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { useAuth } from '../../hooks/use-auth';
+import { signOut } from '../../lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { Badge } from '../ui/badge';
 
@@ -20,8 +21,13 @@ export function Header() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    // TODO: Implement logout
-    router.push('/login');
+    await signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push('/login');
+        },
+      },
+    });
   };
 
   const getInitials = (name: string) => {
