@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import {
   Dialog,
@@ -11,36 +13,64 @@ import {
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Plus } from 'lucide-react';
-import { Patient } from '../../types/mock-types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
+import { Plus, Loader2 } from 'lucide-react';
+import { CreatePatientDto } from '../../services/patient.service';
+import { useCampaigns } from '../../hooks/use-campaigns';
 
 interface CreatePatientDialogProps {
-  onCreate: (patient: Patient) => void;
+  onCreate: (data: CreatePatientDto) => Promise<void>;
+  workspaceId: string;
 }
 
-export function CreatePatientDialog({ onCreate }: CreatePatientDialogProps) {
+export function CreatePatientDialog({
+  onCreate,
+  workspaceId,
+}: CreatePatientDialogProps) {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<Partial<CreatePatientDto>>({
     name: '',
     phone: '',
     email: '',
+    campaignId: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newPatient: Patient = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: formData.name,
-      phone: formData.phone,
-      email: formData.email || null,
-      lastVisit: new Date().toISOString().split('T')[0],
-      campaign: 'Individual',
-      status: 'PENDING',
-    };
+  const { data: campaigns, isLoading: loadingCampaigns } =
+    useCampaigns(workspaceId);
 
-    onCreate(newPatient);
-    setOpen(false);
-    setFormData({ name: '', phone: '', email: '' });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.phone || !formData.campaignId) {
+      return; // Basic validation
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const newPatient: CreatePatientDto = {
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        campaignId: formData.campaignId,
+        appointmentTime: new Date().toISOString(), // Default to now
+        hasConsent: true, // Default to true as per requirements (managed elsewhere usually but required by DTO)
+      };
+
+      await onCreate(newPatient);
+      setOpen(false);
+      setFormData({ name: '', phone: '', email: '', campaignId: '' });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -52,60 +82,107 @@ export function CreatePatientDialog({ onCreate }: CreatePatientDialogProps) {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-106.25">
-        <DialogHeader>
-          <DialogTitle>Agregar Nuevo Paciente</DialogTitle>
-          <DialogDescription>
-            Agrega manualmente un paciente para enviarle una solicitud de
-            feedback individual.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Nombre
-            </Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              className="col-span-3"
-              required
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="phone" className="text-right">
-              Teléfono
-            </Label>
-            <Input
-              id="phone"
-              value={formData.phone}
-              onChange={(e) =>
-                setFormData({ ...formData, phone: e.target.value })
-              }
-              className="col-span-3"
-              placeholder="+593 99 999 9999"
-              required
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email" className="text-right">
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              className="col-span-3"
-              placeholder="opcional"
-            />
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Agregar Paciente</DialogTitle>
+            <DialogDescription>
+              Agrega un paciente manualmente a una campaña activa.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Nombre
+              </Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                className="col-span-3"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="phone" className="text-right">
+                Teléfono
+              </Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                className="col-span-3"
+                placeholder="+593..."
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="campaign" className="text-right">
+                Campaña
+              </Label>
+              <div className="col-span-3">
+                <Select
+                  value={formData.campaignId}
+                  onValueChange={(value: string) =>
+                    setFormData({ ...formData, campaignId: value })
+                  }
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar campaña" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {loadingCampaigns ? (
+                      <div className="flex items-center justify-center p-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      </div>
+                    ) : campaigns && campaigns.length > 0 ? (
+                      campaigns.map((campaign) => (
+                        <SelectItem key={campaign.id} value={campaign.id}>
+                          {campaign.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="p-2 text-sm text-gray-500 text-center">
+                        No hay campañas activas
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
           <DialogFooter>
-            <Button type="submit">Guardar Paciente</Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting || loadingCampaigns}>
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Guardar
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
