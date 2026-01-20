@@ -26,13 +26,13 @@ export interface UpdateTemplateDto {
 export const templateService = {
   async getAll(workspaceId: string): Promise<MessageTemplate[]> {
     return apiClient.get<MessageTemplate[]>(
-      `/api/workspaces/${workspaceId}/templates`,
+      `/workspaces/${workspaceId}/templates`,
     );
   },
 
   async getById(workspaceId: string, id: string): Promise<MessageTemplate> {
     return apiClient.get<MessageTemplate>(
-      `/api/workspaces/${workspaceId}/templates/${id}`,
+      `/workspaces/${workspaceId}/templates/${id}`,
     );
   },
 
@@ -41,7 +41,7 @@ export const templateService = {
     data: CreateTemplateDto,
   ): Promise<MessageTemplate> {
     return apiClient.post<MessageTemplate>(
-      `/api/workspaces/${workspaceId}/templates`,
+      `/workspaces/${workspaceId}/templates`,
       data,
     );
   },
@@ -52,20 +52,18 @@ export const templateService = {
     data: UpdateTemplateDto,
   ): Promise<MessageTemplate> {
     return apiClient.put<MessageTemplate>(
-      `/api/workspaces/${workspaceId}/templates/${id}`,
+      `/workspaces/${workspaceId}/templates/${id}`,
       data,
     );
   },
 
   async delete(workspaceId: string, id: string): Promise<void> {
-    return apiClient.delete<void>(
-      `/api/workspaces/${workspaceId}/templates/${id}`,
-    );
+    return apiClient.delete<void>(`/workspaces/${workspaceId}/templates/${id}`);
   },
 
   async duplicate(workspaceId: string, id: string): Promise<MessageTemplate> {
     return apiClient.post<MessageTemplate>(
-      `/api/workspaces/${workspaceId}/templates/${id}/duplicate`,
+      `/workspaces/${workspaceId}/templates/${id}/duplicate`,
       {},
     );
   },
