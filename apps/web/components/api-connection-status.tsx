@@ -25,8 +25,15 @@ export function ApiConnectionStatus() {
           setStatus('connected');
           setMessage('API conectado correctamente');
         } else {
-          setStatus('error');
-          setMessage(`Error: ${response.status} ${response.statusText}`);
+          // Si es 401 (Unauthorized), significa que el servidor respondió pero requiere auth.
+          // Para fines de health check, esto cuenta como "conectado".
+          if (response.status === 401) {
+            setStatus('connected');
+            setMessage('API conectado correctamente');
+          } else {
+            setStatus('error');
+            setMessage(`Error: ${response.status} ${response.statusText}`);
+          }
         }
       } catch (error) {
         setStatus('disconnected');
