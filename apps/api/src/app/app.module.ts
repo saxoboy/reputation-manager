@@ -20,7 +20,7 @@ import { MessagesModule } from '../messages/messages.module';
     }),
     AuthModule.forRoot({
       auth,
-      // No especificar disableBodyParser - usar el valor por defecto del módulo
+      basePath: '/api/auth', // Especificar la ruta completa incluyendo el prefijo global
     }),
     WorkspacesModule,
     PracticesModule,

@@ -7,7 +7,7 @@ export const auth = betterAuth({
     provider: 'postgresql',
   }),
 
-  basePath: '/api/auth', // Especificar explícitamente el basePath completo
+  basePath: '/api/auth', // Debe coincidir con la ruta final en el servidor
 
   emailAndPassword: {
     enabled: true,
@@ -18,7 +18,7 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      enabled: !!process.env.GOOGLE_CLIENT_ID,
+      // Remover la condición 'enabled' para que siempre esté activo
     },
   },
 

@@ -1,10 +1,11 @@
 'use client';
 
+import { useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { cn } from '../lib/utils';
 import { Button } from '../components/ui/button';
 import { useAuth } from '../hooks/use-auth';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 
 export default function Index() {
   const { isAuthenticated, isPending } = useAuth(false);
@@ -19,7 +20,7 @@ export default function Index() {
   if (isPending) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
       </div>
     );
   }
@@ -33,11 +34,11 @@ export default function Index() {
             <h1
               className={cn(
                 'text-5xl font-bold mb-4',
-                'bg-gradient-to-r from-primary to-blue-600',
+                'bg-linear-to-r from-primary to-blue-600',
                 'bg-clip-text text-transparent',
               )}
             >
-              Reputation Manager
+              <Link href="/">Reputation Manager</Link>
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
               Sistema de gestión de feedback para profesionales de la salud
