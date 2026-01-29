@@ -11,6 +11,7 @@ import { CampaignsModule } from '../campaigns/campaigns.module';
 import { TemplatesModule } from '../templates/templates.module';
 import { PatientsModule } from '../patients/patients.module';
 import { MessagesModule } from '../messages/messages.module';
+import { WebhooksModule } from '../webhooks/webhooks.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { MessagesModule } from '../messages/messages.module';
     TemplatesModule,
     PatientsModule,
     MessagesModule,
+    WebhooksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

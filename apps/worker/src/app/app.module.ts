@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { PrismaService } from '@reputation-manager/database';
+import { TwilioService } from '@reputation-manager/integrations';
 import { QUEUES } from '@reputation-manager/shared-types';
 import { CampaignProcessor } from '../processors/campaign.processor';
 
@@ -24,6 +25,6 @@ import { CampaignProcessor } from '../processors/campaign.processor';
     }),
   ],
   controllers: [],
-  providers: [PrismaService, CampaignProcessor],
+  providers: [PrismaService, TwilioService, CampaignProcessor],
 })
 export class AppModule {}

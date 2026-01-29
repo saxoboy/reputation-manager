@@ -10,16 +10,31 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": ["es2020", "dom"],
+    "lib": [
+      "es2020",
+      "dom"
+    ],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
+    "esModuleInterop": true,
     "paths": {
-      "@reputation-manager/database": ["libs/database/src/index.ts"],
-      "@reputation-manager/shared-types": ["libs/shared-types/src/index.ts"],
-      "@reputation-manager/shared-utils": ["libs/shared-utils/src/index.ts"],
-      "@reputation-manager/integrations": ["libs/integrations/src/index.ts"]
+      "@reputation-manager/database": [
+        "libs/database/src/index.ts"
+      ],
+      "@reputation-manager/shared-types": [
+        "libs/shared-types/src/index.ts"
+      ],
+      "@reputation-manager/shared-utils": [
+        "libs/shared-utils/src/index.ts"
+      ],
+      "@reputation-manager/integrations": [
+        "libs/integrations/src/index.ts"
+      ]
     }
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
 }

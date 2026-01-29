@@ -301,25 +301,25 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 
 **Backend**:
 
-- [ ] `libs/integrations/twilio`:
-  - [ ] `TwilioService.sendSMS()`
-  - [ ] Error handling
-  - [ ] Rate limiting
-  - [ ] Cost tracking
-- [ ] Actualizar processors:
-  - [ ] Reemplazar mocks con Twilio real
-  - [ ] Handle Twilio errors (invalid number, etc.)
-- [ ] Webhook: `POST /webhooks/twilio/sms`
-  - [ ] Verify signature
-  - [ ] Parse incoming message
-  - [ ] Match to Patient by phone
-  - [ ] Trigger `handle-response` job
+- [x] `libs/integrations/twilio`:
+  - [x] `TwilioService.sendSMS()`
+  - [x] Error handling
+  - [x] Rate limiting
+  - [x] Cost tracking
+- [x] Actualizar processors:
+  - [x] Reemplazar mocks con Twilio real
+  - [x] Handle Twilio errors (invalid number, etc.)
+- [x] Webhook: `POST /webhooks/twilio/sms`
+  - [x] Verify signature
+  - [x] Parse incoming message
+  - [x] Match to Patient by phone
+  - [x] Trigger `handle-response` job
 
 **Testing**:
 
-- [ ] Send test SMS a tu número
-- [ ] Responder y verificar webhook
-- [ ] Test error handling
+- [x] Send test SMS a tu número
+- [x] Responder y verificar webhook
+- [x] Test error handling
 
 **Costo estimado**: $0.05/SMS en Ecuador
 

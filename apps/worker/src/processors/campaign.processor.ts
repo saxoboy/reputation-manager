@@ -2,6 +2,7 @@ import { Processor, WorkerHost, InjectQueue } from '@nestjs/bullmq';
 import { Job, Queue } from 'bullmq';
 import { Logger } from '@nestjs/common';
 import { PrismaService } from '@reputation-manager/database';
+import { TwilioService } from '@reputation-manager/integrations';
 import { QUEUES, JOBS } from '@reputation-manager/shared-types';
 
 @Processor(QUEUES.CAMPAIGNS)
@@ -10,6 +11,7 @@ export class CampaignProcessor extends WorkerHost {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly twilioService: TwilioService,
     @InjectQueue(QUEUES.CAMPAIGNS) private campaignQueue: Queue,
   ) {
     super();
@@ -47,16 +49,29 @@ export class CampaignProcessor extends WorkerHost {
       return;
     }
 
-    // TODO: Integrate actual TwilioService
-    this.logger.log(`[Twilio Mock] Sending INITIAL to ${patient.phone}`);
+    // Send SMS via Twilio
+    const messageContent = `Hola ${patient.name}, gracias por tu visita. ¿Cómo nos calificarías del 1 al 5?`;
+
+    const smsResult = await this.twilioService.sendSMS({
+      to: patient.phone,
+      body: messageContent,
+    });
+
+    if (!smsResult.success) {
+      this.logger.error(
+        `Failed to send SMS to ${patient.phone}: ${smsResult.error}`,
+      );
+      throw new Error(smsResult.error);
+    }
 
     const message = await this.prisma.message.create({
       data: {
         type: 'INITIAL',
         channel: patient.preferredChannel || 'SMS',
         status: 'SENT',
-        content: `Hola ${patient.name}, gracias por tu visita. ¿Cómo nos calificarías del 1 al 5?`,
+        content: messageContent,
         sentAt: new Date(),
+        externalId: smsResult.messageId,
         patientId,
         campaignId,
         workspaceId,
@@ -134,8 +149,18 @@ export class CampaignProcessor extends WorkerHost {
     const messageType =
       type === 'HAPPY' ? 'FOLLOWUP_HAPPY' : 'FOLLOWUP_UNHAPPY';
 
-    // TODO: Use TwilioService
-    this.logger.log(`[Twilio Mock] Sending ${content} to ${patient.phone}`);
+    // Send SMS via Twilio
+    const smsResult = await this.twilioService.sendSMS({
+      to: patient.phone,
+      body: content,
+    });
+
+    if (!smsResult.success) {
+      this.logger.error(
+        `Failed to send followup SMS to ${patient.phone}: ${smsResult.error}`,
+      );
+      throw new Error(smsResult.error);
+    }
 
     await this.prisma.message.create({
       data: {
@@ -144,6 +169,7 @@ export class CampaignProcessor extends WorkerHost {
         status: 'SENT',
         content,
         sentAt: new Date(),
+        externalId: smsResult.messageId,
         patientId,
         campaignId,
         workspaceId,
