@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { apiClient } from '../lib/api-client';
 
 export interface Workspace {
   id: string;
@@ -18,10 +19,7 @@ export function useWorkspace() {
   useEffect(() => {
     async function fetchWorkspace() {
       try {
-        const response = await fetch('/api/workspaces');
-        if (!response.ok) throw new Error('Failed to fetch workspaces');
-
-        const data = await response.json();
+        const data = await apiClient.get<Workspace[]>('/workspaces');
         // Por ahora seleccionamos automáticamente el primer workspace
         // TODO: Implementar selector de workspace y persistencia
         if (data && data.length > 0) {

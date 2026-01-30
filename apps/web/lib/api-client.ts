@@ -1,6 +1,7 @@
 import { authClient } from './auth-client';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333';
+const API_URL = `${BASE_URL}/api`;
 
 interface FetchOptions extends RequestInit {
   requireAuth?: boolean;
@@ -14,13 +15,17 @@ class ApiClient {
   }
 
   private async getAuthHeaders(): Promise<HeadersInit> {
-    const session = await authClient.getSession();
+    try {
+      const session = await authClient.getSession();
 
-    if (session?.data?.session?.token) {
-      return {
-        Authorization: `Bearer ${session.data.session.token}`,
-        'Content-Type': 'application/json',
-      };
+      if (session?.data?.session?.token) {
+        return {
+          Authorization: `Bearer ${session.data.session.token}`,
+          'Content-Type': 'application/json',
+        };
+      }
+    } catch (error) {
+      console.error('Error fetching session for headers:', error);
     }
 
     return {
@@ -35,6 +40,7 @@ class ApiClient {
 
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       ...restOptions,
+      credentials: 'include', // Ensure cookies are sent for CORS
       headers: {
         ...authHeaders,
         ...headers,
