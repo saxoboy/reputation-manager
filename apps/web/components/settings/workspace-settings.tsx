@@ -167,8 +167,9 @@ export function WorkspaceSettings() {
               <div
                 className="h-full rounded-full bg-primary"
                 style={{
-                  width: `${(messageCredits / (currentPlanDetails?.messages || 1)) * 100
-                    }%`,
+                  width: `${
+                    (messageCredits / (currentPlanDetails?.messages || 1)) * 100
+                  }%`,
                 }}
               />
             </div>
@@ -268,7 +269,10 @@ export function WorkspaceSettings() {
             <Separator />
 
             <div className="space-y-2">
-              <Label htmlFor="default-channel" className="text-base font-medium">
+              <Label
+                htmlFor="default-channel"
+                className="text-base font-medium"
+              >
                 Canal por Defecto
               </Label>
               <p className="text-sm text-muted-foreground">

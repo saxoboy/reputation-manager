@@ -12,7 +12,8 @@ const mockMessagesCreate = jest.fn();
 const mockMessagesFetch = jest.fn();
 const mockTwilioClient = {
   messages: Object.assign(
-    (sid: string) => ({
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (_sid: string) => ({
       fetch: mockMessagesFetch,
     }),
     {
@@ -25,6 +26,7 @@ const mockTwilioClient = {
 jest.mock('twilio', () => {
   const Twilio = jest.fn(() => mockTwilioClient);
   // Add static methods
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (Twilio as any).validateRequest = jest.fn(() => true);
   return Twilio;
 });

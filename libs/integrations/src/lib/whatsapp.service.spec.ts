@@ -7,7 +7,6 @@ global.fetch = jest.fn();
 
 describe('WhatsAppService', () => {
   let service: WhatsAppService;
-  let configService: ConfigService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -27,7 +26,6 @@ describe('WhatsAppService', () => {
     }).compile();
 
     service = module.get<WhatsAppService>(WhatsAppService);
-    configService = module.get<ConfigService>(ConfigService);
   });
 
   afterEach(() => {

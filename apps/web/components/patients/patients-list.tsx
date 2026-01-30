@@ -234,9 +234,7 @@ export function PatientsList({ initialPatients = [] }: PatientsListProps) {
                 >
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium">
-                        {patient.name}
-                      </span>
+                      <span className="font-medium">{patient.name}</span>
                       <span className="text-sm text-gray-500">
                         {patient.phone}
                       </span>
