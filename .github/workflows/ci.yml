@@ -87,7 +87,7 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/reputation_manager_test
           REDIS_URL: redis://localhost:6379
           BETTER_AUTH_SECRET: test-secret-key-for-ci-pipeline-only
-          BETTER_AUTH_URL: http://localhost:3000
+          BETTER_AUTH_URL: http://localhost:3333
 
       - name: Build
         run: pnpm nx run-many --target=build --all --parallel=3
@@ -95,8 +95,8 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/reputation_manager_test
           REDIS_URL: redis://localhost:6379
           BETTER_AUTH_SECRET: test-secret-key-for-ci-pipeline-only
-          BETTER_AUTH_URL: http://localhost:3000
-          NEXT_PUBLIC_API_URL: http://localhost:3000
+          BETTER_AUTH_URL: http://localhost:3333
+          NEXT_PUBLIC_API_URL: http://localhost:3333
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4

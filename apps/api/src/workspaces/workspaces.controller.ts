@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -10,7 +11,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { WorkspacesService } from './workspaces.service';
-import { CreateWorkspaceDto, UpdateWorkspaceDto } from './dto';
+import {
+  CreateWorkspaceDto,
+  UpdateWorkspaceDto,
+  UpdateWorkspaceChannelSettingsDto,
+} from './dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
@@ -86,5 +91,22 @@ export class WorkspacesController {
   @Delete(':id')
   async remove(@Param('id') id: string, @CurrentUser('id') userId: string) {
     return this.workspacesService.remove(id, userId);
+  }
+
+  /**
+   * PATCH /workspaces/:id/channel-settings
+   * Actualizar configuración de canales de mensajería
+   */
+  @Patch(':id/channel-settings')
+  async updateChannelSettings(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @Body() updateChannelSettingsDto: UpdateWorkspaceChannelSettingsDto,
+  ) {
+    return this.workspacesService.updateChannelSettings(
+      id,
+      userId,
+      updateChannelSettingsDto,
+    );
   }
 }
