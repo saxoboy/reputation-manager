@@ -409,7 +409,7 @@ export class MessagesService {
         content = content.replace('{reviewLink}', googleReviewUrl);
       } else {
         // Agregar link de formulario privado (simulado)
-        const feedbackFormUrl = `${process.env.APP_URL || 'http://localhost:3000'}/feedback/${messageId}`;
+        const feedbackFormUrl = `${process.env.APP_URL || 'http://localhost:4000'}/feedback/${messageId}`;
         content = content.replace('{feedbackLink}', feedbackFormUrl);
       }
 

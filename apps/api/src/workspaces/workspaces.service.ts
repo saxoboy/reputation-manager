@@ -3,9 +3,14 @@ import {
   NotFoundException,
   ForbiddenException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '@reputation-manager/database';
-import { CreateWorkspaceDto, UpdateWorkspaceDto } from './dto';
+import {
+  CreateWorkspaceDto,
+  UpdateWorkspaceDto,
+  UpdateWorkspaceChannelSettingsDto,
+} from './dto';
 import { UserRole } from '@prisma/client';
 
 @Injectable()
@@ -195,5 +200,105 @@ export class WorkspacesService {
     return {
       message: 'Workspace eliminado exitosamente',
     };
+  }
+
+  /**
+   * Actualizar configuración de canales de mensajería
+   * Solo OWNER puede actualizar
+   */
+  async updateChannelSettings(
+    workspaceId: string,
+    userId: string,
+    dto: UpdateWorkspaceChannelSettingsDto,
+  ) {
+    // Verificar que el usuario sea OWNER
+    const workspaceUser = await this.prisma.workspaceUser.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId,
+          userId,
+        },
+      },
+    });
+
+    if (!workspaceUser) {
+      throw new ForbiddenException('No tienes acceso a este workspace');
+    }
+
+    if (workspaceUser.role !== UserRole.OWNER) {
+      throw new ForbiddenException(
+        'Solo el OWNER puede actualizar la configuración de canales',
+      );
+    }
+
+    // Obtener workspace actual para validaciones
+    const currentWorkspace = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: {
+        smsEnabled: true,
+        whatsappEnabled: true,
+        emailEnabled: true,
+        defaultChannel: true,
+      },
+    });
+
+    if (!currentWorkspace) {
+      throw new NotFoundException('Workspace no encontrado');
+    }
+
+    // Validar que al menos un canal quede habilitado
+    const smsEnabled = dto.smsEnabled ?? currentWorkspace.smsEnabled;
+    const whatsappEnabled =
+      dto.whatsappEnabled ?? currentWorkspace.whatsappEnabled;
+    const emailEnabled = dto.emailEnabled ?? currentWorkspace.emailEnabled;
+
+    if (!smsEnabled && !whatsappEnabled && !emailEnabled) {
+      throw new BadRequestException(
+        'Al menos un canal debe estar habilitado (SMS, WhatsApp o Email)',
+      );
+    }
+
+    // Validar que el canal por defecto esté habilitado
+    const defaultChannel =
+      dto.defaultChannel ?? currentWorkspace.defaultChannel;
+
+    if (defaultChannel === 'SMS' && !smsEnabled) {
+      throw new BadRequestException(
+        'No puedes establecer SMS como canal por defecto si está deshabilitado',
+      );
+    }
+
+    if (defaultChannel === 'WHATSAPP' && !whatsappEnabled) {
+      throw new BadRequestException(
+        'No puedes establecer WhatsApp como canal por defecto si está deshabilitado',
+      );
+    }
+
+    if (defaultChannel === 'EMAIL' && !emailEnabled) {
+      throw new BadRequestException(
+        'No puedes establecer Email como canal por defecto si está deshabilitado',
+      );
+    }
+
+    // Actualizar configuración
+    const workspace = await this.prisma.workspace.update({
+      where: { id: workspaceId },
+      data: dto,
+      include: {
+        users: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return workspace;
   }
 }

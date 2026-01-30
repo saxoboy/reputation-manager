@@ -20,7 +20,7 @@ export function ApiConnectionStatus() {
     const checkConnection = async () => {
       try {
         const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+          (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333') + '/api';
         const response = await fetch(`${apiUrl}/api/health`, {
           method: 'GET',
           headers: {

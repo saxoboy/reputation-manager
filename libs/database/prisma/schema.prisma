@@ -127,10 +127,17 @@ model Workspace {
   name                 String
   plan                 String   @default("FREE") // FREE, STARTER, PROFESSIONAL, ENTERPRISE
   messageCredits       Int      @default(50)
-  stripeCustomerId     String?  @unique
-  stripeSubscriptionId String?  @unique
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  stripeCustomerId     String?        @unique
+  stripeSubscriptionId String?        @unique
+
+  // Channel Configuration
+  defaultChannel       MessageChannel @default(SMS)
+  smsEnabled           Boolean        @default(true)
+  whatsappEnabled      Boolean        @default(false)
+  emailEnabled         Boolean        @default(false)
+
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
 
   // Relations
   users     WorkspaceUser[]

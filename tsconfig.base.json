@@ -14,6 +14,7 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
+    "esModuleInterop": true,
     "paths": {
       "@reputation-manager/database": ["libs/database/src/index.ts"],
       "@reputation-manager/shared-types": ["libs/shared-types/src/index.ts"],

@@ -3,9 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    bodyParser: false, // Required for Better Auth - the module handles it
-  });
+  const app = await NestFactory.create(AppModule);
 
   // Set global prefix for all routes
   app.setGlobalPrefix('api');
@@ -21,7 +19,7 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: ['http://localhost:4000', 'http://localhost:3000'],
+    origin: ['http://localhost:4000', 'http://localhost:3333'],
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Accept, Authorization',
