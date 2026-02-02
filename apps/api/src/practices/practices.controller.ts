@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { PracticesService } from './practices.service';
 import { CreatePracticeDto, UpdatePracticeDto } from './dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
@@ -89,8 +90,10 @@ export class PracticesController {
   /**
    * GET /workspaces/:workspaceId/practices/search/google-places
    * Buscar consultorios en Google Places
+   * Rate limit: 20 peticiones por minuto
    */
   @Get('search/google-places')
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   async searchGooglePlaces(
     @Query('query') query: string,
     @Query('lat') lat?: string,
@@ -104,8 +107,10 @@ export class PracticesController {
   /**
    * GET /workspaces/:workspaceId/practices/google-places/:placeId
    * Obtener detalles de un lugar de Google Places por Place ID
+   * Rate limit: 20 peticiones por minuto
    */
   @Get('google-places/:placeId')
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   async getGooglePlaceDetails(@Param('placeId') placeId: string) {
     return this.practicesService.getGooglePlaceDetails(placeId);
   }
@@ -113,8 +118,10 @@ export class PracticesController {
   /**
    * GET /workspaces/:workspaceId/practices/autocomplete/google-places
    * Autocompletar búsqueda de lugares
+   * Rate limit: 20 peticiones por minuto
    */
   @Get('autocomplete/google-places')
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   async autocompleteGooglePlaces(
     @Query('input') input: string,
     @Query('lat') lat?: string,

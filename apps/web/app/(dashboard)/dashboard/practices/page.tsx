@@ -2,7 +2,12 @@
 
 import { useState } from 'react';
 import { useWorkspace } from '../../../../hooks/use-workspace';
-import { usePractices } from '../../../../hooks/use-practices';
+import {
+  usePractices,
+  useCreatePractice,
+  useUpdatePractice,
+  useDeletePractice,
+} from '../../../../hooks/use-practices';
 import { Button } from '../../../../components/ui/button';
 import {
   Card,
@@ -17,7 +22,10 @@ import { Plus, AlertCircle } from 'lucide-react';
 import { PracticesList } from '../../../../components/practices/practices-list';
 import { PracticeDialog } from '../../../../components/practices/practice-dialog';
 import { DeletePracticeDialog } from '../../../../components/practices/delete-practice-dialog';
-import type { Practice } from '../../../../services/practice.service';
+import type {
+  Practice,
+  CreatePracticeDto,
+} from '../../../../services/practice.service';
 
 export default function PracticesPage() {
   const { workspace, loading: workspaceLoading } = useWorkspace();
@@ -26,6 +34,10 @@ export default function PracticesPage() {
     isLoading: practicesLoading,
     error,
   } = usePractices(workspace?.id || '');
+
+  const createPractice = useCreatePractice(workspace?.id || '');
+  const updatePractice = useUpdatePractice(workspace?.id || '');
+  const deletePractice = useDeletePractice(workspace?.id || '');
 
   // Dialog States
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -50,14 +62,36 @@ export default function PracticesPage() {
     setIsDeleteDialogOpen(true);
   };
 
-  const handleSave = () => {
-    setIsDialogOpen(false);
-    setEditingPractice(null);
+  const handleSave = async (practiceData: Partial<Practice>) => {
+    try {
+      if (editingPractice) {
+        // Actualizar
+        await updatePractice.mutateAsync({
+          id: editingPractice.id,
+          data: practiceData,
+        });
+      } else {
+        // Crear
+        await createPractice.mutateAsync(practiceData as CreatePracticeDto);
+      }
+      setIsDialogOpen(false);
+      setEditingPractice(null);
+    } catch (error) {
+      // El error ya se maneja en los hooks con toast
+      console.error('Error saving practice:', error);
+    }
   };
 
-  const handleDelete = () => {
-    setIsDeleteDialogOpen(false);
-    setPracticeToDelete(null);
+  const handleDelete = async () => {
+    if (!practiceToDelete) return;
+
+    try {
+      await deletePractice.mutateAsync(practiceToDelete.id);
+      setIsDeleteDialogOpen(false);
+      setPracticeToDelete(null);
+    } catch (error) {
+      console.error('Error deleting practice:', error);
+    }
   };
 
   if (workspaceLoading) {
@@ -113,7 +147,6 @@ export default function PracticesPage() {
       <PracticeDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
-        // @ts-expect-error Type mismatch between Practice from service and mock-types
         practiceToEdit={editingPractice}
         onSave={handleSave}
       />
@@ -121,7 +154,6 @@ export default function PracticesPage() {
       <DeletePracticeDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
-        // @ts-expect-error Type mismatch between Practice from service and mock-types
         practice={practiceToDelete}
         onConfirm={handleDelete}
       />
@@ -146,11 +178,8 @@ export default function PracticesPage() {
             </div>
           ) : (
             <PracticesList
-              // @ts-expect-error Type mismatch between Practice from service and mock-types
               practices={practices}
-              // @ts-expect-error Handler type mismatch
               onEdit={handleOpenEditDialog}
-              // @ts-expect-error Handler type mismatch
               onDelete={handleOpenDeleteDialog}
             />
           )}
