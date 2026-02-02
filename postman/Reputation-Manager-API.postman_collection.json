@@ -12,7 +12,12 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:3000",
+      "value": "http://localhost:3333",
+      "type": "string"
+    },
+    {
+      "key": "workerUrl",
+      "value": "http://localhost:3001",
       "type": "string"
     },
     {
@@ -129,9 +134,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/workspaces",
+              "raw": "{{baseUrl}}/api/workspaces",
               "host": ["{{baseUrl}}"],
-              "path": ["workspaces"]
+              "path": ["api", "workspaces"]
             },
             "description": "Obtener todos los workspaces del usuario autenticado"
           }
@@ -151,9 +156,9 @@
               "raw": "{\n  \"name\": \"Mi Consultorio\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/workspaces",
+              "raw": "{{baseUrl}}/api/workspaces",
               "host": ["{{baseUrl}}"],
-              "path": ["workspaces"]
+              "path": ["api", "workspaces"]
             },
             "description": "Crear un nuevo workspace y asignar al usuario como OWNER"
           },
@@ -179,9 +184,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/workspaces/{{workspaceId}}",
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["workspaces", "{{workspaceId}}"]
+              "path": ["api", "workspaces", "{{workspaceId}}"]
             },
             "description": "Obtener un workspace específico"
           }
@@ -201,9 +206,9 @@
               "raw": "{\n  \"name\": \"Consultorio Actualizado\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/workspaces/{{workspaceId}}",
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["workspaces", "{{workspaceId}}"]
+              "path": ["api", "workspaces", "{{workspaceId}}"]
             },
             "description": "Actualizar un workspace (solo OWNER)"
           }
@@ -214,11 +219,38 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/workspaces/{{workspaceId}}",
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["workspaces", "{{workspaceId}}"]
+              "path": ["api", "workspaces", "{{workspaceId}}"]
             },
             "description": "Eliminar un workspace (solo OWNER, sin otros usuarios)"
+          }
+        },
+        {
+          "name": "Update Channel Settings",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"defaultChannel\": \"WHATSAPP\",\n  \"smsEnabled\": true,\n  \"whatsappEnabled\": true,\n  \"emailEnabled\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/channel-settings",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "channel-settings"
+              ]
+            },
+            "description": "Actualizar configuración de canales de mensajería (solo OWNER)"
           }
         }
       ],
@@ -233,9 +265,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/workspaces/{{workspaceId}}/practices",
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/practices",
               "host": ["{{baseUrl}}"],
-              "path": ["workspaces", "{{workspaceId}}", "practices"]
+              "path": ["api", "workspaces", "{{workspaceId}}", "practices"]
             },
             "description": "Listar todas las practices de un workspace"
           }
@@ -255,9 +287,9 @@
               "raw": "{\n  \"name\": \"Consultorio Centro\",\n  \"address\": \"Av. 10 de Agosto N45-123, Quito\",\n  \"phone\": \"+593987654321\",\n  \"googlePlaceId\": \"ChIJN1t_tDeuEmsRUsoyG83frY4\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/workspaces/{{workspaceId}}/practices",
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/practices",
               "host": ["{{baseUrl}}"],
-              "path": ["workspaces", "{{workspaceId}}", "practices"]
+              "path": ["api", "workspaces", "{{workspaceId}}", "practices"]
             },
             "description": "Crear una nueva practice (OWNER o DOCTOR)"
           }
@@ -268,9 +300,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/practices/:practiceId",
+              "raw": "{{baseUrl}}/api/practices/:practiceId",
               "host": ["{{baseUrl}}"],
-              "path": ["practices", ":practiceId"],
+              "path": ["api", "practices", ":practiceId"],
               "variable": [
                 {
                   "key": "practiceId",
@@ -296,9 +328,9 @@
               "raw": "{\n  \"name\": \"Consultorio Centro Actualizado\",\n  \"phone\": \"+593999888777\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/practices/:practiceId",
+              "raw": "{{baseUrl}}/api/practices/:practiceId",
               "host": ["{{baseUrl}}"],
-              "path": ["practices", ":practiceId"],
+              "path": ["api", "practices", ":practiceId"],
               "variable": [
                 {
                   "key": "practiceId",
@@ -315,9 +347,9 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/practices/:practiceId",
+              "raw": "{{baseUrl}}/api/practices/:practiceId",
               "host": ["{{baseUrl}}"],
-              "path": ["practices", ":practiceId"],
+              "path": ["api", "practices", ":practiceId"],
               "variable": [
                 {
                   "key": "practiceId",
@@ -340,9 +372,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/workspaces/{{workspaceId}}/users",
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/users",
               "host": ["{{baseUrl}}"],
-              "path": ["workspaces", "{{workspaceId}}", "users"]
+              "path": ["api", "workspaces", "{{workspaceId}}", "users"]
             },
             "description": "Listar todos los usuarios del workspace"
           }
@@ -362,9 +394,15 @@
               "raw": "{\n  \"email\": \"nuevo@ejemplo.com\",\n  \"role\": \"DOCTOR\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/workspaces/{{workspaceId}}/users/invite",
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/users/invite",
               "host": ["{{baseUrl}}"],
-              "path": ["workspaces", "{{workspaceId}}", "users", "invite"]
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "users",
+                "invite"
+              ]
             },
             "description": "Invitar un usuario al workspace (OWNER o DOCTOR)"
           }
@@ -384,9 +422,10 @@
               "raw": "{\n  \"role\": \"RECEPTIONIST\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/workspaces/{{workspaceId}}/users/:userId/role",
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/users/:userId/role",
               "host": ["{{baseUrl}}"],
               "path": [
+                "api",
                 "workspaces",
                 "{{workspaceId}}",
                 "users",
@@ -409,9 +448,15 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/workspaces/{{workspaceId}}/users/:userId",
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/users/:userId",
               "host": ["{{baseUrl}}"],
-              "path": ["workspaces", "{{workspaceId}}", "users", ":userId"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "users",
+                ":userId"
+              ],
               "variable": [
                 {
                   "key": "userId",
@@ -424,6 +469,61 @@
         }
       ],
       "description": "Gestión de usuarios y permisos en workspaces"
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "Verify WhatsApp Webhook",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=random-string-validation&hub.challenge=12345",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "webhooks", "whatsapp"],
+              "query": [
+                {
+                  "key": "hub.mode",
+                  "value": "subscribe"
+                },
+                {
+                  "key": "hub.verify_token",
+                  "value": "random-string-validation"
+                },
+                {
+                  "key": "hub.challenge",
+                  "value": "12345"
+                }
+              ]
+            },
+            "description": "Verificar webhook de WhatsApp (Meta Challenge)"
+          }
+        },
+        {
+          "name": "Incoming WhatsApp Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"object\": \"whatsapp_business_account\",\n  \"entry\": [\n    {\n      \"changes\": [\n        {\n          \"value\": {\n            \"messages\": [\n              {\n                \"from\": \"593991234567\",\n                \"text\": {\n                  \"body\": \"5\"\n                }\n              }\n            ]\n          }\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/webhooks/whatsapp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "webhooks", "whatsapp"]
+            },
+            "description": "Simular mensaje entrante de WhatsApp"
+          }
+        }
+      ],
+      "description": "Endpoints de Webhooks (Twilio, WhatsApp)"
     }
   ]
 }

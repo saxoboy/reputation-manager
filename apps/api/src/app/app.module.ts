@@ -22,6 +22,7 @@ import { WebhooksModule } from '../webhooks/webhooks.module';
     AuthModule.forRoot({
       auth,
       basePath: '/api/auth', // Especificar la ruta completa incluyendo el prefijo global
+      publicRoutes: ['/health'], // Rutas que no requieren autenticación
     }),
     WorkspacesModule,
     PracticesModule,

@@ -5,6 +5,7 @@ import { PrismaService } from '@reputation-manager/database';
 import {
   TwilioService,
   WhatsAppService,
+  GooglePlacesService,
 } from '@reputation-manager/integrations';
 import { QUEUES, JOBS } from '@reputation-manager/shared-types';
 
@@ -16,6 +17,7 @@ export class CampaignProcessor extends WorkerHost {
     private readonly prisma: PrismaService,
     private readonly twilioService: TwilioService,
     private readonly whatsAppService: WhatsAppService,
+    private readonly googlePlacesService: GooglePlacesService,
     @InjectQueue(QUEUES.CAMPAIGNS) private campaignQueue: Queue,
   ) {
     super();
@@ -221,17 +223,47 @@ export class CampaignProcessor extends WorkerHost {
 
     const patient = await this.prisma.patient.findUnique({
       where: { id: patientId },
+      include: {
+        campaign: {
+          include: {
+            practice: true,
+          },
+        },
+      },
     });
 
     if (!patient) return;
 
-    const content =
-      type === 'HAPPY'
-        ? '¡Nos alegra mucho! Por favor ayúdanos con una reseña en Google: https://g.page/review/...'
-        : 'Lamentamos escuchar eso. Por favor cuéntanos más para mejorar: https://forms.gle/...';
-
+    let content: string;
     const messageType =
       type === 'HAPPY' ? 'FOLLOWUP_HAPPY' : 'FOLLOWUP_UNHAPPY';
+
+    if (type === 'HAPPY') {
+      // Generar URL de Google Review usando el Place ID del consultorio
+      const practice = patient.campaign.practice;
+      let reviewUrl = 'https://g.page/review'; // Fallback genérico
+
+      if (practice.googlePlaceId) {
+        // Usar el Place ID para generar URL específica
+        reviewUrl = this.googlePlacesService.generateReviewUrl(
+          practice.googlePlaceId,
+        );
+        this.logger.log(
+          `Generated review URL for practice ${practice.name}: ${reviewUrl}`,
+        );
+      } else {
+        this.logger.warn(
+          `Practice ${practice.name} doesn't have a Google Place ID. Using fallback review URL.`,
+        );
+      }
+
+      content = `¡Nos alegra mucho que hayas tenido una buena experiencia! 🎉\n\n¿Nos ayudarías compartiendo tu opinión en Google? Te tomará menos de 1 minuto:\n\n${reviewUrl}\n\n¡Muchas gracias! 🙏`;
+    } else {
+      // Para pacientes insatisfechos, enviar a formulario privado
+      const feedbackUrl = `${process.env['FRONTEND_URL'] || 'http://localhost:3000'}/feedback/${patient.id}`;
+
+      content = `Lamentamos que tu experiencia no haya sido la esperada. 😔\n\nTu opinión es muy importante para nosotros y queremos mejorar. ¿Podrías compartir más detalles de manera privada?\n\n${feedbackUrl}\n\nGracias por ayudarnos a ser mejores. 🙏`;
+    }
 
     const channel = patient.preferredChannel || 'SMS';
     let externalId = '';

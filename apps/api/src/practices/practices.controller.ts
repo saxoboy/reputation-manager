@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { PracticesService } from './practices.service';
@@ -83,5 +84,44 @@ export class PracticesController {
     @CurrentWorkspace('id') workspaceId: string,
   ) {
     return this.practicesService.remove(id, workspaceId);
+  }
+
+  /**
+   * GET /workspaces/:workspaceId/practices/search/google-places
+   * Buscar consultorios en Google Places
+   */
+  @Get('search/google-places')
+  async searchGooglePlaces(
+    @Query('query') query: string,
+    @Query('lat') lat?: string,
+    @Query('lng') lng?: string,
+  ) {
+    const location =
+      lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : undefined;
+    return this.practicesService.searchGooglePlaces(query, location);
+  }
+
+  /**
+   * GET /workspaces/:workspaceId/practices/google-places/:placeId
+   * Obtener detalles de un lugar de Google Places por Place ID
+   */
+  @Get('google-places/:placeId')
+  async getGooglePlaceDetails(@Param('placeId') placeId: string) {
+    return this.practicesService.getGooglePlaceDetails(placeId);
+  }
+
+  /**
+   * GET /workspaces/:workspaceId/practices/autocomplete/google-places
+   * Autocompletar búsqueda de lugares
+   */
+  @Get('autocomplete/google-places')
+  async autocompleteGooglePlaces(
+    @Query('input') input: string,
+    @Query('lat') lat?: string,
+    @Query('lng') lng?: string,
+  ) {
+    const location =
+      lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : undefined;
+    return this.practicesService.autocompleteGooglePlaces(input, location);
   }
 }

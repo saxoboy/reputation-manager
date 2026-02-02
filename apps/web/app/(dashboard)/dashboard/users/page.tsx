@@ -26,16 +26,31 @@ export default function UsersPage() {
   const removeUserMutation = useRemoveUser(workspace?.id || '');
   const updateRoleMutation = useUpdateUserRole(workspace?.id || '');
 
-  const handleDeleteUser = (id: string) => {
-    removeUserMutation.mutate(id);
+  const handleDeleteUser = (workspaceUserId: string) => {
+    // Encontrar el userId real desde el workspaceUserId
+    const workspaceUser = workspaceUsers?.find(
+      (wu) => wu.id === workspaceUserId,
+    );
+    if (workspaceUser) {
+      removeUserMutation.mutate(workspaceUser.userId);
+    }
   };
 
   const handleRoleChange = (
-    id: string,
+    workspaceUserId: string,
     newRole: 'OWNER' | 'DOCTOR' | 'RECEPTIONIST',
   ) => {
     if (newRole === 'OWNER') return; // No se puede cambiar a OWNER
-    updateRoleMutation.mutate({ userId: id, role: newRole });
+    // Encontrar el userId real desde el workspaceUserId
+    const workspaceUser = workspaceUsers?.find(
+      (wu) => wu.id === workspaceUserId,
+    );
+    if (workspaceUser) {
+      updateRoleMutation.mutate({
+        userId: workspaceUser.userId,
+        role: newRole,
+      });
+    }
   };
 
   const handleInviteSuccess = () => {
@@ -59,13 +74,28 @@ export default function UsersPage() {
 
   // Transformar WorkspaceUser[] a User[] para compatibilidad con componentes existentes
   const users =
-    workspaceUsers?.map((wu) => ({
-      id: wu.userId,
-      name: wu.user.name,
-      email: wu.user.email,
-      role: wu.role,
-      createdAt: new Date(wu.createdAt).toISOString().split('T')[0],
-    })) || [];
+    workspaceUsers?.map((wu) => {
+      let formattedDate = 'N/A';
+      try {
+        if (wu.createdAt) {
+          const date = new Date(wu.createdAt);
+          if (!isNaN(date.getTime())) {
+            formattedDate = date.toISOString().split('T')[0];
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing date:', wu.createdAt, error);
+      }
+
+      return {
+        id: wu.id, // Usar el ID del WorkspaceUser (único)
+        userId: wu.userId, // Mantener userId para operaciones
+        name: wu.user.name,
+        email: wu.user.email,
+        role: wu.role,
+        createdAt: formattedDate,
+      };
+    }) || [];
 
   return (
     <div className="space-y-6">

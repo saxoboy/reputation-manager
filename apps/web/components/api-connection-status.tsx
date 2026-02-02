@@ -20,27 +20,23 @@ export function ApiConnectionStatus() {
     const checkConnection = async () => {
       try {
         const apiUrl =
-          (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333') + '/api';
-        const response = await fetch(`${apiUrl}/api/health`, {
+          process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333';
+
+        // Health check está en /health (sin /api prefix)
+        const response = await fetch(`${apiUrl}/health`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include', // Enviar cookies de sesión
         });
 
         if (response.ok) {
           setStatus('connected');
           setMessage('API conectado correctamente');
         } else {
-          // Si es 401 (Unauthorized), significa que el servidor respondió pero requiere auth.
-          // Para fines de health check, esto cuenta como "conectado".
-          if (response.status === 401) {
-            setStatus('connected');
-            setMessage('API conectado correctamente');
-          } else {
-            setStatus('error');
-            setMessage(`Error: ${response.status} ${response.statusText}`);
-          }
+          setStatus('error');
+          setMessage(`Error: ${response.status} ${response.statusText}`);
         }
       } catch (error) {
         setStatus('disconnected');

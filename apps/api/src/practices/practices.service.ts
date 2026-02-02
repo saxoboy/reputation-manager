@@ -4,11 +4,15 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '@reputation-manager/database';
+import { GooglePlacesService } from '@reputation-manager/integrations';
 import { CreatePracticeDto, UpdatePracticeDto } from './dto';
 
 @Injectable()
 export class PracticesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private googlePlacesService: GooglePlacesService,
+  ) {}
 
   /**
    * Obtener todas las practices de un workspace
@@ -83,5 +87,32 @@ export class PracticesService {
     return {
       message: 'Práctica eliminada exitosamente',
     };
+  }
+
+  /**
+   * Buscar consultorios en Google Places
+   */
+  async searchGooglePlaces(
+    query: string,
+    location?: { lat: number; lng: number },
+  ) {
+    return this.googlePlacesService.searchPlaces(query, location);
+  }
+
+  /**
+   * Obtener detalles de un lugar de Google Places
+   */
+  async getGooglePlaceDetails(placeId: string) {
+    return this.googlePlacesService.getPlaceDetails(placeId);
+  }
+
+  /**
+   * Autocompletar búsqueda de lugares
+   */
+  async autocompleteGooglePlaces(
+    input: string,
+    location?: { lat: number; lng: number },
+  ) {
+    return this.googlePlacesService.autocomplete(input, location);
   }
 }
