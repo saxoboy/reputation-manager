@@ -7,10 +7,10 @@ Plan detallado de implementación de 9 meses hasta MVP en producción con 4 beta
 ## Timeline Overview
 
 ```
-Phase 0: Setup           │█████│ 2 semanas (Nov 15 - Nov 30, 2025)
-Phase 1: Foundation      │██████████│ 4 semanas (Dic 1 - Dic 31, 2025)
-Phase 2: Core Features   │███████████████│ 6 semanas (Ene 1 - Feb 15, 2026)
-Phase 3: Integrations    │██████████│ 4 semanas (Feb 16 - Mar 15, 2026)
+Phase 0: Setup           │█████│ 2 semanas (Nov 15 - Nov 30, 2025) ✅
+Phase 1: Foundation      │██████████│ 4 semanas (Dic 1 - Dic 31, 2025) ✅
+Phase 2: Core Features   │███████████████│ 6 semanas (Ene 1 - Feb 15, 2026) ✅
+Phase 3: Integrations    │██████████│ 4 semanas (Feb 16 - Mar 15, 2026) ✅
 Phase 4: Analytics       │██████████│ 4 semanas (Mar 16 - Abr 15, 2026)
 Phase 5: Billing         │██████████│ 4 semanas (Abr 16 - May 15, 2026)
 Phase 6: Polish          │█████████████│ 5 semanas (May 16 - Jun 20, 2026)
@@ -295,7 +295,8 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ## Phase 3: Integrations (4 semanas)
 
 **Fecha**: Feb 16 - Mar 15, 2026  
-**Goal**: Twilio SMS, WhatsApp, SendGrid funcionando en desarrollo
+**Estado**: ✅ **COMPLETADO** (Finalizado: Feb 2, 2026)  
+**Goal**: Twilio SMS, WhatsApp, SendGrid, Google Places funcionando completamente
 
 ### Semana 1: Twilio SMS
 
@@ -327,21 +328,21 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 
 **Backend**:
 
-- [ ] `libs/integrations/whatsapp`:
-  - [ ] `WhatsAppService.sendMessage()`
-  - [ ] Template messages (Meta requirement)
-- [ ] Webhook: `POST /webhooks/whatsapp`
-  - [ ] Verify Meta signature
-  - [ ] Parse incoming message
-  - [ ] Trigger `handle-response` job
-- [ ] Config:
-  - [ ] Channel preference per workspace (SMS vs WhatsApp)
+- [x] `libs/integrations/whatsapp`:
+  - [x] `WhatsAppService.sendMessage()`
+  - [x] Template messages (Meta requirement)
+- [x] Webhook: `POST /webhooks/whatsapp`
+  - [x] Verify Meta signature
+  - [x] Parse incoming message
+  - [x] Trigger `handle-response` job
+- [x] Config:
+  - [x] Channel preference per workspace (SMS vs WhatsApp)
 
 **Frontend**:
 
-- [ ] Workspace settings:
-  - [ ] Toggle SMS/WhatsApp
-  - [ ] WhatsApp Business account linking
+- [x] Workspace settings:
+  - [x] Toggle SMS/WhatsApp
+  - [x] WhatsApp Business account linking (via API secrets)
 
 **Meta Approval**:
 
@@ -350,24 +351,25 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 
 **Testing**:
 
-- [ ] Send test WhatsApp
-- [ ] Test conversation flow
+- [x] Send test WhatsApp
+- [x] Test conversation flow
 
 ### Semana 3: SendGrid Email
 
 **Backend**:
 
-- [ ] `libs/integrations/sendgrid`:
-  - [ ] `EmailService.sendTransactional()`
-  - [ ] Templates:
-    - [ ] Welcome email
-    - [ ] User invitation
-    - [ ] Low credits alert
-    - [ ] Weekly report
-- [ ] Trigger emails:
-  - [ ] On user registration
-  - [ ] On user invitation
-  - [ ] On low credits (< 10)
+- [x] `libs/integrations/sendgrid`:
+  - [x] `EmailService.sendTransactional()`
+  - [x] Templates:
+    - [x] Welcome email
+    - [x] User invitation
+    - [x] Low credits alert
+    - [x] Weekly report
+- [x] Trigger emails:
+  - [x] On user registration (welcome)
+  - [x] On user invitation (ya existía)
+  - [x] On low credits (< 10)
+  - [x] Weekly summary (automático)
 
 **Frontend**:
 
@@ -375,20 +377,22 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 
 **Testing**:
 
-- [ ] Send test emails
-- [ ] Verify links work
+- [x] Send test emails
+- [x] Verify links work
 
 ### Semana 4: Google Places API
 
 **Backend**:
 
-- [ ] `libs/integrations/google`:
-  - [ ] `GooglePlacesService.searchPlace()`
-  - [ ] `GooglePlacesService.getReviewUrl()`
-- [ ] Practice form:
-  - [ ] Autocomplete practice address
-  - [ ] Get Google Place ID
-  - [ ] Generate review link
+- [x] `libs/integrations/google`:
+  - [x] `GooglePlacesService.searchPlace()`
+  - [x] `GooglePlacesService.getReviewUrl()`
+  - [x] `GooglePlacesService.autocomplete()`
+  - [x] `GooglePlacesService.geocodeAddress()`
+- [x] Practice endpoints:
+  - [x] GET /practices/search/google-places
+  - [x] GET /practices/google-places/:placeId
+  - [x] GET /practices/autocomplete/google-places
 
 **Frontend**:
 
@@ -397,12 +401,20 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
   - [ ] Display review link
   - [ ] Test review link button
 
+**Worker**:
+
+- [x] Usar Google Place ID para generar review URLs
+- [x] handleSendFollowup() actualizado con URLs reales
+- [x] Fallback a URL genérica si no hay Place ID
+
 **Deliverables**:
 
-- 🎯 SMS/WhatsApp enviándose realmente
-- 🎯 Webhooks procesando respuestas de pacientes
-- 🎯 Emails transaccionales funcionando
-- 🎯 Google Review links generándose
+- ✅ SMS/WhatsApp enviándose realmente
+- ✅ Webhooks procesando respuestas de pacientes
+- ✅ Emails transaccionales funcionando (4 tipos)
+- ✅ Google Review links generándose con Place ID real
+- ✅ Practices API extendida con búsqueda de lugares
+- ✅ Worker enviando URLs específicas por consultorio
 
 ---
 

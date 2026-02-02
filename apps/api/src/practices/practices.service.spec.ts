@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PracticesService } from './practices.service';
 import { PrismaService } from '@reputation-manager/database';
+import { GooglePlacesService } from '@reputation-manager/integrations';
 
 describe('PracticesService', () => {
   let service: PracticesService;
@@ -16,6 +17,16 @@ describe('PracticesService', () => {
     },
   };
 
+  const mockGooglePlacesService = {
+    searchPlaces: jest.fn(),
+    getPlaceDetails: jest.fn(),
+    autocomplete: jest.fn(),
+    generateReviewUrl: jest.fn(),
+    generateMapsUrl: jest.fn(),
+    isValidPlaceId: jest.fn(),
+    geocodeAddress: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -23,6 +34,10 @@ describe('PracticesService', () => {
         {
           provide: PrismaService,
           useValue: mockPrisma,
+        },
+        {
+          provide: GooglePlacesService,
+          useValue: mockGooglePlacesService,
         },
       ],
     }).compile();
@@ -192,6 +207,118 @@ describe('PracticesService', () => {
       await expect(service.remove('practice-1', 'ws-wrong')).rejects.toThrow(
         'Práctica no encontrada',
       );
+    });
+  });
+
+  describe('Google Places Integration', () => {
+    describe('searchGooglePlaces', () => {
+      it('should search places using GooglePlacesService', async () => {
+        const query = 'Dr. Juan Pérez Quito';
+        const mockResults = [
+          {
+            placeId: 'ChIJtest123',
+            name: 'Dr. Juan Pérez',
+            address: 'Av. Amazonas, Quito',
+            rating: 4.5,
+            userRatingsTotal: 120,
+            lat: -0.1807,
+            lng: -78.4678,
+          },
+        ];
+
+        mockGooglePlacesService.searchPlaces.mockResolvedValue(mockResults);
+
+        const result = await service.searchGooglePlaces(query);
+
+        expect(result).toEqual(mockResults);
+        expect(mockGooglePlacesService.searchPlaces).toHaveBeenCalledWith(
+          query,
+          undefined,
+        );
+      });
+
+      it('should search places with location', async () => {
+        const query = 'Consultorio dental';
+        const location = { lat: -0.1807, lng: -78.4678 };
+        const mockResults = [];
+
+        mockGooglePlacesService.searchPlaces.mockResolvedValue(mockResults);
+
+        const result = await service.searchGooglePlaces(query, location);
+
+        expect(result).toEqual(mockResults);
+        expect(mockGooglePlacesService.searchPlaces).toHaveBeenCalledWith(
+          query,
+          location,
+        );
+      });
+    });
+
+    describe('getGooglePlaceDetails', () => {
+      it('should get place details by placeId', async () => {
+        const placeId = 'ChIJtest123';
+        const mockDetails = {
+          placeId,
+          name: 'Dr. Juan Pérez',
+          formattedAddress: 'Av. Amazonas 123, Quito',
+          formattedPhoneNumber: '+593 2 123 4567',
+          rating: 4.5,
+          userRatingsTotal: 120,
+          reviewUrl:
+            'https://search.google.com/local/writereview?placeid=ChIJtest123',
+        };
+
+        mockGooglePlacesService.getPlaceDetails.mockResolvedValue(mockDetails);
+
+        const result = await service.getGooglePlaceDetails(placeId);
+
+        expect(result).toEqual(mockDetails);
+        expect(mockGooglePlacesService.getPlaceDetails).toHaveBeenCalledWith(
+          placeId,
+        );
+      });
+    });
+
+    describe('autocompleteGooglePlaces', () => {
+      it('should autocomplete place search', async () => {
+        const input = 'Dr. Juan';
+        const mockSuggestions = [
+          {
+            placeId: 'ChIJtest1',
+            description: 'Dr. Juan Pérez - Quito',
+          },
+          {
+            placeId: 'ChIJtest2',
+            description: 'Dr. Juan González - Guayaquil',
+          },
+        ];
+
+        mockGooglePlacesService.autocomplete.mockResolvedValue(mockSuggestions);
+
+        const result = await service.autocompleteGooglePlaces(input);
+
+        expect(result).toEqual(mockSuggestions);
+        expect(mockGooglePlacesService.autocomplete).toHaveBeenCalledWith(
+          input,
+          undefined,
+        );
+      });
+
+      it('should autocomplete with location', async () => {
+        const input = 'Consultorio';
+        const location = { lat: -0.1807, lng: -78.4678 };
+        const mockSuggestions = [];
+
+        mockGooglePlacesService.autocomplete.mockResolvedValue(mockSuggestions);
+
+        const result = await service.autocompleteGooglePlaces(input, location);
+
+        expect(result).toEqual(mockSuggestions);
+        expect(mockGooglePlacesService.autocomplete).toHaveBeenCalledWith(
+          input,
+          location,
+        );
+      });
     });
   });
 });

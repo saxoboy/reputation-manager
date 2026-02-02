@@ -22,9 +22,7 @@ export interface InviteUserDto {
 
 export const userService = {
   async getWorkspaceUsers(workspaceId: string): Promise<WorkspaceUser[]> {
-    return apiClient.get<WorkspaceUser[]>(
-      `/workspace-users/${workspaceId}/users`,
-    );
+    return apiClient.get<WorkspaceUser[]>(`/workspaces/${workspaceId}/users`);
   },
 
   async inviteUser(
@@ -32,7 +30,7 @@ export const userService = {
     data: InviteUserDto,
   ): Promise<WorkspaceUser> {
     return apiClient.post<WorkspaceUser>(
-      `/workspace-users/${workspaceId}/invite`,
+      `/workspaces/${workspaceId}/users/invite`,
       data,
     );
   },
@@ -43,14 +41,12 @@ export const userService = {
     role: 'DOCTOR' | 'RECEPTIONIST',
   ): Promise<WorkspaceUser> {
     return apiClient.put<WorkspaceUser>(
-      `/workspace-users/${workspaceId}/users/${userId}/role`,
+      `/workspaces/${workspaceId}/users/${userId}/role`,
       { role },
     );
   },
 
   async removeUser(workspaceId: string, userId: string): Promise<void> {
-    return apiClient.delete<void>(
-      `/workspace-users/${workspaceId}/users/${userId}`,
-    );
+    return apiClient.delete<void>(`/workspaces/${workspaceId}/users/${userId}`);
   },
 };

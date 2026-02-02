@@ -5,6 +5,7 @@ import { PrismaService } from '@reputation-manager/database';
 import {
   TwilioService,
   WhatsAppService,
+  GooglePlacesService,
 } from '@reputation-manager/integrations';
 import { QUEUES } from '@reputation-manager/shared-types';
 import { CampaignProcessor } from '../processors/campaign.processor';
@@ -28,6 +29,12 @@ import { CampaignProcessor } from '../processors/campaign.processor';
     }),
   ],
   controllers: [],
-  providers: [PrismaService, TwilioService, WhatsAppService, CampaignProcessor],
+  providers: [
+    PrismaService,
+    TwilioService,
+    WhatsAppService,
+    GooglePlacesService,
+    CampaignProcessor,
+  ],
 })
 export class AppModule {}

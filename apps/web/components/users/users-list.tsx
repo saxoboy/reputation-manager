@@ -98,11 +98,13 @@ export function UsersList({ users, onDelete, onRoleChange }: UsersListProps) {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {new Date(user.createdAt).toLocaleDateString('es-EC', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
+                  {user.createdAt !== 'N/A'
+                    ? new Date(user.createdAt).toLocaleDateString('es-EC', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    : 'N/A'}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
