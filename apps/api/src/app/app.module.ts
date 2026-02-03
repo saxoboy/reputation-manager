@@ -13,6 +13,7 @@ import { TemplatesModule } from '../templates/templates.module';
 import { PatientsModule } from '../patients/patients.module';
 import { MessagesModule } from '../messages/messages.module';
 import { WebhooksModule } from '../webhooks/webhooks.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { WebhooksModule } from '../webhooks/webhooks.module';
     PatientsModule,
     MessagesModule,
     WebhooksModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
