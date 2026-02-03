@@ -25,7 +25,7 @@ export interface PlaceDetails {
 export class GooglePlacesService {
   private readonly logger = new Logger(GooglePlacesService.name);
   private readonly apiKey: string;
-  private readonly baseUrl = 'https://maps.googleapis.com/maps/api';
+  private readonly baseUrl = 'https://places.googleapis.com/v1';
 
   constructor() {
     this.apiKey = process.env['GOOGLE_PLACES_API_KEY'] || '';
@@ -37,7 +37,17 @@ export class GooglePlacesService {
   }
 
   /**
-   * Busca lugares usando la API de Google Places
+   * Headers comunes para la nueva API
+   */
+  private getHeaders(): HeadersInit {
+    return {
+      'Content-Type': 'application/json',
+      'X-Goog-Api-Key': this.apiKey,
+    };
+  }
+
+  /**
+   * Busca lugares usando la API de Google Places (New API v1)
    * @param query Texto de búsqueda (ej: "Dr. Juan Pérez Quito")
    * @param location Coordenadas opcionales para búsqueda geográfica
    * @returns Lista de lugares encontrados
@@ -52,37 +62,48 @@ export class GooglePlacesService {
     }
 
     try {
-      const params = new URLSearchParams({
-        query,
-        key: this.apiKey,
-        fields:
-          'place_id,name,formatted_address,rating,user_ratings_total,geometry',
-      });
+      const body: any = {
+        textQuery: query,
+      };
 
       if (location) {
-        params.append('location', `${location.lat},${location.lng}`);
-        params.append('radius', '5000'); // 5km radius
+        body.locationBias = {
+          circle: {
+            center: {
+              latitude: location.lat,
+              longitude: location.lng,
+            },
+            radius: 10000, // 10km
+          },
+        };
       }
 
-      const url = `${this.baseUrl}/place/textsearch/json?${params}`;
-      const response = await fetch(url);
+      const url = `${this.baseUrl}/places:searchText`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          ...this.getHeaders(),
+          'X-Goog-FieldMask':
+            'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.location',
+        },
+        body: JSON.stringify(body),
+      });
+
       const data = await response.json();
 
-      if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-        this.logger.error(
-          `Google Places API error: ${data.status} - ${data.error_message}`,
-        );
+      if (!data.places) {
+        this.logger.warn('No places found');
         return [];
       }
 
-      return data.results.map((result: any) => ({
-        placeId: result.place_id,
-        name: result.name,
-        address: result.formatted_address,
-        rating: result.rating,
-        userRatingsTotal: result.user_ratings_total,
-        lat: result.geometry.location.lat,
-        lng: result.geometry.location.lng,
+      return data.places.map((place: any) => ({
+        placeId: place.id,
+        name: place.displayName?.text || '',
+        address: place.formattedAddress || '',
+        rating: place.rating,
+        userRatingsTotal: place.userRatingCount,
+        lat: place.location?.latitude || 0,
+        lng: place.location?.longitude || 0,
       }));
     } catch (error) {
       this.logger.error('Failed to search places:', error);
@@ -91,7 +112,7 @@ export class GooglePlacesService {
   }
 
   /**
-   * Obtiene detalles completos de un lugar por Place ID
+   * Obtiene detalles completos de un lugar por Place ID (New API v1)
    * @param placeId Google Place ID
    * @returns Detalles del lugar incluyendo URL de reviews
    */
@@ -102,34 +123,37 @@ export class GooglePlacesService {
     }
 
     try {
-      const params = new URLSearchParams({
-        place_id: placeId,
-        key: this.apiKey,
-        fields:
-          'place_id,name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,url',
+      // Extraer solo el ID si viene con prefijo "places/"
+      const cleanPlaceId = placeId.replace('places/', '');
+
+      const url = `${this.baseUrl}/places/${cleanPlaceId}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          ...this.getHeaders(),
+          'X-Goog-FieldMask':
+            'id,displayName,formattedAddress,internationalPhoneNumber,websiteUri,rating,userRatingCount',
+        },
       });
 
-      const url = `${this.baseUrl}/place/details/json?${params}`;
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data.status !== 'OK') {
+      if (!response.ok) {
         this.logger.error(
-          `Google Places API error: ${data.status} - ${data.error_message}`,
+          `Google Places API error: ${response.status} ${response.statusText}`,
         );
         return this.generateFallbackDetails(placeId);
       }
 
-      const result = data.result;
+      const place = await response.json();
+
       return {
-        placeId: result.place_id,
-        name: result.name,
-        formattedAddress: result.formatted_address,
-        formattedPhoneNumber: result.formatted_phone_number,
-        website: result.website,
-        rating: result.rating,
-        userRatingsTotal: result.user_ratings_total,
-        reviewUrl: this.generateReviewUrl(result.place_id),
+        placeId: place.id || placeId,
+        name: place.displayName?.text || 'Unknown',
+        formattedAddress: place.formattedAddress || '',
+        formattedPhoneNumber: place.internationalPhoneNumber,
+        website: place.websiteUri,
+        rating: place.rating,
+        userRatingsTotal: place.userRatingCount,
+        reviewUrl: this.generateReviewUrl(cleanPlaceId),
       };
     } catch (error) {
       this.logger.error('Failed to get place details:', error);
@@ -185,7 +209,7 @@ export class GooglePlacesService {
   }
 
   /**
-   * Autocomplete de lugares (para formularios)
+   * Autocomplete de lugares (New API v1)
    * @param input Texto parcial (ej: "Dr. Juan")
    * @param location Coordenadas opcionales
    * @returns Sugerencias de autocompletado
@@ -199,30 +223,47 @@ export class GooglePlacesService {
     }
 
     try {
-      const params = new URLSearchParams({
+      const body: any = {
         input,
-        key: this.apiKey,
-        types: 'establishment',
-      });
+        includedPrimaryTypes: ['hospital', 'doctor', 'dentist', 'health'],
+      };
 
       if (location) {
-        params.append('location', `${location.lat},${location.lng}`);
-        params.append('radius', '10000'); // 10km
+        body.locationBias = {
+          circle: {
+            center: {
+              latitude: location.lat,
+              longitude: location.lng,
+            },
+            radius: 10000, // 10km
+          },
+        };
       }
 
-      const url = `${this.baseUrl}/place/autocomplete/json?${params}`;
-      const response = await fetch(url);
-      const data = await response.json();
+      const url = `${this.baseUrl}/places:autocomplete`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(body),
+      });
 
-      if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-        this.logger.error(`Google Autocomplete API error: ${data.status}`);
+      if (!response.ok) {
+        this.logger.error(`Google Autocomplete API error: ${response.status}`);
         return [];
       }
 
-      return data.predictions.map((pred: any) => ({
-        placeId: pred.place_id,
-        description: pred.description,
-      }));
+      const data = await response.json();
+
+      if (!data.suggestions) {
+        return [];
+      }
+
+      return data.suggestions
+        .filter((suggestion: any) => suggestion.placePrediction)
+        .map((suggestion: any) => ({
+          placeId: suggestion.placePrediction.placeId,
+          description: suggestion.placePrediction.text?.text || '',
+        }));
     } catch (error) {
       this.logger.error('Failed to autocomplete:', error);
       return [];
@@ -230,7 +271,7 @@ export class GooglePlacesService {
   }
 
   /**
-   * Geocoding: Convierte dirección a coordenadas
+   * Geocoding: Convierte dirección a coordenadas (New API v1)
    * Útil para búsquedas geográficas
    */
   async geocodeAddress(
@@ -241,25 +282,32 @@ export class GooglePlacesService {
     }
 
     try {
-      const params = new URLSearchParams({
-        address,
-        key: this.apiKey,
+      // La nueva API usa searchText para geocoding también
+      const body = {
+        textQuery: address,
+      };
+
+      const url = `${this.baseUrl}/places:searchText`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          ...this.getHeaders(),
+          'X-Goog-FieldMask': 'places.location',
+        },
+        body: JSON.stringify(body),
       });
 
-      const url = `${this.baseUrl}/geocode/json?${params}`;
-      const response = await fetch(url);
       const data = await response.json();
 
-      if (data.status !== 'OK' || data.results.length === 0) {
-        this.logger.warn(`Geocoding failed for address: ${address}`);
-        return null;
+      if (data.places && data.places.length > 0) {
+        const location = data.places[0].location;
+        return {
+          lat: location.latitude,
+          lng: location.longitude,
+        };
       }
 
-      const location = data.results[0].geometry.location;
-      return {
-        lat: location.lat,
-        lng: location.lng,
-      };
+      return null;
     } catch (error) {
       this.logger.error('Failed to geocode address:', error);
       return null;

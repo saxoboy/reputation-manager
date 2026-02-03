@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
@@ -19,6 +20,12 @@ import { WebhooksModule } from '../webhooks/webhooks.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 60 segundos (1 minuto)
+        limit: 20, // 20 peticiones por minuto
+      },
+    ]),
     AuthModule.forRoot({
       auth,
       basePath: '/api/auth', // Especificar la ruta completa incluyendo el prefijo global

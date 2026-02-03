@@ -396,8 +396,25 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 
 **Frontend**:
 
-- [ ] Practice form:
-  - [ ] Google Places autocomplete
+- [x] Practice form:
+  - [x] Google Places autocomplete
+  - [x] Auto-fill name, address, phone from selected place
+  - [x] Display Google Place ID (read-only)
+- [x] Email preview page (dev only)
+
+**Testing**:
+
+- [x] Search for a place in Practice form
+- [x] Verify autocomplete suggestions
+- [x] Select a place and verify auto-fill
+- [x] Save Practice with Google Place ID
+- [x] Generate review URL for the practice
+
+**Deliverables**:
+
+- ✅ Google Places autocomplete in Practice form
+- ✅ Email templates preview page
+- ✅ Complete Phase 3 integration suite
   - [ ] Display review link
   - [ ] Test review link button
 
