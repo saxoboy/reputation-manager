@@ -62,7 +62,6 @@ const secondaryNavigation: NavItem[] = [
     name: 'Analytics',
     href: '/dashboard/analytics',
     icon: BarChart3,
-    badge: 'Próximamente',
   },
   {
     name: 'Facturación',
