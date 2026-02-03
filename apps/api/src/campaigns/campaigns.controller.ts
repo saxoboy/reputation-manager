@@ -7,7 +7,9 @@ import {
   Body,
   Param,
   UseGuards,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { CampaignsService } from './campaigns.service';
 import { CreateCampaignDto, UpdateCampaignDto, UploadCsvDto } from './dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
@@ -100,5 +102,35 @@ export class CampaignsController {
     @Body() uploadDto: UploadCsvDto,
   ) {
     return this.campaignsService.uploadCsv(id, workspaceId, uploadDto);
+  }
+
+  /**
+   * GET /workspaces/:workspaceId/campaigns/:id/export
+   * Exportar datos de una campaña específica en formato CSV
+   */
+  @Get(':id/export')
+  async exportCampaign(
+    @CurrentWorkspace('id') workspaceId: string,
+    @Param('id') campaignId: string,
+    @Res() res: Response,
+  ) {
+    const csvContent = await this.campaignsService.exportCampaignCsv(
+      campaignId,
+      workspaceId,
+    );
+
+    const campaign = await this.campaignsService.findOne(
+      campaignId,
+      workspaceId,
+    );
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `campaign-${campaign.name.replace(/\s+/g, '-')}-${timestamp}.csv`;
+
+    res.set({
+      'Content-Type': 'text/csv',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    });
+
+    res.send(csvContent);
   }
 }

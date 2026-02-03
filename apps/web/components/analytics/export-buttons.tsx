@@ -28,18 +28,24 @@ export function ExportButtons({ workspaceId, dateRange }: ExportButtonsProps) {
       }
 
       const queryString = params.toString();
-      const url = `/api/workspaces/${workspaceId}/analytics/export/${format}${queryString ? `?${queryString}` : ''}`;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333';
+      const url = `${apiUrl}/api/workspaces/${workspaceId}/analytics/export/${format}${queryString ? `?${queryString}` : ''}`;
 
       // Hacer download del archivo
       const response = await fetch(url, {
         method: 'GET',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
+        credentials: 'include',
       });
 
       if (!response.ok) {
-        throw new Error('Error al exportar');
+        const errorText = await response.text();
+        console.error('Export error details:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+          url,
+        });
+        throw new Error(`Error al exportar (${response.status}): ${errorText}`);
       }
 
       const blob = await response.blob();
