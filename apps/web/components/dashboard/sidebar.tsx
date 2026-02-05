@@ -67,7 +67,6 @@ const secondaryNavigation: NavItem[] = [
     name: 'Facturación',
     href: '/dashboard/billing',
     icon: CreditCard,
-    badge: 'Próximamente',
   },
   {
     name: 'Configuración',

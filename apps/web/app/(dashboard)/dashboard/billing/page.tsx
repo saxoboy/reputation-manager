@@ -76,20 +76,6 @@ export default function BillingPage() {
 
   const workspaceId = workspace?.id;
 
-  // Early return if no workspace
-  if (!workspace || !workspaceId) {
-    return (
-      <div className="container max-w-6xl py-8">
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Cargando información de workspace...
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
   useEffect(() => {
     if (workspaceId) {
       loadBillingData();
@@ -97,6 +83,8 @@ export default function BillingPage() {
   }, [workspaceId]);
 
   const loadBillingData = async () => {
+    if (!workspaceId) return;
+
     try {
       setLoading(true);
       const [info, availablePlans, txHistory] = await Promise.all([
@@ -121,7 +109,7 @@ export default function BillingPage() {
   };
 
   const handleUpgradePlan = async () => {
-    if (!selectedPlan) return;
+    if (!selectedPlan || !workspaceId) return;
 
     try {
       setProcessingAction(true);
@@ -146,6 +134,8 @@ export default function BillingPage() {
   };
 
   const handlePurchaseCredits = async (credits: number) => {
+    if (!workspaceId) return;
+
     try {
       setProcessingAction(true);
       const result = await billingService.purchaseCredits(workspaceId, {
@@ -174,6 +164,8 @@ export default function BillingPage() {
   };
 
   const handleCancelSubscription = async (when: 'now' | 'period_end') => {
+    if (!workspaceId) return;
+
     try {
       setProcessingAction(true);
       const result = await billingService.cancelSubscription(workspaceId, {
@@ -200,6 +192,8 @@ export default function BillingPage() {
   };
 
   const handleResumeSubscription = async () => {
+    if (!workspaceId) return;
+
     try {
       setProcessingAction(true);
       const result = await billingService.resumeSubscription(workspaceId);
@@ -223,6 +217,8 @@ export default function BillingPage() {
   };
 
   const handleOpenBillingPortal = async () => {
+    if (!workspaceId) return;
+
     try {
       setProcessingAction(true);
       const result = await billingService.getBillingPortal(workspaceId);
@@ -286,6 +282,20 @@ export default function BillingPage() {
         100,
       )
     : 0;
+
+  // Guard: Show loading state if workspace is not loaded yet
+  if (!workspace || !workspaceId) {
+    return (
+      <div className="container max-w-6xl py-8">
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Cargando información de workspace...
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

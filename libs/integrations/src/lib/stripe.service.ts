@@ -49,19 +49,23 @@ export interface StripeSubscription {
 @Injectable()
 export class StripeService {
   private readonly logger = new Logger(StripeService.name);
-  private readonly stripe: Stripe;
+  private readonly stripe: Stripe | null;
   private readonly isDev: boolean;
+  private readonly isEnabled: boolean;
 
   constructor() {
     const apiKey = process.env['STRIPE_SECRET_KEY'];
+    this.isDev = process.env['NODE_ENV'] === 'development';
+    this.isEnabled = !!apiKey;
 
     if (!apiKey) {
-      throw new Error(
-        'STRIPE_SECRET_KEY is not defined in environment variables',
+      this.stripe = null;
+      this.logger.warn(
+        '⚠️  Stripe is not configured (STRIPE_SECRET_KEY missing). Billing features will be disabled.',
       );
+      return;
     }
 
-    this.isDev = process.env['NODE_ENV'] === 'development';
     this.stripe = new Stripe(apiKey, {
       apiVersion: '2025-12-15.clover',
       typescript: true,
@@ -73,13 +77,32 @@ export class StripeService {
   }
 
   /**
+   * Check if Stripe is properly configured
+   */
+  private checkStripeEnabled(): void {
+    if (!this.isEnabled || !this.stripe) {
+      throw new Error(
+        'Stripe is not configured. Please set STRIPE_SECRET_KEY in environment variables.',
+      );
+    }
+  }
+
+  /**
+   * Returns whether Stripe is enabled and configured
+   */
+  isStripeEnabled(): boolean {
+    return this.isEnabled;
+  }
+
+  /**
    * Creates a new Stripe customer
    */
   async createCustomer(params: CreateCustomerParams): Promise<StripeCustomer> {
+    this.checkStripeEnabled();
     try {
       this.logger.log(`Creating customer: ${params.email}`);
 
-      const customer = await this.stripe.customers.create({
+      const customer = await this.stripe!.customers.create({
         email: params.email,
         name: params.name,
         metadata: params.metadata || {},
@@ -107,8 +130,9 @@ export class StripeService {
    * Retrieves a Stripe customer by ID
    */
   async getCustomer(customerId: string): Promise<StripeCustomer | null> {
+    this.checkStripeEnabled();
     try {
-      const customer = await this.stripe.customers.retrieve(customerId);
+      const customer = await this.stripe!.customers.retrieve(customerId);
 
       if (customer.deleted) {
         return null;
@@ -138,8 +162,9 @@ export class StripeService {
     customerId: string,
     params: Partial<CreateCustomerParams>,
   ): Promise<StripeCustomer> {
+    this.checkStripeEnabled();
     try {
-      const customer = await this.stripe.customers.update(customerId, {
+      const customer = await this.stripe!.customers.update(customerId, {
         email: params.email,
         name: params.name,
         metadata: params.metadata,
@@ -167,12 +192,13 @@ export class StripeService {
   async createSubscription(
     params: CreateSubscriptionParams,
   ): Promise<StripeSubscription> {
+    this.checkStripeEnabled();
     try {
       this.logger.log(
         `Creating subscription for customer: ${params.customerId}`,
       );
 
-      const subscription = await this.stripe.subscriptions.create({
+      const subscription = await this.stripe!.subscriptions.create({
         customer: params.customerId,
         items: [{ price: params.priceId }],
         metadata: params.metadata || {},
@@ -200,9 +226,10 @@ export class StripeService {
   async getSubscription(
     subscriptionId: string,
   ): Promise<StripeSubscription | null> {
+    this.checkStripeEnabled();
     try {
       const subscription =
-        await this.stripe.subscriptions.retrieve(subscriptionId);
+        await this.stripe!.subscriptions.retrieve(subscriptionId);
       return this.mapSubscription(subscription);
     } catch (error) {
       const err = error as StripeError;
@@ -225,6 +252,7 @@ export class StripeService {
     subscriptionId: string,
     atPeriodEnd = true,
   ): Promise<StripeSubscription> {
+    this.checkStripeEnabled();
     try {
       this.logger.log(
         `Canceling subscription: ${subscriptionId} (at period end: ${atPeriodEnd})`,
@@ -233,11 +261,11 @@ export class StripeService {
       let subscription: Stripe.Subscription;
 
       if (atPeriodEnd) {
-        subscription = await this.stripe.subscriptions.update(subscriptionId, {
+        subscription = await this.stripe!.subscriptions.update(subscriptionId, {
           cancel_at_period_end: true,
         });
       } else {
-        subscription = await this.stripe.subscriptions.cancel(subscriptionId);
+        subscription = await this.stripe!.subscriptions.cancel(subscriptionId);
       }
 
       this.logger.log(`✅ Subscription canceled: ${subscription.id}`);
@@ -259,10 +287,11 @@ export class StripeService {
   async resumeSubscription(
     subscriptionId: string,
   ): Promise<StripeSubscription> {
+    this.checkStripeEnabled();
     try {
       this.logger.log(`Resuming subscription: ${subscriptionId}`);
 
-      const subscription = await this.stripe.subscriptions.update(
+      const subscription = await this.stripe!.subscriptions.update(
         subscriptionId,
         {
           cancel_at_period_end: false,
@@ -288,12 +317,13 @@ export class StripeService {
   async createPaymentIntent(
     params: CreatePaymentIntentParams,
   ): Promise<Stripe.PaymentIntent> {
+    this.checkStripeEnabled();
     try {
       this.logger.log(
         `Creating payment intent: $${params.amount / 100} ${params.currency || 'USD'}`,
       );
 
-      const paymentIntent = await this.stripe.paymentIntents.create({
+      const paymentIntent = await this.stripe!.paymentIntents.create({
         amount: params.amount,
         currency: params.currency || 'usd',
         customer: params.customerId,
@@ -320,9 +350,10 @@ export class StripeService {
   async getPaymentIntent(
     paymentIntentId: string,
   ): Promise<Stripe.PaymentIntent | null> {
+    this.checkStripeEnabled();
     try {
       const paymentIntent =
-        await this.stripe.paymentIntents.retrieve(paymentIntentId);
+        await this.stripe!.paymentIntents.retrieve(paymentIntentId);
       return paymentIntent;
     } catch (error) {
       const err = error as StripeError;
@@ -348,6 +379,7 @@ export class StripeService {
     cancelUrl: string;
     metadata?: Record<string, string>;
   }): Promise<Stripe.Checkout.Session> {
+    this.checkStripeEnabled();
     try {
       this.logger.log(`Creating checkout session (${params.mode})`);
 
@@ -366,7 +398,8 @@ export class StripeService {
         sessionParams.line_items = [{ price: params.priceId, quantity: 1 }];
       }
 
-      const session = await this.stripe.checkout.sessions.create(sessionParams);
+      const session =
+        await this.stripe!.checkout.sessions.create(sessionParams);
 
       this.logger.log(`✅ Checkout session created: ${session.id}`);
 
@@ -388,12 +421,13 @@ export class StripeService {
     customerId: string;
     returnUrl: string;
   }): Promise<Stripe.BillingPortal.Session> {
+    this.checkStripeEnabled();
     try {
       this.logger.log(
         `Creating billing portal session for customer: ${params.customerId}`,
       );
 
-      const session = await this.stripe.billingPortal.sessions.create({
+      const session = await this.stripe!.billingPortal.sessions.create({
         customer: params.customerId,
         return_url: params.returnUrl,
       });
@@ -422,8 +456,9 @@ export class StripeService {
     signature: string,
     secret: string,
   ): Stripe.Event {
+    this.checkStripeEnabled();
     try {
-      return this.stripe.webhooks.constructEvent(payload, signature, secret);
+      return this.stripe!.webhooks.constructEvent(payload, signature, secret);
     } catch (error) {
       const err = error as Error;
       this.logger.error(

@@ -76,9 +76,39 @@ export class BillingService {
    * Get available plans
    */
   getAvailablePlans() {
+    const planDetails = {
+      [PlanType.FREE]: {
+        name: 'Free',
+        maxUsers: 1,
+        maxPractices: 1,
+      },
+      [PlanType.STARTER]: {
+        name: 'Starter',
+        maxUsers: 2,
+        maxPractices: 1,
+      },
+      [PlanType.PROFESSIONAL]: {
+        name: 'Professional',
+        maxUsers: 5,
+        maxPractices: 5,
+      },
+      [PlanType.ENTERPRISE]: {
+        name: 'Enterprise',
+        maxUsers: -1, // Unlimited
+        maxPractices: -1, // Unlimited
+      },
+    };
+
     return Object.entries(PLAN_PRICES).map(([plan, details]) => ({
       plan,
-      ...details,
+      name: planDetails[plan as PlanType].name,
+      price: details.monthlyPrice, // Monthly price in cents
+      priceYearly: details.yearlyPrice, // Yearly price in cents
+      credits: details.credits,
+      maxUsers: planDetails[plan as PlanType].maxUsers,
+      maxPractices: planDetails[plan as PlanType].maxPractices,
+      stripePriceIdMonthly: details.stripePriceIdMonthly,
+      stripePriceIdYearly: details.stripePriceIdYearly,
     }));
   }
 
@@ -378,33 +408,198 @@ export class BillingService {
 
   /**
    * Deduct credits from workspace (called when sending messages)
+   * Returns remaining credits after deduction
    */
-  async deductCredits(workspaceId: string, amount: number): Promise<boolean> {
+  async deductCredits(
+    workspaceId: string,
+    amount: number,
+  ): Promise<{ success: boolean; remainingCredits: number; plan: string }> {
     const workspace = await this.prisma.workspace.findUnique({
       where: { id: workspaceId },
+      select: {
+        id: true,
+        plan: true,
+        messageCredits: true,
+      },
     });
 
     if (!workspace) {
       throw new NotFoundException('Workspace not found');
     }
 
-    // Check if has enough credits (or unlimited on ENTERPRISE)
-    if (
-      workspace.plan !== PlanType.ENTERPRISE &&
-      workspace.messageCredits < amount
-    ) {
-      throw new BadRequestException('Insufficient message credits');
+    // ENTERPRISE has unlimited credits
+    if (workspace.plan === PlanType.ENTERPRISE) {
+      this.logger.debug(
+        `Workspace ${workspaceId} has ENTERPRISE plan - unlimited credits`,
+      );
+      return {
+        success: true,
+        remainingCredits: -1, // -1 = unlimited
+        plan: workspace.plan,
+      };
     }
 
-    // Deduct credits (only if not ENTERPRISE with unlimited)
-    if (workspace.plan !== PlanType.ENTERPRISE) {
-      await this.prisma.workspace.update({
-        where: { id: workspaceId },
-        data: { messageCredits: { decrement: amount } },
-      });
+    // Check if has enough credits
+    if (workspace.messageCredits < amount) {
+      this.logger.error(
+        `Workspace ${workspaceId} has insufficient credits: ${workspace.messageCredits} < ${amount}`,
+      );
+      throw new BadRequestException(
+        `Insufficient message credits. You have ${workspace.messageCredits} credits but need ${amount}. Please purchase more credits or upgrade your plan.`,
+      );
     }
 
-    return true;
+    // Deduct credits atomically
+    const updated = await this.prisma.workspace.update({
+      where: { id: workspaceId },
+      data: { messageCredits: { decrement: amount } },
+      select: { messageCredits: true },
+    });
+
+    const remainingCredits = updated.messageCredits;
+
+    // Create transaction record for audit trail
+    await this.prisma.transaction.create({
+      data: {
+        workspaceId,
+        type: 'CREDIT_ADJUSTMENT',
+        status: 'SUCCEEDED',
+        amount: 0,
+        currency: 'usd',
+        creditsAdded: -amount, // Negative for deduction
+        description: `Message sent - ${amount} credit(s) deducted`,
+      },
+    });
+
+    this.logger.log(
+      `✅ Deducted ${amount} credit(s) from workspace ${workspaceId}. Remaining: ${remainingCredits}`,
+    );
+
+    return {
+      success: true,
+      remainingCredits,
+      plan: workspace.plan,
+    };
+  }
+
+  /**
+   * Check if workspace can send a message (has enough credits)
+   */
+  async canSendMessage(
+    workspaceId: string,
+    requiredCredits = 1,
+  ): Promise<{ canSend: boolean; remainingCredits: number; reason?: string }> {
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: {
+        plan: true,
+        messageCredits: true,
+      },
+    });
+
+    if (!workspace) {
+      return {
+        canSend: false,
+        remainingCredits: 0,
+        reason: 'Workspace not found',
+      };
+    }
+
+    // ENTERPRISE has unlimited credits
+    if (workspace.plan === PlanType.ENTERPRISE) {
+      return {
+        canSend: true,
+        remainingCredits: -1, // -1 = unlimited
+      };
+    }
+
+    // Check if has enough credits
+    if (workspace.messageCredits < requiredCredits) {
+      return {
+        canSend: false,
+        remainingCredits: workspace.messageCredits,
+        reason: `Insufficient credits. Have ${workspace.messageCredits}, need ${requiredCredits}`,
+      };
+    }
+
+    return {
+      canSend: true,
+      remainingCredits: workspace.messageCredits,
+    };
+  }
+
+  /**
+   * Check if credits are running low and return alert level
+   */
+  async checkLowCreditsAlert(workspaceId: string): Promise<{
+    alertLevel: 'none' | 'info' | 'warning' | 'critical';
+    remainingCredits: number;
+    percentageRemaining: number;
+    shouldNotify: boolean;
+  }> {
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: {
+        plan: true,
+        messageCredits: true,
+      },
+    });
+
+    if (!workspace) {
+      throw new NotFoundException('Workspace not found');
+    }
+
+    // ENTERPRISE has unlimited
+    if (workspace.plan === PlanType.ENTERPRISE) {
+      return {
+        alertLevel: 'none',
+        remainingCredits: -1,
+        percentageRemaining: 100,
+        shouldNotify: false,
+      };
+    }
+
+    // Get plan credit limit
+    const planDetails = PLAN_PRICES[workspace.plan];
+    const planLimit = planDetails?.credits || 0;
+
+    if (planLimit === 0) {
+      return {
+        alertLevel: 'none',
+        remainingCredits: workspace.messageCredits,
+        percentageRemaining: 0,
+        shouldNotify: false,
+      };
+    }
+
+    const remainingCredits = workspace.messageCredits;
+    const percentageRemaining = (remainingCredits / planLimit) * 100;
+
+    let alertLevel: 'none' | 'info' | 'warning' | 'critical' = 'none';
+    let shouldNotify = false;
+
+    if (percentageRemaining < 10 && remainingCredits > 0) {
+      alertLevel = 'critical';
+      shouldNotify = true;
+    } else if (percentageRemaining < 20 && remainingCredits > 0) {
+      alertLevel = 'warning';
+      shouldNotify = true;
+    } else if (percentageRemaining < 50 && remainingCredits > 0) {
+      alertLevel = 'info';
+      shouldNotify = false; // Don't spam for 50%
+    }
+
+    if (remainingCredits === 0) {
+      alertLevel = 'critical';
+      shouldNotify = true;
+    }
+
+    return {
+      alertLevel,
+      remainingCredits,
+      percentageRemaining,
+      shouldNotify,
+    };
   }
 
   /**
