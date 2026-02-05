@@ -123,12 +123,16 @@ enum MessageStatus {
 }
 
 model Workspace {
-  id                   String   @id @default(cuid())
-  name                 String
-  plan                 String   @default("FREE") // FREE, STARTER, PROFESSIONAL, ENTERPRISE
-  messageCredits       Int      @default(50)
-  stripeCustomerId     String?        @unique
-  stripeSubscriptionId String?        @unique
+  id                       String    @id @default(cuid())
+  name                     String
+  plan                     String    @default("FREE") // FREE, STARTER, PROFESSIONAL, ENTERPRISE
+  messageCredits           Int       @default(50)
+  stripeCustomerId         String?   @unique
+  stripeSubscriptionId     String?   @unique
+  subscriptionStatus       String?   // active, canceled, incomplete, incomplete_expired, past_due, trialing, unpaid
+  subscriptionPeriodEnd    DateTime?
+  trialEnd                 DateTime?
+  cancelAtPeriodEnd        Boolean   @default(false)
 
   // Channel Configuration
   defaultChannel       MessageChannel @default(SMS)
@@ -147,8 +151,11 @@ model Workspace {
   templates Template[]
   messages  Message[]
   weeklyReportConfig WeeklyReportConfig?
+  transactions Transaction[]
 
   @@index([plan])
+  @@index([stripeCustomerId])
+  @@index([subscriptionStatus])
 }
 
 model WorkspaceUser {
@@ -379,4 +386,52 @@ model WeeklyReportConfig {
 
   @@index([workspaceId])
   @@index([enabled])
+}
+
+// ============================================
+// Billing Models
+// ============================================
+
+enum TransactionType {
+  SUBSCRIPTION_PAYMENT
+  CREDIT_PURCHASE
+  REFUND
+  CREDIT_ADJUSTMENT
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+model Transaction {
+  id                   String            @id @default(cuid())
+  workspaceId          String
+  workspace            Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Stripe data
+  stripePaymentIntentId String?          @unique
+  stripeInvoiceId       String?          @unique
+  stripeChargeId        String?
+
+  // Transaction details
+  type                 TransactionType
+  status               TransactionStatus @default(PENDING)
+  amount               Int               // Amount in cents
+  currency             String            @default("usd")
+  creditsAdded         Int               @default(0) // Message credits added
+  description          String?
+
+  // Metadata
+  metadata             Json?             @db.JsonB
+
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  @@index([workspaceId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
 }
