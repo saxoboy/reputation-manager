@@ -43,6 +43,175 @@ export class CampaignProcessor extends WorkerHost {
     }
   }
 
+  /**
+   * Check if workspace has credits and deduct 1 credit
+   * Throws error if insufficient credits (except ENTERPRISE plan)
+   * Creates transaction record for audit trail
+   * Returns remaining credits and checks for low credit alerts
+   */
+  private async checkAndDeductCredits(
+    workspaceId: string,
+  ): Promise<{ remainingCredits: number; plan: string }> {
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { id: true, plan: true, messageCredits: true },
+    });
+
+    if (!workspace) {
+      throw new Error('Workspace not found');
+    }
+
+    // ENTERPRISE has unlimited credits
+    if (workspace.plan === 'ENTERPRISE') {
+      this.logger.debug(
+        `Workspace ${workspaceId} has ENTERPRISE plan - unlimited credits`,
+      );
+      return { remainingCredits: -1, plan: workspace.plan }; // -1 = unlimited
+    }
+
+    // Check if has enough credits
+    if (workspace.messageCredits < 1) {
+      this.logger.error(
+        `Workspace ${workspaceId} has insufficient credits: ${workspace.messageCredits}`,
+      );
+      throw new Error(
+        `Insufficient message credits. You have ${workspace.messageCredits} credits but need 1. Please purchase more credits or upgrade your plan.`,
+      );
+    }
+
+    // Deduct 1 credit atomically
+    const updated = await this.prisma.workspace.update({
+      where: { id: workspaceId },
+      data: { messageCredits: { decrement: 1 } },
+      select: { messageCredits: true },
+    });
+
+    const remainingCredits = updated.messageCredits;
+
+    // Create transaction record for audit trail
+    try {
+      await this.prisma.transaction.create({
+        data: {
+          workspaceId,
+          type: 'CREDIT_ADJUSTMENT',
+          status: 'SUCCEEDED',
+          amount: 0,
+          currency: 'usd',
+          creditsAdded: -1, // Negative for deduction
+          description: 'Message sent - 1 credit deducted',
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to create transaction record for workspace ${workspaceId}`,
+        error,
+      );
+      // Don't throw - transaction record is for audit only
+    }
+
+    this.logger.log(
+      `✅ Deducted 1 credit from workspace ${workspaceId}. Remaining: ${remainingCredits}`,
+    );
+
+    // Check for low credits warning and notifications
+    await this.checkLowCredits(workspaceId, workspace.plan, remainingCredits);
+
+    return { remainingCredits, plan: workspace.plan };
+  }
+
+  /**
+   * Check if credits are running low and log warnings
+   * TODO: Send email notifications via EmailService when implemented
+   */
+  private async checkLowCredits(
+    workspaceId: string,
+    plan: string,
+    remainingCredits: number,
+  ): Promise<void> {
+    // Define credit thresholds per plan for warnings
+    const planLimits: Record<string, number> = {
+      FREE: 50,
+      STARTER: 500,
+      PROFESSIONAL: 2000,
+      ENTERPRISE: -1, // Unlimited
+    };
+
+    const planLimit = planLimits[plan] || 0;
+    if (planLimit === -1) return; // ENTERPRISE has unlimited
+
+    const percentageRemaining = (remainingCredits / planLimit) * 100;
+
+    // CRITICAL: No credits left
+    if (remainingCredits === 0) {
+      this.logger.error(
+        `🚨 CRITICAL: Workspace ${workspaceId} has 0 credits remaining! Messages cannot be sent.`,
+      );
+      // TODO: Send urgent email to workspace owner
+      // await this.emailService.sendLowCreditsAlert({
+      //   workspaceId,
+      //   alertLevel: 'critical',
+      //   remainingCredits: 0,
+      //   plan,
+      //   subject: 'URGENT: Your message credits have been depleted',
+      //   message: 'You cannot send more messages until you add credits or upgrade your plan.',
+      //   ctaUrl: `${process.env.FRONTEND_URL}/dashboard/billing`
+      // });
+      return;
+    }
+
+    // CRITICAL: < 10% remaining
+    if (percentageRemaining < 10) {
+      this.logger.warn(
+        `🚨 CRITICAL: Workspace ${workspaceId} has only ${remainingCredits} credits remaining (${percentageRemaining.toFixed(1)}% of ${plan} plan limit)`,
+      );
+      // TODO: Send email alert to workspace owner
+      // await this.emailService.sendLowCreditsAlert({
+      //   workspaceId,
+      //   alertLevel: 'critical',
+      //   remainingCredits,
+      //   percentageRemaining: percentageRemaining.toFixed(1),
+      //   plan,
+      //   subject: 'CRITICAL: Less than 10% of your message credits remain',
+      //   ctaUrl: `${process.env.FRONTEND_URL}/dashboard/billing`
+      // });
+    }
+    // WARNING: < 20% remaining
+    else if (percentageRemaining < 20) {
+      this.logger.warn(
+        `⚠️ WARNING: Workspace ${workspaceId} has ${remainingCredits} credits remaining (${percentageRemaining.toFixed(1)}% of ${plan} plan)`,
+      );
+      // TODO: Send email alert to workspace owner
+      // await this.emailService.sendLowCreditsAlert({
+      //   workspaceId,
+      //   alertLevel: 'warning',
+      //   remainingCredits,
+      //   percentageRemaining: percentageRemaining.toFixed(1),
+      //   plan,
+      //   subject: 'Warning: Running low on message credits',
+      //   ctaUrl: `${process.env.FRONTEND_URL}/dashboard/billing`
+      // });
+    }
+    // INFO: First time dropping below 50%
+    else if (
+      percentageRemaining < 50 &&
+      remainingCredits === Math.floor(planLimit / 2)
+    ) {
+      this.logger.log(
+        `ℹ️ INFO: Workspace ${workspaceId} has used 50% of credits (${remainingCredits} remaining)`,
+      );
+      // Optional: Send informational email
+      // await this.emailService.sendLowCreditsAlert({
+      //   workspaceId,
+      //   alertLevel: 'info',
+      //   remainingCredits,
+      //   percentageRemaining: 50,
+      //   plan,
+      //   subject: 'You've used 50% of your message credits',
+      //   ctaUrl: `${process.env.FRONTEND_URL}/dashboard/billing`
+      // });
+    }
+  }
+
   private async handleSendInitialMessage(job: Job): Promise<any> {
     const { patientId, workspaceId, campaignId } = job.data;
 
@@ -112,6 +281,9 @@ export class CampaignProcessor extends WorkerHost {
         ? 'Template: feedback_request_v1'
         : `Hola ${patient.name}, gracias por tu visita. ¿Cómo nos calificarías del 1 al 5?`;
     let externalId = '';
+
+    // 💳 Check credits and deduct 1 before sending
+    await this.checkAndDeductCredits(workspaceId);
 
     if (channel === 'WHATSAPP') {
       const success = await this.whatsAppService.sendTemplateMessage(
@@ -267,6 +439,9 @@ export class CampaignProcessor extends WorkerHost {
 
     const channel = patient.preferredChannel || 'SMS';
     let externalId = '';
+
+    // 💳 Check credits and deduct 1 before sending
+    await this.checkAndDeductCredits(workspaceId);
 
     if (channel === 'WHATSAPP') {
       const success = await this.whatsAppService.sendTextMessage(

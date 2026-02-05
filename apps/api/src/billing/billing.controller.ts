@@ -130,4 +130,23 @@ export class BillingController {
   async getTransactions(@Param('workspaceId') workspaceId: string) {
     return this.billingService.getTransactions(workspaceId);
   }
+
+  /**
+   * GET /workspaces/:workspaceId/billing/can-send
+   * Check if workspace has enough credits to send messages
+   * Used for pre-validation before enqueuing jobs
+   */
+  @Get('can-send')
+  async canSendMessages(@Param('workspaceId') workspaceId: string) {
+    return this.billingService.canSendMessage(workspaceId, 1);
+  }
+
+  /**
+   * GET /workspaces/:workspaceId/billing/credits-alert
+   * Get low credits alert level and notification status
+   */
+  @Get('credits-alert')
+  async getCreditsAlert(@Param('workspaceId') workspaceId: string) {
+    return this.billingService.checkLowCreditsAlert(workspaceId);
+  }
 }
