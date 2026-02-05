@@ -71,7 +71,7 @@ export function WeeklyReportSettings() {
         `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/weekly-reports/config`,
         {
           credentials: 'include',
-        }
+        },
       );
 
       if (!response.ok) {
@@ -112,7 +112,7 @@ export function WeeklyReportSettings() {
             dayOfWeek,
             recipients,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -197,7 +197,7 @@ export function WeeklyReportSettings() {
           body: JSON.stringify({
             testEmail: email,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -291,7 +291,9 @@ export function WeeklyReportSettings() {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Los reportes se enviarán cada {DAYS_OF_WEEK.find(d => d.value === dayOfWeek)?.label} a las 9:00 AM (hora de Ecuador)
+                Los reportes se enviarán cada{' '}
+                {DAYS_OF_WEEK.find((d) => d.value === dayOfWeek)?.label} a las
+                9:00 AM (hora de Ecuador)
               </p>
             </div>
 
@@ -376,7 +378,8 @@ export function WeeklyReportSettings() {
             <div>
               <h4 className="font-medium mb-1">Enviar reporte de prueba</h4>
               <p className="text-sm text-muted-foreground">
-                Envía un reporte inmediatamente para verificar que todo funciona correctamente
+                Envía un reporte inmediatamente para verificar que todo funciona
+                correctamente
               </p>
             </div>
 
