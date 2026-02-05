@@ -9,6 +9,7 @@ import {
 import { WorkspaceSettings } from '../../../../components/settings/workspace-settings';
 import { ProfileSettings } from '../../../../components/settings/profile-settings';
 import { BillingSettings } from '../../../../components/settings/billing-settings';
+import { WeeklyReportSettings } from '../../../../components/settings/weekly-report-settings';
 
 export default function SettingsPage() {
   return (
@@ -24,6 +25,7 @@ export default function SettingsPage() {
         <TabsList>
           <TabsTrigger value="workspace">Workspace</TabsTrigger>
           <TabsTrigger value="profile">Mi Perfil</TabsTrigger>
+          <TabsTrigger value="reports">Reportes</TabsTrigger>
           <TabsTrigger value="billing">Facturación</TabsTrigger>
         </TabsList>
 
@@ -33,6 +35,10 @@ export default function SettingsPage() {
 
         <TabsContent value="profile">
           <ProfileSettings />
+        </TabsContent>
+
+        <TabsContent value="reports">
+          <WeeklyReportSettings />
         </TabsContent>
 
         <TabsContent value="billing">

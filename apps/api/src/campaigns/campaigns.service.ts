@@ -185,7 +185,7 @@ export class CampaignsService {
     uploadDto: UploadCsvDto,
   ) {
     // Verificar que la campaña existe y pertenece al workspace
-    const campaign = await this.findOne(campaignId, workspaceId);
+    await this.findOne(campaignId, workspaceId);
 
     // Parsear CSV
     const parseResult = parsePatientsCSV(uploadDto.csvContent, {
@@ -233,5 +233,81 @@ export class CampaignsService {
       patients: createdPatients,
       errors: parseResult.errors.length > 0 ? parseResult.errors : undefined,
     };
+  }
+
+  /**
+   * Exportar datos de una campaña en formato CSV
+   */
+  async exportCampaignCsv(
+    campaignId: string,
+    workspaceId: string,
+  ): Promise<string> {
+    // Verificar que la campaña existe y pertenece al workspace
+    await this.findOne(campaignId, workspaceId);
+
+    // Obtener pacientes con sus mensajes
+    const patients = await this.prisma.patient.findMany({
+      where: {
+        campaignId,
+        workspaceId,
+      },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    // Generar CSV
+    const headers = [
+      'Nombre',
+      'Teléfono',
+      'Email',
+      'Fecha de Cita',
+      'Tipo de Cita',
+      'Estado',
+      'Mensajes Enviados',
+      'Respuesta',
+      'Rating',
+      'Fecha de Respuesta',
+      'Consentimiento',
+    ];
+
+    const rows = patients.map((patient) => {
+      const responseMessage = patient.messages.find((m) => m.repliedAt);
+
+      // Calcular estado del paciente
+      let status = 'PENDING';
+      if (responseMessage) {
+        status = 'RESPONDED';
+      } else if (patient.messages.length > 0) {
+        status = 'SENT';
+      }
+
+      return [
+        patient.name,
+        patient.phone,
+        patient.email || '',
+        patient.appointmentTime.toISOString(),
+        patient.appointmentType || '',
+        status,
+        patient.messages.length.toString(),
+        responseMessage?.feedback || '',
+        responseMessage?.rating?.toString() || '',
+        responseMessage?.repliedAt?.toISOString() || '',
+        patient.hasConsent ? 'Sí' : 'No',
+      ];
+    });
+
+    // Construir CSV manualmente
+    const csvLines = [
+      headers.join(','),
+      ...rows.map((row) =>
+        row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(','),
+      ),
+    ];
+
+    return csvLines.join('\n');
   }
 }

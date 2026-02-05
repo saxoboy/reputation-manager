@@ -438,35 +438,36 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 ## Phase 4: Analytics (4 semanas)
 
 **Fecha**: Mar 16 - Abr 15, 2026  
+**Estado**: 🟡 **EN PROGRESO** (50% completado - Ver [PHASE_4_PROGRESS.md](./PHASE_4_PROGRESS.md))  
 **Goal**: Dashboard con métricas, reports, exports
 
 ### Semana 1-2: Core Metrics
 
 **Backend**:
 
-- [ ] Analytics endpoints:
-  - [ ] `GET /analytics/workspace` - Overview metrics
-  - [ ] `GET /analytics/campaigns/:id` - Campaign stats
-  - [ ] `GET /analytics/practices/:id` - Practice stats
-  - [ ] `GET /analytics/timeline` - Time series data
-- [ ] Queries:
-  - [ ] Total messages sent
-  - [ ] Response rate
-  - [ ] Average rating
-  - [ ] NPS score
-  - [ ] Conversion rate (responded → Google Review)
-  - [ ] Rating distribution (1-5)
-  - [ ] Messages per day (last 30 days)
+- [x] Analytics endpoints:
+  - [x] `GET /analytics/workspace` - Overview metrics
+  - [x] `GET /analytics/campaigns/:id` - Campaign stats
+  - [x] `GET /analytics/practices/:id` - Practice stats
+  - [x] `GET /analytics/timeline` - Time series data
+- [x] Queries:
+  - [x] Total messages sent
+  - [x] Response rate
+  - [x] Average rating
+  - [x] NPS score
+  - [x] Conversion rate (responded → Google Review)
+  - [x] Rating distribution (1-5)
+  - [x] Messages per day (last 30 days)
 
 **Frontend**:
 
-- [ ] Analytics page:
-  - [ ] KPI cards (total sent, response rate, NPS)
-  - [ ] Rating distribution chart (bar chart)
-  - [ ] Messages timeline (line chart)
-  - [ ] Top performing campaigns table
-  - [ ] Filter by date range
-  - [ ] Filter by practice
+- [x] Analytics page:
+  - [x] KPI cards (total sent, response rate, NPS)
+  - [x] Rating distribution chart (bar chart)
+  - [x] Messages timeline (line chart)
+  - [x] Top performing campaigns table
+  - [x] Filter by date range
+  - [x] Filter by practice
 
 **Tests**:
 
@@ -477,18 +478,20 @@ María López,+593988888888,maria@email.com,2026-01-15T11:30:00,true
 
 **Backend**:
 
-- [ ] Export endpoints:
-  - [ ] `GET /campaigns/:id/export` - CSV
-  - [ ] `GET /analytics/report` - PDF
+- [x] Export endpoints:
+  - [x] `GET /campaigns/:id/export` - CSV
+  - [x] `GET /analytics/export/csv` - Analytics CSV
+  - [x] `GET /analytics/export/pdf` - Analytics PDF
 - [ ] Report generation:
   - [ ] Weekly summary email (via SendGrid)
-  - [ ] PDF report with charts
+  - [x] PDF report with charts
 
 **Frontend**:
 
-- [ ] Export buttons:
-  - [ ] Download campaign CSV
-  - [ ] Download PDF report
+- [x] Export buttons:
+  - [x] Download campaign CSV
+  - [x] Download analytics CSV
+  - [x] Download PDF report
 - [ ] Scheduled reports settings:
   - [ ] Enable/disable weekly email
   - [ ] Email recipients

@@ -14,6 +14,8 @@ import { PatientsModule } from '../patients/patients.module';
 import { MessagesModule } from '../messages/messages.module';
 import { WebhooksModule } from '../webhooks/webhooks.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
+import { WeeklyReportsModule } from '../weekly-reports/weekly-reports.module';
+import { BillingModule } from '../billing/billing.module';
 
 @Module({
   imports: [
@@ -41,6 +43,8 @@ import { AnalyticsModule } from '../analytics/analytics.module';
     MessagesModule,
     WebhooksModule,
     AnalyticsModule,
+    WeeklyReportsModule,
+    BillingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

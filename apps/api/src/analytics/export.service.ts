@@ -86,15 +86,15 @@ export class ExportService {
       { metric: '', value: '' },
       { metric: '=== SENTIMIENTO ===', value: '' },
       {
-        metric: 'Pacientes Felices (4-5⭐)',
+        metric: 'Pacientes Felices (4-5 estrellas)',
         value: data.sentiment.happy.toString(),
       },
       {
-        metric: 'Pacientes Neutrales (3⭐)',
+        metric: 'Pacientes Neutrales (3 estrellas)',
         value: data.sentiment.neutral.toString(),
       },
       {
-        metric: 'Pacientes Infelices (1-2⭐)',
+        metric: 'Pacientes Infelices (1-2 estrellas)',
         value: data.sentiment.unhappy.toString(),
       },
       { metric: '', value: '' },
@@ -123,7 +123,7 @@ export class ExportService {
       { metric: '=== TOP CAMPAÑAS ===', value: '' },
       ...data.campaigns.map((campaign) => ({
         metric: campaign.name,
-        value: `${campaign.messagesSent} mensajes | ${campaign.responses} respuestas | ${campaign.responseRate.toFixed(1)}% | ⭐ ${campaign.averageRating.toFixed(2)}`,
+        value: `${campaign.messagesSent} mensajes | ${campaign.responses} respuestas | ${campaign.responseRate.toFixed(1)}% | Rating: ${campaign.averageRating.toFixed(2)}/5.0`,
       })),
     ];
 
@@ -203,21 +203,21 @@ export class ExportService {
         data.sentiment.happy + data.sentiment.neutral + data.sentiment.unhappy;
       const sentimentData = [
         [
-          'Felices (4-5⭐)',
+          'Felices (4-5 estrellas)',
           data.sentiment.happy.toString(),
           total > 0
             ? `${((data.sentiment.happy / total) * 100).toFixed(1)}%`
             : '0%',
         ],
         [
-          'Neutrales (3⭐)',
+          'Neutrales (3 estrellas)',
           data.sentiment.neutral.toString(),
           total > 0
             ? `${((data.sentiment.neutral / total) * 100).toFixed(1)}%`
             : '0%',
         ],
         [
-          'Infelices (1-2⭐)',
+          'Infelices (1-2 estrellas)',
           data.sentiment.unhappy.toString(),
           total > 0
             ? `${((data.sentiment.unhappy / total) * 100).toFixed(1)}%`
@@ -244,8 +244,9 @@ export class ExportService {
       doc.fontSize(11).font('Helvetica');
       for (let i = 5; i >= 1; i--) {
         const count = data.ratingDistribution[i.toString()] || 0;
+        const stars = i === 1 ? 'estrella' : 'estrellas';
         doc
-          .text(`${'⭐'.repeat(i)}: `, { continued: true })
+          .text(`${i} ${stars}: `, { continued: true })
           .font('Helvetica-Bold')
           .text(count.toString());
       }
@@ -263,7 +264,7 @@ export class ExportService {
             .font('Helvetica')
             .fontSize(9)
             .text(
-              `   ${campaign.messagesSent} mensajes | ${campaign.responses} respuestas | ${campaign.responseRate.toFixed(1)}% | ⭐ ${campaign.averageRating.toFixed(2)}`,
+              `   ${campaign.messagesSent} mensajes | ${campaign.responses} respuestas | ${campaign.responseRate.toFixed(1)}% | Rating: ${campaign.averageRating.toFixed(2)}/5.0`,
             );
           doc.moveDown(0.3);
         });
