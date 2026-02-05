@@ -15,6 +15,7 @@ import { MessagesModule } from '../messages/messages.module';
 import { WebhooksModule } from '../webhooks/webhooks.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { WeeklyReportsModule } from '../weekly-reports/weekly-reports.module';
+import { BillingModule } from '../billing/billing.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { WeeklyReportsModule } from '../weekly-reports/weekly-reports.module';
     WebhooksModule,
     AnalyticsModule,
     WeeklyReportsModule,
+    BillingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

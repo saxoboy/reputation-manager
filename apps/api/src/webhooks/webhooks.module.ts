@@ -4,10 +4,12 @@ import { PrismaService } from '@reputation-manager/database';
 import {
   TwilioService,
   WhatsAppService,
+  StripeService,
 } from '@reputation-manager/integrations';
 import { QUEUES } from '@reputation-manager/shared-types';
 import { TwilioWebhookController } from './twilio-webhook.controller';
 import { WhatsAppWebhookController } from './whatsapp-webhook.controller';
+import { StripeWebhookController } from './stripe-webhook.controller';
 
 @Module({
   imports: [
@@ -15,7 +17,11 @@ import { WhatsAppWebhookController } from './whatsapp-webhook.controller';
       name: QUEUES.CAMPAIGNS,
     }),
   ],
-  controllers: [TwilioWebhookController, WhatsAppWebhookController],
-  providers: [PrismaService, TwilioService, WhatsAppService],
+  controllers: [
+    TwilioWebhookController,
+    WhatsAppWebhookController,
+    StripeWebhookController,
+  ],
+  providers: [PrismaService, TwilioService, WhatsAppService, StripeService],
 })
 export class WebhooksModule {}

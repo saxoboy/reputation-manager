@@ -1,0 +1,133 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import { BillingService } from './billing.service';
+import {
+  CreateSubscriptionDto,
+  CancelSubscriptionDto,
+  PurchaseCreditsDto,
+  BillingInfoDto,
+} from './dto';
+
+// TODO: Import guards once auth is fully implemented
+// import { JwtGuard } from '../auth/guards/jwt.guard';
+// import { WorkspaceGuard } from '../common/guards/workspace.guard';
+// import { Roles } from '../common/decorators/roles.decorator';
+// import { RolesGuard } from '../common/guards/roles.guard';
+// import { UseGuards } from '@nestjs/common';
+
+@Controller('workspaces/:workspaceId/billing')
+// @UseGuards(JwtGuard, WorkspaceGuard, RolesGuard)
+export class BillingController {
+  constructor(private readonly billingService: BillingService) {}
+
+  /**
+   * GET /workspaces/:workspaceId/billing
+   * Get current billing information
+   */
+  @Get()
+  async getBillingInfo(
+    @Param('workspaceId') workspaceId: string,
+  ): Promise<BillingInfoDto> {
+    return this.billingService.getBillingInfo(workspaceId);
+  }
+
+  /**
+   * GET /workspaces/:workspaceId/billing/plans
+   * Get available subscription plans
+   */
+  @Get('plans')
+  async getPlans() {
+    return this.billingService.getAvailablePlans();
+  }
+
+  /**
+   * GET /workspaces/:workspaceId/billing/credit-packages
+   * Get available credit packages
+   */
+  @Get('credit-packages')
+  async getCreditPackages() {
+    return this.billingService.getAvailableCreditPackages();
+  }
+
+  /**
+   * POST /workspaces/:workspaceId/billing/subscribe
+   * Create checkout session for new subscription
+   * @roles OWNER
+   */
+  @Post('subscribe')
+  // @Roles('OWNER')
+  async createSubscription(
+    @Param('workspaceId') workspaceId: string,
+    @Body() dto: CreateSubscriptionDto,
+  ) {
+    return this.billingService.createSubscriptionCheckout(workspaceId, dto);
+  }
+
+  /**
+   * POST /workspaces/:workspaceId/billing/credits
+   * Create checkout session for credit purchase
+   * @roles OWNER
+   */
+  @Post('credits')
+  // @Roles('OWNER')
+  async purchaseCredits(
+    @Param('workspaceId') workspaceId: string,
+    @Body() dto: PurchaseCreditsDto,
+  ) {
+    return this.billingService.createCreditCheckout(workspaceId, dto);
+  }
+
+  /**
+   * POST /workspaces/:workspaceId/billing/cancel
+   * Cancel subscription
+   * @roles OWNER
+   */
+  @Post('cancel')
+  @HttpCode(HttpStatus.OK)
+  // @Roles('OWNER')
+  async cancelSubscription(
+    @Param('workspaceId') workspaceId: string,
+    @Body() dto: CancelSubscriptionDto,
+  ) {
+    return this.billingService.cancelSubscription(workspaceId, dto);
+  }
+
+  /**
+   * POST /workspaces/:workspaceId/billing/resume
+   * Resume canceled subscription
+   * @roles OWNER
+   */
+  @Post('resume')
+  @HttpCode(HttpStatus.OK)
+  // @Roles('OWNER')
+  async resumeSubscription(@Param('workspaceId') workspaceId: string) {
+    return this.billingService.resumeSubscription(workspaceId);
+  }
+
+  /**
+   * GET /workspaces/:workspaceId/billing/portal
+   * Get Stripe billing portal URL
+   * @roles OWNER
+   */
+  @Get('portal')
+  // @Roles('OWNER')
+  async getBillingPortal(@Param('workspaceId') workspaceId: string) {
+    return this.billingService.getBillingPortalUrl(workspaceId);
+  }
+
+  /**
+   * GET /workspaces/:workspaceId/billing/transactions
+   * Get transaction history
+   */
+  @Get('transactions')
+  async getTransactions(@Param('workspaceId') workspaceId: string) {
+    return this.billingService.getTransactions(workspaceId);
+  }
+}
