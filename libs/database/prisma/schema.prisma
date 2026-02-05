@@ -146,6 +146,7 @@ model Workspace {
   patients  Patient[]
   templates Template[]
   messages  Message[]
+  weeklyReportConfig WeeklyReportConfig?
 
   @@index([plan])
 }
@@ -344,4 +345,38 @@ model Template {
 
   @@index([workspaceId])
   @@index([type])
+}
+
+// ============================================
+// Weekly Reports Configuration
+// ============================================
+
+enum ReportDay {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model WeeklyReportConfig {
+  id          String     @id @default(cuid())
+  workspaceId String     @unique
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Configuration
+  enabled     Boolean    @default(false)
+  dayOfWeek   ReportDay  @default(MONDAY)
+  recipients  String[]   // Array of email addresses
+
+  // Tracking
+  lastSentAt  DateTime?
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([workspaceId])
+  @@index([enabled])
 }

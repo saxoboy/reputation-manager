@@ -26,9 +26,17 @@ export class SendGridService {
     const from = process.env['SENDGRID_FROM_EMAIL'] || 'noreply@example.com';
 
     if (!process.env['SENDGRID_API_KEY']) {
-      this.logger.warn(
-        `Email not sent (SendGrid not configured): ${options.subject} to ${options.to}`,
-      );
+      // Modo desarrollo: solo loguear el email
+      this.logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      this.logger.log('📧 EMAIL (Modo Desarrollo - No Enviado)');
+      this.logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      this.logger.log(`From: ${from}`);
+      this.logger.log(`To: ${options.to}`);
+      this.logger.log(`Subject: ${options.subject}`);
+      this.logger.log('─────────────────────────────────────────');
+      this.logger.log('HTML Preview (primeros 500 caracteres):');
+      this.logger.log(options.html.substring(0, 500) + '...');
+      this.logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       return;
     }
 
@@ -41,9 +49,9 @@ export class SendGridService {
         text: options.text || '',
       });
 
-      this.logger.log(`Email sent successfully to ${options.to}`);
+      this.logger.log(`✅ Email sent successfully to ${options.to}`);
     } catch (error) {
-      this.logger.error(`Failed to send email to ${options.to}:`, error);
+      this.logger.error(`❌ Failed to send email to ${options.to}:`, error);
       throw error;
     }
   }

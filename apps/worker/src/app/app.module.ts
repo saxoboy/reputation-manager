@@ -9,6 +9,7 @@ import {
 } from '@reputation-manager/integrations';
 import { QUEUES } from '@reputation-manager/shared-types';
 import { CampaignProcessor } from '../processors/campaign.processor';
+import { WeeklyReportsModule } from '../weekly-reports.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { CampaignProcessor } from '../processors/campaign.processor';
     BullModule.registerQueue({
       name: QUEUES.CAMPAIGNS,
     }),
+    WeeklyReportsModule,
   ],
   controllers: [],
   providers: [
