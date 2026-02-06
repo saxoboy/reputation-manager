@@ -68,8 +68,12 @@ export function UsersList({ users, onDelete, onRoleChange }: UsersListProps) {
         {users.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Users className="h-10 w-10 text-muted-foreground/50 mb-3" />
-            <p className="text-sm font-medium text-muted-foreground">No hay usuarios</p>
-            <p className="text-xs text-muted-foreground/70 mt-1">Invita a tu equipo para gestionar el workspace.</p>
+            <p className="text-sm font-medium text-muted-foreground">
+              No hay usuarios
+            </p>
+            <p className="text-xs text-muted-foreground/70 mt-1">
+              Invita a tu equipo para gestionar el workspace.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -89,7 +93,9 @@ export function UsersList({ users, onDelete, onRoleChange }: UsersListProps) {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
-                          <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                          <AvatarFallback>
+                            {getInitials(user.name)}
+                          </AvatarFallback>
                         </Avatar>
                         <span className="font-medium">{user.name}</span>
                       </div>
@@ -108,10 +114,10 @@ export function UsersList({ users, onDelete, onRoleChange }: UsersListProps) {
                     <TableCell className="text-sm text-muted-foreground">
                       {user.createdAt !== 'N/A'
                         ? new Date(user.createdAt).toLocaleDateString('es-EC', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })
                         : 'N/A'}
                     </TableCell>
                     <TableCell>

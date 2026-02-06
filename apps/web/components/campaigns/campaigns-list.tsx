@@ -67,90 +67,97 @@ export function CampaignsList({ campaigns, workspaceId }: CampaignsListProps) {
           Gestiona y monitorea el estado de tus campañas de feedback.
         </CardDescription>
       </CardHeader>
-      <CardContent>        {campaigns.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <MessageSquare className="h-10 w-10 text-muted-foreground/50 mb-3" />
-          <p className="text-sm font-medium text-muted-foreground">No hay campañas aún</p>
-          <p className="text-xs text-muted-foreground/70 mt-1">Crea tu primera campaña para comenzar a recopilar feedback.</p>
-        </div>
-      ) : (<div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead>Pacientes</TableHead>
-              <TableHead>Respuestas</TableHead>
-              <TableHead>NPS</TableHead>
-              <TableHead>Fecha Creación</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {campaigns.map((campaign) => (
-              <TableRow key={campaign.id}>
-                <TableCell className="font-medium">
-                  <div>{campaign.name}</div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Building2 className="h-3 w-3" />
-                    {campaign.practiceName}
-                  </div>
-                </TableCell>
-                <TableCell>{getStatusBadge(campaign.status)}</TableCell>
-                <TableCell>{campaign.patientsCount}</TableCell>
-                <TableCell>
-                  {campaign.respondedCount}
-                  <span className="text-xs text-muted-foreground ml-1">
-                    (
-                    {campaign.patientsCount > 0
-                      ? Math.round(
-                        (campaign.respondedCount / campaign.patientsCount) *
-                        100,
-                      )
-                      : 0}
-                    %)
-                  </span>
-                </TableCell>
-                <TableCell>
-                  {campaign.nps > 0 ? (
-                    <span
-                      className={
-                        campaign.nps >= 50
-                          ? 'text-green-600 font-medium'
-                          : 'text-yellow-600'
-                      }
-                    >
-                      {campaign.nps}
-                    </span>
-                  ) : (
-                    '-'
-                  )}
-                </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {campaign.createdAt}
-                </TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleOpenUpload(campaign)}
-                  >
-                    <Upload className="h-4 w-4 mr-1" />
-                    Importar CSV
-                  </Button>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/dashboard/campaigns/${campaign.id}`}>
-                      Ver Detalles
-                    </Link>
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      )}
-
+      <CardContent>
+        {' '}
+        {campaigns.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <MessageSquare className="h-10 w-10 text-muted-foreground/50 mb-3" />
+            <p className="text-sm font-medium text-muted-foreground">
+              No hay campañas aún
+            </p>
+            <p className="text-xs text-muted-foreground/70 mt-1">
+              Crea tu primera campaña para comenzar a recopilar feedback.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Pacientes</TableHead>
+                  <TableHead>Respuestas</TableHead>
+                  <TableHead>NPS</TableHead>
+                  <TableHead>Fecha Creación</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {campaigns.map((campaign) => (
+                  <TableRow key={campaign.id}>
+                    <TableCell className="font-medium">
+                      <div>{campaign.name}</div>
+                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Building2 className="h-3 w-3" />
+                        {campaign.practiceName}
+                      </div>
+                    </TableCell>
+                    <TableCell>{getStatusBadge(campaign.status)}</TableCell>
+                    <TableCell>{campaign.patientsCount}</TableCell>
+                    <TableCell>
+                      {campaign.respondedCount}
+                      <span className="text-xs text-muted-foreground ml-1">
+                        (
+                        {campaign.patientsCount > 0
+                          ? Math.round(
+                              (campaign.respondedCount /
+                                campaign.patientsCount) *
+                                100,
+                            )
+                          : 0}
+                        %)
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {campaign.nps > 0 ? (
+                        <span
+                          className={
+                            campaign.nps >= 50
+                              ? 'text-green-600 font-medium'
+                              : 'text-yellow-600'
+                          }
+                        >
+                          {campaign.nps}
+                        </span>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-sm">
+                      {campaign.createdAt}
+                    </TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenUpload(campaign)}
+                      >
+                        <Upload className="h-4 w-4 mr-1" />
+                        Importar CSV
+                      </Button>
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link href={`/dashboard/campaigns/${campaign.id}`}>
+                          Ver Detalles
+                        </Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
         {selectedCampaign && (
           <CsvUploadDialog
             open={uploadDialogOpen}

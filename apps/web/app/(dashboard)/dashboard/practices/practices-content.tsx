@@ -132,7 +132,9 @@ export default function PracticesContent() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Consultorios</h2>
+          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
+            Consultorios
+          </h2>
           <p className="text-sm text-muted-foreground">
             Gestiona tus ubicaciones físicas y su información de contacto.
           </p>

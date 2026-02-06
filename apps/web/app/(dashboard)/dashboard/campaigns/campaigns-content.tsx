@@ -70,7 +70,9 @@ export default function CampaignsContent() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Campañas</h2>
+          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
+            Campañas
+          </h2>
           <p className="text-sm text-muted-foreground">
             Crea campañas masivas importando tu lista de pacientes.
           </p>

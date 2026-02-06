@@ -276,11 +276,11 @@ export default function BillingContent() {
 
   const creditsPercentage = billingInfo
     ? Math.min(
-      (billingInfo.messageCredits /
-        (plans.find((p) => p.plan === billingInfo.plan)?.credits || 1)) *
-      100,
-      100,
-    )
+        (billingInfo.messageCredits /
+          (plans.find((p) => p.plan === billingInfo.plan)?.credits || 1)) *
+          100,
+        100,
+      )
     : 0;
 
   // Guard: Show loading state if workspace is not loaded yet
@@ -326,7 +326,7 @@ export default function BillingContent() {
       {/* Alert Success */}
       {typeof window !== 'undefined' &&
         new URLSearchParams(window.location.search).get('success') ===
-        'true' && (
+          'true' && (
           <Alert>
             <Check className="h-4 w-4" />
             <AlertDescription>
@@ -343,8 +343,8 @@ export default function BillingContent() {
             Tu suscripción será cancelada el{' '}
             {billingInfo.subscriptionPeriodEnd
               ? new Date(billingInfo.subscriptionPeriodEnd).toLocaleDateString(
-                'es-ES',
-              )
+                  'es-ES',
+                )
               : 'final del periodo'}
             .
             <Button

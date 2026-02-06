@@ -105,12 +105,17 @@ export default function TemplatesContent() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Plantillas</h1>
+          <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+            Plantillas
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Gestiona los mensajes automáticos que se envían a tus pacientes.
           </p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)} className="w-full sm:w-auto">
+        <Button
+          onClick={() => setIsCreateOpen(true)}
+          className="w-full sm:w-auto"
+        >
           <Plus className="mr-2 h-4 w-4" /> Nueva Plantilla
         </Button>
       </div>

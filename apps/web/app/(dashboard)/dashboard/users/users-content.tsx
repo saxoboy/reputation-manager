@@ -107,7 +107,10 @@ export default function UsersContent() {
           </p>
         </div>
 
-        <Button onClick={() => setInviteDialogOpen(true)} className="w-full sm:w-auto">
+        <Button
+          onClick={() => setInviteDialogOpen(true)}
+          className="w-full sm:w-auto"
+        >
           <UserPlus className="mr-2 h-4 w-4" />
           Invitar Usuario
         </Button>

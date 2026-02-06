@@ -48,8 +48,12 @@ export function TemplatesList({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <FileText className="h-10 w-10 text-muted-foreground/50 mb-3" />
-        <p className="text-sm font-medium text-muted-foreground">No hay plantillas</p>
-        <p className="text-xs text-muted-foreground/70 mt-1">Crea una plantilla para personalizar los mensajes a tus pacientes.</p>
+        <p className="text-sm font-medium text-muted-foreground">
+          No hay plantillas
+        </p>
+        <p className="text-xs text-muted-foreground/70 mt-1">
+          Crea una plantilla para personalizar los mensajes a tus pacientes.
+        </p>
       </div>
     );
   }

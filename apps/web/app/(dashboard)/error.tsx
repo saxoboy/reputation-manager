@@ -21,9 +21,7 @@ export default function DashboardError({
         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
           <AlertTriangle className="h-8 w-8 text-destructive" />
         </div>
-        <h2 className="mb-2 text-xl font-semibold">
-          Error en el Dashboard
-        </h2>
+        <h2 className="mb-2 text-xl font-semibold">Error en el Dashboard</h2>
         <p className="mb-6 text-sm text-muted-foreground">
           Algo salió mal al cargar esta sección. Puedes intentar de nuevo.
         </p>

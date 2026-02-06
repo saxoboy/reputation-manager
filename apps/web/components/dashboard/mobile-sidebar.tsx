@@ -5,12 +5,7 @@ import Link from 'next/link';
 import { LayoutDashboard, Menu } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '../ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../ui/sheet';
 import { SidebarNav } from './sidebar-nav';
 
 export function MobileSidebar() {
