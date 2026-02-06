@@ -19,7 +19,7 @@ import {
 } from '../ui/table';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { Building2, Upload } from 'lucide-react';
+import { Building2, MessageSquare, Upload } from 'lucide-react';
 import { Campaign, CampaignStatus } from '../../types/mock-types';
 import { CsvUploadDialog } from './csv-upload-dialog';
 
@@ -67,7 +67,13 @@ export function CampaignsList({ campaigns, workspaceId }: CampaignsListProps) {
           Gestiona y monitorea el estado de tus campañas de feedback.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent>        {campaigns.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <MessageSquare className="h-10 w-10 text-muted-foreground/50 mb-3" />
+          <p className="text-sm font-medium text-muted-foreground">No hay campañas aún</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Crea tu primera campaña para comenzar a recopilar feedback.</p>
+        </div>
+      ) : (<div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -98,9 +104,9 @@ export function CampaignsList({ campaigns, workspaceId }: CampaignsListProps) {
                     (
                     {campaign.patientsCount > 0
                       ? Math.round(
-                          (campaign.respondedCount / campaign.patientsCount) *
-                            100,
-                        )
+                        (campaign.respondedCount / campaign.patientsCount) *
+                        100,
+                      )
                       : 0}
                     %)
                   </span>
@@ -142,6 +148,8 @@ export function CampaignsList({ campaigns, workspaceId }: CampaignsListProps) {
             ))}
           </TableBody>
         </Table>
+      </div>
+      )}
 
         {selectedCampaign && (
           <CsvUploadDialog

@@ -44,69 +44,81 @@ export function TemplatesList({
     }
   };
 
+  if (templates.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <FileText className="h-10 w-10 text-muted-foreground/50 mb-3" />
+        <p className="text-sm font-medium text-muted-foreground">No hay plantillas</p>
+        <p className="text-xs text-muted-foreground/70 mt-1">Crea una plantilla para personalizar los mensajes a tus pacientes.</p>
+      </div>
+    );
+  }
+
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Nombre</TableHead>
-          <TableHead>Tipo</TableHead>
-          <TableHead className="w-[40%]">Contenido</TableHead>
-          <TableHead>Última Actualización</TableHead>
-          <TableHead className="text-right">Acciones</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {templates.map((template) => (
-          <TableRow key={template.id}>
-            <TableCell className="font-medium">
-              <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-muted-foreground" />
-                {template.name}
-              </div>
-            </TableCell>
-            <TableCell>
-              <Badge variant="outline">{TEMPLATE_TYPES[template.type]}</Badge>
-            </TableCell>
-            <TableCell>
-              <p className="text-sm text-muted-foreground truncate max-w-75">
-                {template.content}
-              </p>
-            </TableCell>
-            <TableCell className="text-sm text-muted-foreground">
-              {template.updatedAt}
-            </TableCell>
-            <TableCell className="text-right">
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onDuplicate(template)}
-                  title="Duplicar"
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onEdit(template)}
-                  title="Editar"
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => onDelete(template.id)}
-                  title="Eliminar"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </TableCell>
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Nombre</TableHead>
+            <TableHead>Tipo</TableHead>
+            <TableHead className="w-[40%]">Contenido</TableHead>
+            <TableHead>Última Actualización</TableHead>
+            <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {templates.map((template) => (
+            <TableRow key={template.id}>
+              <TableCell className="font-medium">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  {template.name}
+                </div>
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline">{TEMPLATE_TYPES[template.type]}</Badge>
+              </TableCell>
+              <TableCell>
+                <p className="text-sm text-muted-foreground truncate max-w-75">
+                  {template.content}
+                </p>
+              </TableCell>
+              <TableCell className="text-sm text-muted-foreground">
+                {template.updatedAt}
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onDuplicate(template)}
+                    title="Duplicar"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onEdit(template)}
+                    title="Editar"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => onDelete(template.id)}
+                    title="Eliminar"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

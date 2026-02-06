@@ -15,6 +15,7 @@ import { useAuth } from '../../hooks/use-auth';
 import { signOut } from '../../lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { Badge } from '../ui/badge';
+import { MobileSidebar } from './mobile-sidebar';
 
 export function Header() {
   const { user } = useAuth();
@@ -40,13 +41,13 @@ export function Header() {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-card px-6">
-      <div className="flex items-center gap-4">
-        {/* Breadcrumbs will be injected here */}
+    <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">
+      <div className="flex items-center gap-2">
+        <MobileSidebar />
         <div id="breadcrumbs-container" />
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
@@ -67,7 +68,7 @@ export function Header() {
                   {user?.name ? getInitials(user.name) : 'U'}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex flex-col items-start text-left">
+              <div className="hidden sm:flex flex-col items-start text-left">
                 <span className="text-sm font-medium">
                   {user?.name || 'Usuario'}
                 </span>
@@ -75,7 +76,7 @@ export function Header() {
                   {user?.email}
                 </span>
               </div>
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              <ChevronDown className="hidden sm:block h-4 w-4 text-muted-foreground" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
