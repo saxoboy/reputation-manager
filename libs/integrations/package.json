@@ -8,9 +8,9 @@
   "dependencies": {
     "@nestjs/common": "^10.4.15",
     "@nestjs/config": "^4.0.2",
-    "@sendgrid/mail": "^8.1.4",
+    "resend": "^6.9.1",
     "stripe": "^20.2.0",
-    "twilio": "^5.11.2",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "twilio": "^5.11.2"
   }
 }

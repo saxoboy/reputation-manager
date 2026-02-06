@@ -1,27 +1,31 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { EmailService, LowCreditsAlertEmail } from './email.service';
-import * as sgMail from '@sendgrid/mail';
 
-// Mock @sendgrid/mail
-jest.mock('@sendgrid/mail', () => ({
-  setApiKey: jest.fn(),
-  send: jest.fn().mockResolvedValue([{ statusCode: 202 }]),
+// Mock resend
+const mockSend = jest
+  .fn()
+  .mockResolvedValue({ data: { id: 'email-123' }, error: null });
+
+jest.mock('resend', () => ({
+  Resend: jest.fn().mockImplementation(() => ({
+    emails: { send: mockSend },
+  })),
 }));
 
 describe('EmailService', () => {
   let service: EmailService;
-  let configService: jest.Mocked<ConfigService>;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSend.mockResolvedValue({ data: { id: 'email-123' }, error: null });
   });
 
   const createService = async (envOverrides: Record<string, string> = {}) => {
     const defaultEnv: Record<string, string> = {
-      SENDGRID_API_KEY: '',
-      SENDGRID_FROM_EMAIL: 'test@reputationmanager.com',
-      SENDGRID_FROM_NAME: 'Test Sender',
+      RESEND_API_KEY: '',
+      RESEND_FROM_EMAIL: 'test@reputationmanager.com',
+      RESEND_FROM_NAME: 'Test Sender',
       ...envOverrides,
     };
 
@@ -41,15 +45,14 @@ describe('EmailService', () => {
   };
 
   describe('initialization', () => {
-    it('should be disabled when SENDGRID_API_KEY is not set', async () => {
+    it('should be disabled when RESEND_API_KEY is not set', async () => {
       service = await createService();
       expect(service.isEnabled()).toBe(false);
     });
 
-    it('should be enabled when SENDGRID_API_KEY is set', async () => {
-      service = await createService({ SENDGRID_API_KEY: 'SG.test-key' });
+    it('should be enabled when RESEND_API_KEY is set', async () => {
+      service = await createService({ RESEND_API_KEY: 're_test_key' });
       expect(service.isEnabled()).toBe(true);
-      expect(sgMail.setApiKey).toHaveBeenCalledWith('SG.test-key');
     });
   });
 
@@ -74,32 +77,37 @@ describe('EmailService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return true when service is enabled (simulated send)', async () => {
-      service = await createService({ SENDGRID_API_KEY: 'SG.test-key' });
+    it('should send email via Resend when enabled', async () => {
+      service = await createService({ RESEND_API_KEY: 're_test_key' });
       const result = await service.sendLowCreditsAlert(mockAlertData);
       expect(result).toBe(true);
-      expect(sgMail.send).toHaveBeenCalledWith(
+      expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           to: 'doctor@clinic.com',
-          from: expect.objectContaining({
-            email: 'test@reputationmanager.com',
-          }),
           subject: mockAlertData.subject,
         }),
       );
     });
 
-    it('should return false when SendGrid throws an error', async () => {
-      (sgMail.send as jest.Mock).mockRejectedValueOnce(
-        new Error('SendGrid API error'),
-      );
-      service = await createService({ SENDGRID_API_KEY: 'SG.test-key' });
+    it('should return false when Resend returns an error', async () => {
+      mockSend.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'API error' },
+      });
+      service = await createService({ RESEND_API_KEY: 're_test_key' });
+      const result = await service.sendLowCreditsAlert(mockAlertData);
+      expect(result).toBe(false);
+    });
+
+    it('should return false when Resend throws', async () => {
+      mockSend.mockRejectedValueOnce(new Error('Network error'));
+      service = await createService({ RESEND_API_KEY: 're_test_key' });
       const result = await service.sendLowCreditsAlert(mockAlertData);
       expect(result).toBe(false);
     });
 
     it('should handle critical alert with 0 credits', async () => {
-      service = await createService({ SENDGRID_API_KEY: 'SG.test-key' });
+      service = await createService({ RESEND_API_KEY: 're_test_key' });
       const result = await service.sendLowCreditsAlert({
         ...mockAlertData,
         remainingCredits: 0,
@@ -110,7 +118,7 @@ describe('EmailService', () => {
     });
 
     it('should handle warning alert', async () => {
-      service = await createService({ SENDGRID_API_KEY: 'SG.test-key' });
+      service = await createService({ RESEND_API_KEY: 're_test_key' });
       const result = await service.sendLowCreditsAlert({
         ...mockAlertData,
         remainingCredits: 80,
@@ -121,7 +129,7 @@ describe('EmailService', () => {
     });
 
     it('should handle info alert', async () => {
-      service = await createService({ SENDGRID_API_KEY: 'SG.test-key' });
+      service = await createService({ RESEND_API_KEY: 're_test_key' });
       const result = await service.sendLowCreditsAlert({
         ...mockAlertData,
         remainingCredits: 250,
@@ -144,8 +152,8 @@ describe('EmailService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return true when service is enabled', async () => {
-      service = await createService({ SENDGRID_API_KEY: 'SG.test-key' });
+    it('should send welcome email via Resend', async () => {
+      service = await createService({ RESEND_API_KEY: 're_test_key' });
       const result = await service.sendWelcomeEmail({
         email: 'user@test.com',
         name: 'Test User',
@@ -153,7 +161,7 @@ describe('EmailService', () => {
         loginUrl: 'http://localhost:4000/login',
       });
       expect(result).toBe(true);
-      expect(sgMail.send).toHaveBeenCalledWith(
+      expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           to: 'user@test.com',
           subject: '¡Bienvenido a My Clinic!',
@@ -176,8 +184,8 @@ describe('EmailService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return true when service is enabled', async () => {
-      service = await createService({ SENDGRID_API_KEY: 'SG.test-key' });
+    it('should send invoice email via Resend', async () => {
+      service = await createService({ RESEND_API_KEY: 're_test_key' });
       const result = await service.sendInvoiceEmail({
         email: 'user@test.com',
         name: 'Test User',
@@ -187,7 +195,7 @@ describe('EmailService', () => {
         date: '2026-02-06',
       });
       expect(result).toBe(true);
-      expect(sgMail.send).toHaveBeenCalledWith(
+      expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           to: 'user@test.com',
           subject: 'Tu factura de Reputation Manager',

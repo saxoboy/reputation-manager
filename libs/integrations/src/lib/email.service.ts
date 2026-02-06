@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as sgMail from '@sendgrid/mail';
+import { Resend } from 'resend';
 
 export interface LowCreditsAlertEmail {
   workspaceId: string;
@@ -38,24 +38,25 @@ export class EmailService {
   private readonly enabled: boolean;
   private readonly fromEmail: string;
   private readonly fromName: string;
+  private readonly resend: Resend | null = null;
 
   constructor(private readonly configService: ConfigService) {
-    const sendGridApiKey = this.configService.get<string>('SENDGRID_API_KEY');
-    this.enabled = !!sendGridApiKey;
+    const resendApiKey = this.configService.get<string>('RESEND_API_KEY');
+    this.enabled = !!resendApiKey;
     this.fromEmail =
-      this.configService.get<string>('SENDGRID_FROM_EMAIL') ||
+      this.configService.get<string>('RESEND_FROM_EMAIL') ||
       'noreply@reputationmanager.com';
     this.fromName =
-      this.configService.get<string>('SENDGRID_FROM_NAME') ||
+      this.configService.get<string>('RESEND_FROM_NAME') ||
       'Reputation Manager';
 
-    if (!this.enabled || !sendGridApiKey) {
+    if (!this.enabled || !resendApiKey) {
       this.logger.warn(
-        '⚠️ EmailService is disabled: SENDGRID_API_KEY not configured',
+        '⚠️ EmailService is disabled: RESEND_API_KEY not configured',
       );
     } else {
-      sgMail.setApiKey(sendGridApiKey);
-      this.logger.log('✅ EmailService initialized successfully');
+      this.resend = new Resend(resendApiKey);
+      this.logger.log('✅ EmailService initialized with Resend');
     }
   }
 
@@ -70,7 +71,7 @@ export class EmailService {
    * Send low credits alert email to workspace owner
    */
   async sendLowCreditsAlert(data: LowCreditsAlertEmail): Promise<boolean> {
-    if (!this.enabled) {
+    if (!this.enabled || !this.resend) {
       this.logger.warn('Email service disabled - skipping low credits alert');
       return false;
     }
@@ -80,12 +81,16 @@ export class EmailService {
         `📧 Sending low credits alert (${data.alertLevel}) to ${data.ownerEmail}`,
       );
 
-      await sgMail.send({
+      const { error } = await this.resend.emails.send({
         to: data.ownerEmail,
-        from: { email: this.fromEmail, name: this.fromName },
+        from: `${this.fromName} <${this.fromEmail}>`,
         subject: data.subject,
         html: this.generateLowCreditsEmailHtml(data),
       });
+
+      if (error) {
+        throw new Error(error.message);
+      }
 
       this.logger.log(
         `✅ Low credits alert email sent to ${data.ownerEmail} (${data.alertLevel})`,
@@ -105,7 +110,7 @@ export class EmailService {
    * Send welcome email to new user
    */
   async sendWelcomeEmail(data: WelcomeEmail): Promise<boolean> {
-    if (!this.enabled) {
+    if (!this.enabled || !this.resend) {
       this.logger.warn('Email service disabled - skipping welcome email');
       return false;
     }
@@ -113,12 +118,16 @@ export class EmailService {
     try {
       this.logger.log(`📧 Sending welcome email to ${data.email}`);
 
-      await sgMail.send({
+      const { error } = await this.resend.emails.send({
         to: data.email,
-        from: { email: this.fromEmail, name: this.fromName },
+        from: `${this.fromName} <${this.fromEmail}>`,
         subject: `¡Bienvenido a ${data.workspaceName}!`,
         html: this.generateWelcomeEmailHtml(data),
       });
+
+      if (error) {
+        throw new Error(error.message);
+      }
 
       this.logger.log(`✅ Welcome email sent to ${data.email}`);
       return true;
@@ -132,7 +141,7 @@ export class EmailService {
    * Send invoice email
    */
   async sendInvoiceEmail(data: InvoiceEmail): Promise<boolean> {
-    if (!this.enabled) {
+    if (!this.enabled || !this.resend) {
       this.logger.warn('Email service disabled - skipping invoice email');
       return false;
     }
@@ -140,12 +149,16 @@ export class EmailService {
     try {
       this.logger.log(`📧 Sending invoice email to ${data.email}`);
 
-      await sgMail.send({
+      const { error } = await this.resend.emails.send({
         to: data.email,
-        from: { email: this.fromEmail, name: this.fromName },
+        from: `${this.fromName} <${this.fromEmail}>`,
         subject: 'Tu factura de Reputation Manager',
         html: this.generateInvoiceEmailHtml(data),
       });
+
+      if (error) {
+        throw new Error(error.message);
+      }
 
       this.logger.log(`✅ Invoice email sent to ${data.email}`);
       return true;

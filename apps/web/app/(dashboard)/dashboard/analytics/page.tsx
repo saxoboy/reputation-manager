@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { DateRange } from 'react-day-picker';
+import Link from 'next/link';
 import {
   TrendingUp,
   MessageSquare,
@@ -9,6 +10,8 @@ import {
   BarChart3,
   Users,
   CheckCircle,
+  GitCompareArrows,
+  Calendar,
 } from 'lucide-react';
 import {
   Card,
@@ -16,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsService } from '../../../../services/analytics.service';
 import { practiceService } from '../../../../services/practice.service';
@@ -210,6 +214,22 @@ export default function AnalyticsPage() {
         onDateRangeChange={setDateRange}
         onClearFilters={handleClearFilters}
       />
+
+      {/* Sub-navigation */}
+      <div className="flex gap-3">
+        <Link href="/dashboard/analytics/comparison">
+          <Button variant="outline" className="gap-2">
+            <GitCompareArrows className="h-4 w-4" />
+            Comparar
+          </Button>
+        </Link>
+        <Link href="/dashboard/analytics/cohorts">
+          <Button variant="outline" className="gap-2">
+            <Calendar className="h-4 w-4" />
+            Cohortes
+          </Button>
+        </Link>
+      </div>
 
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

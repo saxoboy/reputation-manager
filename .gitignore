@@ -53,3 +53,21 @@ libs/database/src/generated
 
 # Environment variables
 .env
+
+# Scripts (testing/utility scripts, not part of the app)
+scripts/
+
+# Docs - progress tracking & internal guides (commit at project end)
+docs/BACKEND_INTEGRATION.md
+docs/CHANNEL_CONFIGURATION.md
+docs/CHANNEL_IMPLEMENTATION_SUMMARY.md
+docs/CREDITS_SYSTEM.md
+docs/GOOGLE_PLACES_API_MIGRATION.md
+docs/PHASE_0_COMPLETE.md
+docs/PHASE_1_COMPLETE.md
+docs/PHASE_3_COMPLETE.md
+docs/PHASE_4_PROGRESS.md
+docs/PHASE_5_PROGRESS.md
+docs/WEEKLY_REPORTS_GUIDE.md
+docs/WEEKLY_REPORTS_SUMMARY.md
+docs/WEEKLY_REPORTS_TESTING.md

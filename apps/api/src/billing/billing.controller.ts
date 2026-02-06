@@ -6,7 +6,9 @@ import {
   Param,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 import { BillingService } from './billing.service';
 import {
   CreateSubscriptionDto,
@@ -14,16 +16,12 @@ import {
   PurchaseCreditsDto,
   BillingInfoDto,
 } from './dto';
-
-// TODO: Import guards once auth is fully implemented
-// import { JwtGuard } from '../auth/guards/jwt.guard';
-// import { WorkspaceGuard } from '../common/guards/workspace.guard';
-// import { Roles } from '../common/decorators/roles.decorator';
-// import { RolesGuard } from '../common/guards/roles.guard';
-// import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { WorkspaceGuard } from '../auth/guards/workspace.guard';
+import { RoleGuard, Roles } from '../auth/guards/role.guard';
 
 @Controller('workspaces/:workspaceId/billing')
-// @UseGuards(JwtGuard, WorkspaceGuard, RolesGuard)
+@UseGuards(AuthGuard, WorkspaceGuard)
 export class BillingController {
   constructor(private readonly billingService: BillingService) {}
 
@@ -62,7 +60,8 @@ export class BillingController {
    * @roles OWNER
    */
   @Post('subscribe')
-  // @Roles('OWNER')
+  @UseGuards(AuthGuard, WorkspaceGuard, RoleGuard)
+  @Roles(UserRole.OWNER)
   async createSubscription(
     @Param('workspaceId') workspaceId: string,
     @Body() dto: CreateSubscriptionDto,
@@ -76,7 +75,8 @@ export class BillingController {
    * @roles OWNER
    */
   @Post('credits')
-  // @Roles('OWNER')
+  @UseGuards(AuthGuard, WorkspaceGuard, RoleGuard)
+  @Roles(UserRole.OWNER)
   async purchaseCredits(
     @Param('workspaceId') workspaceId: string,
     @Body() dto: PurchaseCreditsDto,
@@ -91,7 +91,8 @@ export class BillingController {
    */
   @Post('cancel')
   @HttpCode(HttpStatus.OK)
-  // @Roles('OWNER')
+  @UseGuards(AuthGuard, WorkspaceGuard, RoleGuard)
+  @Roles(UserRole.OWNER)
   async cancelSubscription(
     @Param('workspaceId') workspaceId: string,
     @Body() dto: CancelSubscriptionDto,
@@ -106,7 +107,8 @@ export class BillingController {
    */
   @Post('resume')
   @HttpCode(HttpStatus.OK)
-  // @Roles('OWNER')
+  @UseGuards(AuthGuard, WorkspaceGuard, RoleGuard)
+  @Roles(UserRole.OWNER)
   async resumeSubscription(@Param('workspaceId') workspaceId: string) {
     return this.billingService.resumeSubscription(workspaceId);
   }
@@ -117,7 +119,8 @@ export class BillingController {
    * @roles OWNER
    */
   @Get('portal')
-  // @Roles('OWNER')
+  @UseGuards(AuthGuard, WorkspaceGuard, RoleGuard)
+  @Roles(UserRole.OWNER)
   async getBillingPortal(@Param('workspaceId') workspaceId: string) {
     return this.billingService.getBillingPortalUrl(workspaceId);
   }

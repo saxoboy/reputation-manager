@@ -5,6 +5,7 @@ import {
   TwilioService,
   WhatsAppService,
   StripeService,
+  EmailService,
 } from '@reputation-manager/integrations';
 import { QUEUES } from '@reputation-manager/shared-types';
 import { TwilioWebhookController } from './twilio-webhook.controller';
@@ -22,6 +23,12 @@ import { StripeWebhookController } from './stripe-webhook.controller';
     WhatsAppWebhookController,
     StripeWebhookController,
   ],
-  providers: [PrismaService, TwilioService, WhatsAppService, StripeService],
+  providers: [
+    PrismaService,
+    TwilioService,
+    WhatsAppService,
+    StripeService,
+    EmailService,
+  ],
 })
 export class WebhooksModule {}
