@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -38,24 +39,18 @@ export function WorkspaceSettings() {
 
   const [loading, setLoading] = useState(false);
   const [channelLoading, setChannelLoading] = useState(false);
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
-  const [channelSuccess, setChannelSuccess] = useState('');
-  const [channelError, setChannelError] = useState('');
 
   const currentPlanDetails = MOCK_PLANS.find((p) => p.id === currentPlan);
 
   const handleUpdate = async () => {
     setLoading(true);
-    setError('');
-    setSuccess('');
 
     try {
       // TODO: Implement API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setSuccess('Configuración del workspace actualizada correctamente');
+      toast.success('Configuración del workspace actualizada correctamente');
     } catch {
-      setError('Error al actualizar la configuración');
+      toast.error('Error al actualizar la configuración');
     } finally {
       setLoading(false);
     }
@@ -63,12 +58,10 @@ export function WorkspaceSettings() {
 
   const handleChannelUpdate = async () => {
     setChannelLoading(true);
-    setChannelError('');
-    setChannelSuccess('');
 
     // Validación: al menos un canal debe estar habilitado
     if (!smsEnabled && !whatsappEnabled && !emailEnabled) {
-      setChannelError(
+      toast.error(
         'Al menos un canal debe estar habilitado (SMS, WhatsApp o Email)',
       );
       setChannelLoading(false);
@@ -77,21 +70,21 @@ export function WorkspaceSettings() {
 
     // Validación: el canal por defecto debe estar habilitado
     if (defaultChannel === 'SMS' && !smsEnabled) {
-      setChannelError(
+      toast.error(
         'No puedes establecer SMS como canal por defecto si está deshabilitado',
       );
       setChannelLoading(false);
       return;
     }
     if (defaultChannel === 'WHATSAPP' && !whatsappEnabled) {
-      setChannelError(
+      toast.error(
         'No puedes establecer WhatsApp como canal por defecto si está deshabilitado',
       );
       setChannelLoading(false);
       return;
     }
     if (defaultChannel === 'EMAIL' && !emailEnabled) {
-      setChannelError(
+      toast.error(
         'No puedes establecer Email como canal por defecto si está deshabilitado',
       );
       setChannelLoading(false);
@@ -101,9 +94,9 @@ export function WorkspaceSettings() {
     try {
       // TODO: Implement API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setChannelSuccess('Configuración de canales actualizada correctamente');
+      toast.success('Configuración de canales actualizada correctamente');
     } catch {
-      setChannelError('Error al actualizar la configuración de canales');
+      toast.error('Error al actualizar la configuración de canales');
     } finally {
       setChannelLoading(false);
     }
@@ -119,18 +112,6 @@ export function WorkspaceSettings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {success && (
-            <Alert className="border-green-500 bg-green-50 text-green-800">
-              <AlertDescription>{success}</AlertDescription>
-            </Alert>
-          )}
-
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
           <div className="space-y-2">
             <Label htmlFor="workspace-name">Nombre del Workspace</Label>
             <Input
@@ -192,18 +173,6 @@ export function WorkspaceSettings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {channelSuccess && (
-            <Alert className="border-green-500 bg-green-50 text-green-800">
-              <AlertDescription>{channelSuccess}</AlertDescription>
-            </Alert>
-          )}
-
-          {channelError && (
-            <Alert variant="destructive">
-              <AlertDescription>{channelError}</AlertDescription>
-            </Alert>
-          )}
-
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">

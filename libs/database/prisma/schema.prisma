@@ -329,6 +329,10 @@ model Message {
   @@index([externalId])
   @@index([sentAt])
   @@index([rating])
+  // Composite indexes for analytics queries
+  @@index([workspaceId, sentAt])
+  @@index([workspaceId, status])
+  @@index([campaignId, status])
 }
 
 model Template {

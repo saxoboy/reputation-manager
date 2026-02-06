@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -67,6 +68,7 @@ export function CreateCampaignDialog({ onCreate }: CreateCampaignDialogProps) {
     };
 
     onCreate(newCampaign);
+    toast.success('Campaña creada exitosamente');
     setIsOpen(false);
 
     // Reset form

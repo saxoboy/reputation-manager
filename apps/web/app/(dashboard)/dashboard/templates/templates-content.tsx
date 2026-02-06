@@ -9,6 +9,8 @@ import { Plus, AlertCircle } from 'lucide-react';
 import { useWorkspace } from '../../../../hooks/use-workspace';
 import {
   useTemplates,
+  useCreateTemplate,
+  useUpdateTemplate,
   useDeleteTemplate,
   useDuplicateTemplate,
 } from '../../../../hooks/use-templates';
@@ -36,6 +38,8 @@ export default function TemplatesContent() {
     error,
   } = useTemplates(workspaceId);
 
+  const createMutation = useCreateTemplate(workspaceId);
+  const updateMutation = useUpdateTemplate(workspaceId);
   const deleteMutation = useDeleteTemplate(workspaceId);
   const duplicateMutation = useDuplicateTemplate(workspaceId);
 
@@ -137,7 +141,19 @@ export default function TemplatesContent() {
           if (!open) setEditingTemplate(null);
         }}
         templateToEdit={editingTemplate}
-        onSave={() => {
+        onSave={(data) => {
+          if (editingTemplate) {
+            updateMutation.mutate({
+              templateId: editingTemplate.id,
+              data: { name: data.name, content: data.content },
+            });
+          } else {
+            createMutation.mutate({
+              type: data.type,
+              name: data.name,
+              content: data.content,
+            });
+          }
           setIsCreateOpen(false);
           setEditingTemplate(null);
         }}
