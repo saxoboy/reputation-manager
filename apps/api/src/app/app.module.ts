@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { PrismaService } from '@reputation-manager/database';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
@@ -47,6 +48,6 @@ import { BillingModule } from '../billing/billing.module';
     BillingModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, PrismaService],
 })
 export class AppModule {}
