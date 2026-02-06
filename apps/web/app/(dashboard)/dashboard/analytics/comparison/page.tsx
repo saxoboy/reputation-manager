@@ -2,10 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  ArrowLeft,
-  GitCompareArrows,
-} from 'lucide-react';
+import { ArrowLeft, GitCompareArrows } from 'lucide-react';
 import Link from 'next/link';
 import {
   Card,
@@ -31,9 +28,7 @@ import {
   TableRow,
 } from '../../../../../components/ui/table';
 import { ComparisonChart } from '../../../../../components/analytics/comparison-chart';
-import {
-  analyticsService,
-} from '../../../../../services/analytics.service';
+import { analyticsService } from '../../../../../services/analytics.service';
 import { practiceService } from '../../../../../services/practice.service';
 import { campaignService } from '../../../../../services/campaign.service';
 import { useCurrentWorkspace } from '../../../../../hooks/use-workspaces';
@@ -66,10 +61,7 @@ export default function ComparisonPage() {
   });
 
   // Query comparación
-  const {
-    data: comparison,
-    isLoading,
-  } = useQuery({
+  const { data: comparison, isLoading } = useQuery({
     queryKey: ['comparison', mode, selectedIds],
     queryFn: () => {
       if (!workspace?.id || selectedIds.length < 2) {
@@ -143,10 +135,11 @@ export default function ComparisonPage() {
               {items.map((item) => (
                 <label
                   key={item.id}
-                  className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${selectedIds.includes(item.id)
+                  className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
+                    selectedIds.includes(item.id)
                       ? 'border-primary bg-primary/5'
                       : 'hover:bg-muted/50'
-                    }`}
+                  }`}
                 >
                   <Checkbox
                     checked={selectedIds.includes(item.id)}
@@ -292,12 +285,13 @@ export default function ComparisonPage() {
                         <div
                           className="h-full rounded-full bg-green-600"
                           style={{
-                            width: `${item.totalResponses > 0
+                            width: `${
+                              item.totalResponses > 0
                                 ? (item.distribution.sentiment.happy /
-                                  item.totalResponses) *
-                                100
+                                    item.totalResponses) *
+                                  100
                                 : 0
-                              }%`,
+                            }%`,
                           }}
                         />
                       </div>
@@ -309,12 +303,13 @@ export default function ComparisonPage() {
                         <div
                           className="h-full rounded-full bg-yellow-600"
                           style={{
-                            width: `${item.totalResponses > 0
+                            width: `${
+                              item.totalResponses > 0
                                 ? (item.distribution.sentiment.neutral /
-                                  item.totalResponses) *
-                                100
+                                    item.totalResponses) *
+                                  100
                                 : 0
-                              }%`,
+                            }%`,
                           }}
                         />
                       </div>
@@ -326,12 +321,13 @@ export default function ComparisonPage() {
                         <div
                           className="h-full rounded-full bg-red-600"
                           style={{
-                            width: `${item.totalResponses > 0
+                            width: `${
+                              item.totalResponses > 0
                                 ? (item.distribution.sentiment.unhappy /
-                                  item.totalResponses) *
-                                100
+                                    item.totalResponses) *
+                                  100
                                 : 0
-                              }%`,
+                            }%`,
                           }}
                         />
                       </div>

@@ -17,7 +17,9 @@ const VALID_TABS = ['workspace', 'profile', 'reports', 'billing'] as const;
 export default function SettingsPage() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
-  const defaultTab = VALID_TABS.includes(tabParam as (typeof VALID_TABS)[number])
+  const defaultTab = VALID_TABS.includes(
+    tabParam as (typeof VALID_TABS)[number],
+  )
     ? (tabParam as string)
     : 'workspace';
 
