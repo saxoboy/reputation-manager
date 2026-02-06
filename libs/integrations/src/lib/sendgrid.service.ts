@@ -1,18 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as sgMail from '@sendgrid/mail';
+import { Resend } from 'resend';
 
 @Injectable()
 export class SendGridService {
   private readonly logger = new Logger(SendGridService.name);
+  private readonly resend: Resend | null = null;
 
   constructor() {
-    const apiKey = process.env['SENDGRID_API_KEY'];
+    const apiKey = process.env['RESEND_API_KEY'];
     if (apiKey) {
-      sgMail.setApiKey(apiKey);
-      this.logger.log('SendGrid configured successfully');
+      this.resend = new Resend(apiKey);
+      this.logger.log('Email service configured successfully (Resend)');
     } else {
       this.logger.warn(
-        'SENDGRID_API_KEY not found. Email sending will be disabled.',
+        'RESEND_API_KEY not found. Email sending will be disabled.',
       );
     }
   }
@@ -23,9 +24,10 @@ export class SendGridService {
     html: string;
     text?: string;
   }): Promise<void> {
-    const from = process.env['SENDGRID_FROM_EMAIL'] || 'noreply@example.com';
+    const from = process.env['RESEND_FROM_EMAIL'] || 'onboarding@resend.dev';
+    const fromName = process.env['RESEND_FROM_NAME'] || 'Reputation Manager';
 
-    if (!process.env['SENDGRID_API_KEY']) {
+    if (!this.resend) {
       // Modo desarrollo: solo loguear el email
       this.logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       this.logger.log('📧 EMAIL (Modo Desarrollo - No Enviado)');
@@ -41,13 +43,16 @@ export class SendGridService {
     }
 
     try {
-      await sgMail.send({
+      const { error } = await this.resend.emails.send({
         to: options.to,
-        from,
+        from: `${fromName} <${from}>`,
         subject: options.subject,
         html: options.html,
-        text: options.text || '',
       });
+
+      if (error) {
+        throw new Error(error.message);
+      }
 
       this.logger.log(`✅ Email sent successfully to ${options.to}`);
     } catch (error) {
