@@ -206,89 +206,91 @@ export function PatientsList({ initialPatients = [] }: PatientsListProps) {
 
       {/* Table */}
       <div className="rounded-md border shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Paciente</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead>Última Campaña</TableHead>
-              <TableHead>Último Contacto</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredPatients.length === 0 ? (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="h-24 text-center text-gray-500"
-                >
-                  No se encontraron pacientes
-                </TableCell>
+                <TableHead>Paciente</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead>Última Campaña</TableHead>
+                <TableHead>Último Contacto</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
-            ) : (
-              filteredPatients.map((patient) => (
-                <TableRow
-                  key={patient.id}
-                  className="hover:bg-gray-50/10 transition-colors"
-                >
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{patient.name}</span>
-                      <span className="text-sm text-gray-500">
-                        {patient.phone}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{getStatusBadge(patient)}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">
-                        {patient.campaign ? patient.campaign.name : 'N/A'}
-                      </span>
-                      {patient.campaign && (
-                        <span className="text-xs text-gray-500">
-                          {format(new Date(patient.createdAt), 'd MMM yyyy', {
-                            locale: es,
-                          })}
-                        </span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-gray-500">
-                      {getLastContactDate(patient)}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Abrir menú</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                        <DropdownMenuItem>
-                          <History className="mr-2 h-4 w-4" /> Ver historial
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <MessageSquare className="mr-2 h-4 w-4" /> Enviar
-                          mensaje
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600 focus:text-red-600">
-                          <Ban className="mr-2 h-4 w-4" /> Dar de baja
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+            </TableHeader>
+            <TableBody>
+              {filteredPatients.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="h-24 text-center text-gray-500"
+                  >
+                    No se encontraron pacientes
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                filteredPatients.map((patient) => (
+                  <TableRow
+                    key={patient.id}
+                    className="hover:bg-gray-50/10 transition-colors"
+                  >
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{patient.name}</span>
+                        <span className="text-sm text-gray-500">
+                          {patient.phone}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{getStatusBadge(patient)}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">
+                          {patient.campaign ? patient.campaign.name : 'N/A'}
+                        </span>
+                        {patient.campaign && (
+                          <span className="text-xs text-gray-500">
+                            {format(new Date(patient.createdAt), 'd MMM yyyy', {
+                              locale: es,
+                            })}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-gray-500">
+                        {getLastContactDate(patient)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Abrir menú</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                          <DropdownMenuItem>
+                            <History className="mr-2 h-4 w-4" /> Ver historial
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <MessageSquare className="mr-2 h-4 w-4" /> Enviar
+                            mensaje
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-red-600 focus:text-red-600">
+                            <Ban className="mr-2 h-4 w-4" /> Dar de baja
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       <div className="text-xs text-gray-500 text-center py-2">

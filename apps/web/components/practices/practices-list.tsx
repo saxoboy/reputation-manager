@@ -8,7 +8,7 @@ import {
 } from '../ui/table';
 import { Button } from '../ui/button';
 import { Building2, MapPin, Pencil, Phone, Trash2 } from 'lucide-react';
-import { Practice } from '../../types/mock-types';
+import { Practice } from '../../services/practice.service';
 
 interface PracticesListProps {
   practices: Practice[];

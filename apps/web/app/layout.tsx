@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import { Providers } from '../components/providers';
 import { Toaster } from '../components/ui/sonner';
 import { ApiConnectionStatus } from '../components/api-connection-status';
+import { FeedbackWidgetLoader } from '../components/feedback-widget-loader';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -30,6 +31,7 @@ export default function RootLayout({
           {children}
           <Toaster />
           <ApiConnectionStatus />
+          <FeedbackWidgetLoader />
         </Providers>
       </body>
     </html>

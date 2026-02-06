@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useAuth } from '../../hooks/use-auth';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -10,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from '../ui/card';
-import { Alert, AlertDescription } from '../ui/alert';
 
 export function ProfileSettings() {
   const { user } = useAuth();
@@ -18,8 +18,6 @@ export function ProfileSettings() {
   const [email, setEmail] = useState('');
 
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -30,15 +28,13 @@ export function ProfileSettings() {
 
   const handleUpdate = async () => {
     setLoading(true);
-    setError('');
-    setSuccess('');
 
     try {
       // TODO: Implement API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setSuccess('Perfil actualizado correctamente');
+      toast.success('Perfil actualizado correctamente');
     } catch {
-      setError('Error al actualizar el perfil');
+      toast.error('Error al actualizar el perfil');
     } finally {
       setLoading(false);
     }
@@ -51,18 +47,6 @@ export function ProfileSettings() {
         <CardDescription>Actualiza tu información personal</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {success && (
-          <Alert className="border-green-500 bg-green-50 text-green-800">
-            <AlertDescription>{success}</AlertDescription>
-          </Alert>
-        )}
-
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
         <div className="space-y-2">
           <Label htmlFor="name">Nombre Completo</Label>
           <Input

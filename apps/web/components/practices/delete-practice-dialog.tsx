@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '../ui/dialog';
 import { Button } from '../ui/button';
-import { Practice } from '../../types/mock-types';
+import { Practice } from '../../services/practice.service';
 
 interface DeletePracticeDialogProps {
   open: boolean;

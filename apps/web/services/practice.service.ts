@@ -4,19 +4,31 @@ export interface Practice {
   id: string;
   workspaceId: string;
   name: string;
-  googlePlaceId?: string;
+  address?: string | null;
+  city?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  googlePlaceId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreatePracticeDto {
   name: string;
-  googlePlaceId?: string;
+  address?: string | null;
+  city?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  googlePlaceId?: string | null;
 }
 
 export interface UpdatePracticeDto {
   name?: string;
-  googlePlaceId?: string;
+  address?: string | null;
+  city?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  googlePlaceId?: string | null;
 }
 
 export const practiceService = {

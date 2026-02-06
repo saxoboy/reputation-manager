@@ -1,0 +1,16 @@
+# Dependencies
+node_modules
+.next
+dist
+.git
+.github
+*.md
+docs/
+postman/
+scripts/
+tmp/
+coverage/
+.env
+.env.local
+.env*.local
+docker-compose.yml

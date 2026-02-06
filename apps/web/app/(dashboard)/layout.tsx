@@ -17,10 +17,10 @@ export default function DashboardLayout({
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header />
-        <div className="flex items-center border-b bg-muted/30 px-6 py-3">
+        <div className="hidden md:flex items-center border-b bg-muted/30 px-6 py-3">
           <Breadcrumbs />
         </div>
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
     </div>
   );

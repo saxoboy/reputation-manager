@@ -1,9 +1,16 @@
+// Sentry must be imported first
+import './instrument';
+
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import helmet from 'helmet';
 import { AppModule } from './app/app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Security headers
+  app.use(helmet());
 
   // Set global prefix for all routes EXCEPT health check
   app.setGlobalPrefix('api', {
@@ -19,9 +26,13 @@ async function bootstrap() {
     }),
   );
 
-  // Enable CORS
+  // Dynamic CORS based on environment
+  const allowedOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
+    : ['http://localhost:4000', 'http://localhost:3333'];
+
   app.enableCors({
-    origin: ['http://localhost:4000', 'http://localhost:3333'],
+    origin: allowedOrigins,
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Accept, Authorization',

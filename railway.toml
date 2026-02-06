@@ -1,0 +1,41 @@
+# Railway configuration for Reputation Manager
+# Each service is deployed independently from its Dockerfile
+
+# ==========================================
+# API Service
+# ==========================================
+[deploy]
+# Railway auto-detects Dockerfiles per service
+# Configure each service separately in Railway dashboard
+
+# Environment variables needed per service:
+#
+# === All services ===
+# NODE_ENV=production
+# SENTRY_DSN=<your-sentry-dsn>
+#
+# === API (apps/api) ===
+# DATABASE_URL=<railway-postgres-url>
+# REDIS_URL=<railway-redis-url>
+# API_PORT=3333
+# CORS_ORIGINS=https://your-domain.com
+# BETTER_AUTH_SECRET=<random-32-char-string>
+# BETTER_AUTH_URL=https://your-api-domain.com
+# FRONTEND_URL=https://your-domain.com
+# TWILIO_ACCOUNT_SID=<twilio-sid>
+# TWILIO_AUTH_TOKEN=<twilio-token>
+# TWILIO_PHONE_NUMBER=<twilio-number>
+# STRIPE_SECRET_KEY=<stripe-key>
+# STRIPE_WEBHOOK_SECRET=<stripe-webhook-secret>
+# RESEND_API_KEY=<resend-key>
+#
+# === Web (apps/web) ===
+# NEXT_PUBLIC_API_URL=https://your-api-domain.com
+# NEXT_PUBLIC_SENTRY_DSN=<your-sentry-dsn>
+#
+# === Worker (apps/worker) ===
+# DATABASE_URL=<railway-postgres-url>
+# REDIS_URL=<railway-redis-url>
+# TWILIO_ACCOUNT_SID=<twilio-sid>
+# TWILIO_AUTH_TOKEN=<twilio-token>
+# TWILIO_PHONE_NUMBER=<twilio-number>
