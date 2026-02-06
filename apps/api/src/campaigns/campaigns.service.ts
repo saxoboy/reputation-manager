@@ -7,10 +7,14 @@ import {
 import { PrismaService } from '@reputation-manager/database';
 import { CreateCampaignDto, UpdateCampaignDto, UploadCsvDto } from './dto';
 import { parsePatientsCSV } from '@reputation-manager/shared-utils';
+import { BillingService } from '../billing/billing.service';
 
 @Injectable()
 export class CampaignsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private billingService: BillingService,
+  ) {}
 
   /**
    * Obtener todas las campañas de un workspace
@@ -201,6 +205,30 @@ export class CampaignsService {
         totalRows: parseResult.totalRows,
         validRows: parseResult.validRows,
         invalidRows: parseResult.invalidRows,
+      });
+    }
+
+    // IMPORTANT: Verificar si el workspace tiene suficientes créditos ANTES de crear pacientes
+    const requiredCredits = parseResult.validRows;
+    const creditCheck = await this.billingService.canSendMessage(
+      workspaceId,
+      requiredCredits,
+    );
+
+    if (!creditCheck.canSend) {
+      throw new ForbiddenException({
+        message: 'Créditos insuficientes para procesar esta campaña',
+        details: {
+          required: requiredCredits,
+          available: creditCheck.remainingCredits,
+          deficit: requiredCredits - creditCheck.remainingCredits,
+          plan: creditCheck.plan || 'FREE',
+          suggestion:
+            creditCheck.plan === 'FREE'
+              ? 'Actualiza tu plan para obtener más créditos incluidos'
+              : 'Compra créditos adicionales o actualiza tu plan',
+          billingUrl: '/dashboard/billing',
+        },
       });
     }
 

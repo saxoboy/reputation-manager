@@ -488,7 +488,12 @@ export class BillingService {
   async canSendMessage(
     workspaceId: string,
     requiredCredits = 1,
-  ): Promise<{ canSend: boolean; remainingCredits: number; reason?: string }> {
+  ): Promise<{
+    canSend: boolean;
+    remainingCredits: number;
+    plan?: string;
+    reason?: string;
+  }> {
     const workspace = await this.prisma.workspace.findUnique({
       where: { id: workspaceId },
       select: {
@@ -510,6 +515,7 @@ export class BillingService {
       return {
         canSend: true,
         remainingCredits: -1, // -1 = unlimited
+        plan: workspace.plan,
       };
     }
 
@@ -518,6 +524,7 @@ export class BillingService {
       return {
         canSend: false,
         remainingCredits: workspace.messageCredits,
+        plan: workspace.plan,
         reason: `Insufficient credits. Have ${workspace.messageCredits}, need ${requiredCredits}`,
       };
     }
@@ -525,6 +532,7 @@ export class BillingService {
     return {
       canSend: true,
       remainingCredits: workspace.messageCredits,
+      plan: workspace.plan,
     };
   }
 
