@@ -1,10 +1,10 @@
 {
   "info": {
     "name": "Reputation Manager API",
-    "description": "API REST para gestión de feedback de profesionales de la salud",
+    "description": "API REST completa para gestión de feedback de profesionales de la salud.\n\n**Base URL**: http://localhost:3000\n**Auth**: Better Auth (cookies automáticas)\n**Total endpoints**: 79\n\nFlujo recomendado:\n1. Sign Up/Sign In → cookies se guardan automáticamente\n2. Create Workspace → workspaceId se guarda\n3. Create Practice → practiceId se guarda\n4. Create Campaign + Patients\n5. Ver Analytics, Billing, Reports",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_postman_id": "reputation-manager-api",
-    "version": "1.0.0"
+    "version": "2.0.0"
   },
   "auth": {
     "type": "noauth"
@@ -12,21 +12,36 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:3333",
-      "type": "string"
-    },
-    {
-      "key": "workerUrl",
-      "value": "http://localhost:3001",
-      "type": "string"
-    },
-    {
-      "key": "authToken",
-      "value": "",
+      "value": "http://localhost:3000",
       "type": "string"
     },
     {
       "key": "workspaceId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "practiceId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "campaignId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "patientId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "messageId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "templateId",
       "value": "",
       "type": "string"
     },
@@ -38,18 +53,45 @@
   ],
   "item": [
     {
+      "name": "Health",
+      "item": [
+        {
+          "name": "API Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api",
+              "host": ["{{baseUrl}}"],
+              "path": ["api"]
+            },
+            "description": "Verificar que el API está corriendo"
+          }
+        },
+        {
+          "name": "Health Check (DB)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Health check con verificación de conectividad a PostgreSQL. Retorna 200 si todo OK, 503 si DB está caída."
+          }
+        }
+      ],
+      "description": "Health check y status del API"
+    },
+    {
       "name": "Auth",
       "item": [
         {
           "name": "Sign Up",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"doctor@ejemplo.com\",\n  \"password\": \"password123\",\n  \"name\": \"Dr. Juan Pérez\"\n}"
@@ -59,19 +101,14 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "sign-up", "email"]
             },
-            "description": "Registrar un nuevo usuario con email y contraseña"
+            "description": "Registrar un nuevo usuario con email y contraseña. Crea sesión automáticamente (cookie)."
           }
         },
         {
           "name": "Sign In",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"doctor@ejemplo.com\",\n  \"password\": \"password123\"\n}"
@@ -81,20 +118,8 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "sign-in", "email"]
             },
-            "description": "Iniciar sesión con email y contraseña"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "// Better Auth usa cookies automáticamente",
-                  "// No necesitas hacer nada, las cookies se guardan automáticamente"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
+            "description": "Iniciar sesión con email y contraseña. La cookie de sesión se guarda automáticamente en Postman."
+          }
         },
         {
           "name": "Get Session",
@@ -106,7 +131,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "get-session"]
             },
-            "description": "Obtener información de la sesión actual"
+            "description": "Obtener información de la sesión actual (user, workspace, etc.)"
           }
         },
         {
@@ -119,11 +144,11 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "sign-out"]
             },
-            "description": "Cerrar sesión"
+            "description": "Cerrar sesión y eliminar cookie"
           }
         }
       ],
-      "description": "Endpoints de autenticación con Better Auth"
+      "description": "Autenticación con Better Auth. Usa cookies automáticas — no necesitas copiar tokens manualmente."
     },
     {
       "name": "Workspaces",
@@ -145,12 +170,7 @@
           "name": "Create Workspace",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Mi Consultorio\"\n}"
@@ -160,17 +180,17 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "workspaces"]
             },
-            "description": "Crear un nuevo workspace y asignar al usuario como OWNER"
+            "description": "Crear un nuevo workspace. El usuario se asigna como OWNER automáticamente."
           },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "// Guardar workspaceId automáticamente",
                   "if (pm.response.code === 201) {",
                   "    var jsonData = pm.response.json();",
                   "    pm.collectionVariables.set('workspaceId', jsonData.id);",
+                  "    console.log('✅ workspaceId guardado:', jsonData.id);",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -179,7 +199,35 @@
           ]
         },
         {
-          "name": "Get Workspace",
+          "name": "Get Current Workspace",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/current",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workspaces", "current"]
+            },
+            "description": "Obtener el workspace activo del usuario"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('workspaceId', jsonData.id);",
+                  "    console.log('✅ workspaceId guardado:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Workspace by ID",
           "request": {
             "method": "GET",
             "header": [],
@@ -188,19 +236,14 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "workspaces", "{{workspaceId}}"]
             },
-            "description": "Obtener un workspace específico"
+            "description": "Obtener un workspace específico por ID"
           }
         },
         {
           "name": "Update Workspace",
           "request": {
             "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Consultorio Actualizado\"\n}"
@@ -223,22 +266,17 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "workspaces", "{{workspaceId}}"]
             },
-            "description": "Eliminar un workspace (solo OWNER, sin otros usuarios)"
+            "description": "Eliminar un workspace (solo OWNER, sin otros usuarios activos)"
           }
         },
         {
           "name": "Update Channel Settings",
           "request": {
             "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"defaultChannel\": \"WHATSAPP\",\n  \"smsEnabled\": true,\n  \"whatsappEnabled\": true,\n  \"emailEnabled\": false\n}"
+              "raw": "{\n  \"defaultChannel\": \"SMS\",\n  \"smsEnabled\": true,\n  \"whatsappEnabled\": true,\n  \"emailEnabled\": false\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/channel-settings",
@@ -250,11 +288,11 @@
                 "channel-settings"
               ]
             },
-            "description": "Actualizar configuración de canales de mensajería (solo OWNER)"
+            "description": "Actualizar configuración de canales de mensajería. Opciones de defaultChannel: SMS, WHATSAPP, EMAIL"
           }
         }
       ],
-      "description": "Gestión de workspaces (tenants)"
+      "description": "Gestión de workspaces (tenants). Cada doctor tiene uno o más workspaces."
     },
     {
       "name": "Practices",
@@ -269,19 +307,14 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "workspaces", "{{workspaceId}}", "practices"]
             },
-            "description": "Listar todas las practices de un workspace"
+            "description": "Listar todas las practices (consultorios) del workspace"
           }
         },
         {
           "name": "Create Practice",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Consultorio Centro\",\n  \"address\": \"Av. 10 de Agosto N45-123, Quito\",\n  \"phone\": \"+593987654321\",\n  \"googlePlaceId\": \"ChIJN1t_tDeuEmsRUsoyG83frY4\"\n}"
@@ -291,8 +324,23 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "workspaces", "{{workspaceId}}", "practices"]
             },
-            "description": "Crear una nueva practice (OWNER o DOCTOR)"
-          }
+            "description": "Crear una nueva practice (OWNER o DOCTOR). El googlePlaceId se usa para generar URLs de Google Reviews."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('practiceId', jsonData.id);",
+                  "    console.log('✅ practiceId guardado:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
           "name": "Get Practice",
@@ -300,14 +348,14 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/practices/:practiceId",
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/practices/{{practiceId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "practices", ":practiceId"],
-              "variable": [
-                {
-                  "key": "practiceId",
-                  "value": ""
-                }
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "practices",
+                "{{practiceId}}"
               ]
             },
             "description": "Obtener una practice específica"
@@ -317,25 +365,20 @@
           "name": "Update Practice",
           "request": {
             "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Consultorio Centro Actualizado\",\n  \"phone\": \"+593999888777\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/practices/:practiceId",
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/practices/{{practiceId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "practices", ":practiceId"],
-              "variable": [
-                {
-                  "key": "practiceId",
-                  "value": ""
-                }
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "practices",
+                "{{practiceId}}"
               ]
             },
             "description": "Actualizar una practice (OWNER o DOCTOR)"
@@ -347,21 +390,94 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/practices/:practiceId",
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/practices/{{practiceId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "practices", ":practiceId"],
-              "variable": [
-                {
-                  "key": "practiceId",
-                  "value": ""
-                }
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "practices",
+                "{{practiceId}}"
               ]
             },
             "description": "Eliminar una practice (solo OWNER)"
           }
+        },
+        {
+          "name": "Search Google Places",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/practices/search/google-places?query=consultorio dental quito",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "practices",
+                "search",
+                "google-places"
+              ],
+              "query": [
+                { "key": "query", "value": "consultorio dental quito" },
+                { "key": "lat", "value": "-0.1807", "disabled": true },
+                { "key": "lng", "value": "-78.4678", "disabled": true }
+              ]
+            },
+            "description": "Buscar consultorios en Google Places por texto"
+          }
+        },
+        {
+          "name": "Google Places Autocomplete",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/practices/autocomplete/google-places?input=dr perez quito",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "practices",
+                "autocomplete",
+                "google-places"
+              ],
+              "query": [
+                { "key": "input", "value": "dr perez quito" },
+                { "key": "lat", "value": "-0.1807", "disabled": true },
+                { "key": "lng", "value": "-78.4678", "disabled": true }
+              ]
+            },
+            "description": "Autocomplete de Google Places para buscar consultorios"
+          }
+        },
+        {
+          "name": "Get Google Place Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/practices/google-places/:placeId",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "practices",
+                "google-places",
+                ":placeId"
+              ],
+              "variable": [
+                { "key": "placeId", "value": "ChIJN1t_tDeuEmsRUsoyG83frY4" }
+              ]
+            },
+            "description": "Obtener detalles de un lugar específico de Google Places"
+          }
         }
       ],
-      "description": "Gestión de ubicaciones físicas (consultorios)"
+      "description": "Gestión de practices (consultorios/ubicaciones físicas). Incluye integración con Google Places para buscar y vincular consultorios."
     },
     {
       "name": "Workspace Users",
@@ -383,15 +499,10 @@
           "name": "Invite User",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"nuevo@ejemplo.com\",\n  \"role\": \"DOCTOR\"\n}"
+              "raw": "{\n  \"email\": \"recepcionista@ejemplo.com\",\n  \"role\": \"RECEPTIONIST\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/users/invite",
@@ -404,39 +515,28 @@
                 "invite"
               ]
             },
-            "description": "Invitar un usuario al workspace (OWNER o DOCTOR)"
+            "description": "Invitar un usuario al workspace. Roles: OWNER, DOCTOR, RECEPTIONIST"
           }
         },
         {
           "name": "Update User Role",
           "request": {
             "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"role\": \"RECEPTIONIST\"\n}"
+              "raw": "{\n  \"role\": \"DOCTOR\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/users/:userId/role",
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/users/{{userId}}/role",
               "host": ["{{baseUrl}}"],
               "path": [
                 "api",
                 "workspaces",
                 "{{workspaceId}}",
                 "users",
-                ":userId",
+                "{{userId}}",
                 "role"
-              ],
-              "variable": [
-                {
-                  "key": "userId",
-                  "value": ""
-                }
               ]
             },
             "description": "Cambiar el rol de un usuario (solo OWNER)"
@@ -448,33 +548,1252 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/users/:userId",
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/users/{{userId}}",
               "host": ["{{baseUrl}}"],
               "path": [
                 "api",
                 "workspaces",
                 "{{workspaceId}}",
                 "users",
-                ":userId"
-              ],
-              "variable": [
-                {
-                  "key": "userId",
-                  "value": ""
-                }
+                "{{userId}}"
               ]
             },
-            "description": "Remover un usuario del workspace (permisos según rol)"
+            "description": "Remover un usuario del workspace"
           }
         }
       ],
-      "description": "Gestión de usuarios y permisos en workspaces"
+      "description": "Gestión de usuarios y permisos dentro de un workspace. Roles: OWNER (acceso total), DOCTOR (crear practices, invitar), RECEPTIONIST (solo lectura)."
+    },
+    {
+      "name": "Campaigns",
+      "item": [
+        {
+          "name": "List Campaigns",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/campaigns",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workspaces", "{{workspaceId}}", "campaigns"]
+            },
+            "description": "Listar todas las campañas del workspace"
+          }
+        },
+        {
+          "name": "Create Campaign",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"practiceId\": \"{{practiceId}}\",\n  \"name\": \"Campaña Febrero 2026\",\n  \"description\": \"Feedback de pacientes de febrero\",\n  \"scheduledHoursAfter\": 2,\n  \"patients\": [\n    {\n      \"name\": \"María García\",\n      \"phone\": \"+593991234567\",\n      \"email\": \"maria@ejemplo.com\",\n      \"appointmentTime\": \"2026-02-06T10:00:00.000Z\",\n      \"hasConsent\": true\n    },\n    {\n      \"name\": \"Carlos López\",\n      \"phone\": \"+593987654321\",\n      \"appointmentTime\": \"2026-02-06T14:00:00.000Z\",\n      \"hasConsent\": true\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/campaigns",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workspaces", "{{workspaceId}}", "campaigns"]
+            },
+            "description": "Crear una nueva campaña con pacientes. scheduledHoursAfter: horas después de la cita para enviar el mensaje (1-48, default 2). Requiere practiceId válido."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('campaignId', jsonData.id);",
+                  "    console.log('✅ campaignId guardado:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Campaign",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/campaigns/{{campaignId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "campaigns",
+                "{{campaignId}}"
+              ]
+            },
+            "description": "Obtener una campaña específica con sus pacientes y mensajes"
+          }
+        },
+        {
+          "name": "Update Campaign",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Campaña Febrero Actualizada\",\n  \"description\": \"Descripción actualizada\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/campaigns/{{campaignId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "campaigns",
+                "{{campaignId}}"
+              ]
+            },
+            "description": "Actualizar una campaña. Status: DRAFT, ACTIVE, PAUSED, COMPLETED"
+          }
+        },
+        {
+          "name": "Delete Campaign",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/campaigns/{{campaignId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "campaigns",
+                "{{campaignId}}"
+              ]
+            },
+            "description": "Eliminar una campaña"
+          }
+        },
+        {
+          "name": "Upload CSV to Campaign",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"csvContent\": \"name,phone,email,appointmentTime,hasConsent\\nAna Martínez,+593991111111,ana@mail.com,2026-02-07T09:00:00.000Z,true\\nPedro Sánchez,+593992222222,,2026-02-07T11:00:00.000Z,true\",\n  \"delimiter\": \",\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/campaigns/{{campaignId}}/upload",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "campaigns",
+                "{{campaignId}}",
+                "upload"
+              ]
+            },
+            "description": "Subir pacientes a una campaña existente via CSV. Columnas: name, phone, email (opt), appointmentTime, hasConsent"
+          }
+        },
+        {
+          "name": "Export Campaign",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/campaigns/{{campaignId}}/export",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "campaigns",
+                "{{campaignId}}",
+                "export"
+              ]
+            },
+            "description": "Exportar datos de una campaña"
+          }
+        }
+      ],
+      "description": "Gestión de campañas de feedback. Una campaña agrupa pacientes de un día/período y se vincula a una practice."
+    },
+    {
+      "name": "Patients",
+      "item": [
+        {
+          "name": "List Patients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/patients",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workspaces", "{{workspaceId}}", "patients"],
+              "query": [
+                { "key": "campaignId", "value": "", "disabled": true },
+                { "key": "hasConsent", "value": "true", "disabled": true },
+                { "key": "optedOut", "value": "false", "disabled": true }
+              ]
+            },
+            "description": "Listar pacientes del workspace. Filtros opcionales: campaignId, hasConsent, optedOut"
+          }
+        },
+        {
+          "name": "Get Patient Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/patients/stats",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "patients",
+                "stats"
+              ]
+            },
+            "description": "Resumen estadístico de pacientes del workspace"
+          }
+        },
+        {
+          "name": "Get Patient",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/patients/{{patientId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "patients",
+                "{{patientId}}"
+              ]
+            },
+            "description": "Obtener un paciente específico con su historial de mensajes"
+          }
+        },
+        {
+          "name": "Create Patient",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Laura Morales\",\n  \"phone\": \"+593993333333\",\n  \"email\": \"laura@ejemplo.com\",\n  \"appointmentTime\": \"2026-02-06T16:00:00.000Z\",\n  \"hasConsent\": true,\n  \"campaignId\": \"{{campaignId}}\",\n  \"preferredChannel\": \"SMS\",\n  \"language\": \"es\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/patients",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workspaces", "{{workspaceId}}", "patients"]
+            },
+            "description": "Crear un paciente individual. preferredChannel: SMS, WHATSAPP, EMAIL"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('patientId', jsonData.id);",
+                  "    console.log('✅ patientId guardado:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Patient",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Laura Morales Actualizada\",\n  \"email\": \"laura.new@ejemplo.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/patients/{{patientId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "patients",
+                "{{patientId}}"
+              ]
+            },
+            "description": "Actualizar datos de un paciente"
+          }
+        },
+        {
+          "name": "Delete Patient",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/patients/{{patientId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "patients",
+                "{{patientId}}"
+              ]
+            },
+            "description": "Eliminar un paciente"
+          }
+        },
+        {
+          "name": "Opt-Out Patient",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/patients/{{patientId}}/opt-out",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "patients",
+                "{{patientId}}",
+                "opt-out"
+              ]
+            },
+            "description": "Marcar paciente como opt-out. No recibirá más mensajes."
+          }
+        },
+        {
+          "name": "List Patients by Campaign",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/campaigns/{{campaignId}}/patients",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "campaigns",
+                "{{campaignId}}",
+                "patients"
+              ]
+            },
+            "description": "Listar pacientes de una campaña específica"
+          }
+        }
+      ],
+      "description": "Gestión de pacientes. Incluye CRUD, opt-out y estadísticas."
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "List Messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workspaces", "{{workspaceId}}", "messages"],
+              "query": [
+                { "key": "campaignId", "value": "", "disabled": true },
+                { "key": "patientId", "value": "", "disabled": true },
+                { "key": "status", "value": "SENT", "disabled": true },
+                { "key": "type", "value": "INITIAL", "disabled": true }
+              ]
+            },
+            "description": "Listar mensajes del workspace. Filtros: campaignId, patientId, status (PENDING/SENT/DELIVERED/REPLIED/FAILED), type (INITIAL/FOLLOWUP_HAPPY/FOLLOWUP_UNHAPPY/REMINDER)"
+          }
+        },
+        {
+          "name": "Get Message Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/messages/stats",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "messages",
+                "stats"
+              ]
+            },
+            "description": "Estadísticas de mensajes: enviados, entregados, respondidos, fallidos"
+          }
+        },
+        {
+          "name": "Get Message",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/messages/{{messageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "messages",
+                "{{messageId}}"
+              ]
+            },
+            "description": "Obtener un mensaje específico con detalles de entrega"
+          }
+        },
+        {
+          "name": "Create Message",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"type\": \"INITIAL\",\n  \"channel\": \"SMS\",\n  \"content\": \"Hola {name}, ¿cómo calificarías tu visita? (1-5)\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workspaces", "{{workspaceId}}", "messages"]
+            },
+            "description": "Crear un mensaje manual. type: INITIAL, FOLLOWUP_HAPPY, FOLLOWUP_UNHAPPY, REMINDER. channel: SMS, WHATSAPP, EMAIL"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('messageId', jsonData.id);",
+                  "    console.log('✅ messageId guardado:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Message",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"DELIVERED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/messages/{{messageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "messages",
+                "{{messageId}}"
+              ]
+            },
+            "description": "Actualizar un mensaje (status, rating, feedback, etc.)"
+          }
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/messages/{{messageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "messages",
+                "{{messageId}}"
+              ]
+            },
+            "description": "Eliminar un mensaje"
+          }
+        },
+        {
+          "name": "Simulate Patient Response",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"feedback\": \"Excelente atención, muy profesional\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/messages/{{messageId}}/response",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "messages",
+                "{{messageId}}",
+                "response"
+              ]
+            },
+            "description": "Simular la respuesta de un paciente (para testing). rating: 1-5. Si 4-5 → followup happy, si 1-3 → followup unhappy."
+          }
+        },
+        {
+          "name": "List Messages by Campaign",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/campaigns/{{campaignId}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "campaigns",
+                "{{campaignId}}",
+                "messages"
+              ]
+            },
+            "description": "Listar todos los mensajes de una campaña"
+          }
+        },
+        {
+          "name": "List Messages by Patient",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/patients/{{patientId}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "patients",
+                "{{patientId}}",
+                "messages"
+              ]
+            },
+            "description": "Listar todos los mensajes de un paciente"
+          }
+        }
+      ],
+      "description": "Gestión de mensajes SMS/WhatsApp/Email. Incluye simulación de respuestas para testing y vistas por campaña/paciente."
+    },
+    {
+      "name": "Templates",
+      "item": [
+        {
+          "name": "List Templates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/templates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workspaces", "{{workspaceId}}", "templates"]
+            },
+            "description": "Listar todas las plantillas de mensajes del workspace"
+          }
+        },
+        {
+          "name": "Create Template",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mensaje Inicial SMS\",\n  \"type\": \"INITIAL\",\n  \"content\": \"Hola {name}, gracias por visitar al Dr. {doctor}. ¿Cómo calificarías tu experiencia del 1 al 5?\",\n  \"variables\": [\"name\", \"doctor\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/templates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workspaces", "{{workspaceId}}", "templates"]
+            },
+            "description": "Crear una plantilla. type: INITIAL, FOLLOWUP_HAPPY, FOLLOWUP_UNHAPPY, REMINDER. Variables disponibles: {name}, {doctor}, {practice}, {reviewUrl}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('templateId', jsonData.id);",
+                  "    console.log('✅ templateId guardado:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Template",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/templates/{{templateId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "templates",
+                "{{templateId}}"
+              ]
+            },
+            "description": "Obtener una plantilla específica"
+          }
+        },
+        {
+          "name": "Update Template",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mensaje Inicial SMS v2\",\n  \"content\": \"Hola {name}, ¿qué tal tu cita con el Dr. {doctor}? Califica del 1-5\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/templates/{{templateId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "templates",
+                "{{templateId}}"
+              ]
+            },
+            "description": "Actualizar contenido de una plantilla"
+          }
+        },
+        {
+          "name": "Delete Template",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/templates/{{templateId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "templates",
+                "{{templateId}}"
+              ]
+            },
+            "description": "Eliminar una plantilla"
+          }
+        },
+        {
+          "name": "Duplicate Template",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/templates/{{templateId}}/duplicate",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "templates",
+                "{{templateId}}",
+                "duplicate"
+              ]
+            },
+            "description": "Duplicar una plantilla existente"
+          }
+        }
+      ],
+      "description": "Plantillas de mensajes reutilizables. Variables: {name}, {doctor}, {practice}, {reviewUrl}"
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Workspace Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/analytics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workspaces", "{{workspaceId}}", "analytics"],
+              "query": [
+                { "key": "startDate", "value": "2026-01-01", "disabled": true },
+                { "key": "endDate", "value": "2026-02-28", "disabled": true }
+              ]
+            },
+            "description": "Analytics generales del workspace: NPS, response rate, conversion rate, rating distribution"
+          }
+        },
+        {
+          "name": "Campaign Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/analytics/campaigns/{{campaignId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "analytics",
+                "campaigns",
+                "{{campaignId}}"
+              ]
+            },
+            "description": "Analytics específicos de una campaña"
+          }
+        },
+        {
+          "name": "Practice Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/analytics/practices/{{practiceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "analytics",
+                "practices",
+                "{{practiceId}}"
+              ],
+              "query": [
+                { "key": "startDate", "value": "2026-01-01", "disabled": true },
+                { "key": "endDate", "value": "2026-02-28", "disabled": true }
+              ]
+            },
+            "description": "Analytics de una practice/consultorio específico"
+          }
+        },
+        {
+          "name": "Export Analytics CSV",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/analytics/export/csv",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "analytics",
+                "export",
+                "csv"
+              ],
+              "query": [
+                { "key": "startDate", "value": "2026-01-01", "disabled": true },
+                { "key": "endDate", "value": "2026-02-28", "disabled": true }
+              ]
+            },
+            "description": "Exportar analytics en formato CSV"
+          }
+        },
+        {
+          "name": "Export Analytics PDF",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/analytics/export/pdf",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "analytics",
+                "export",
+                "pdf"
+              ],
+              "query": [
+                { "key": "startDate", "value": "2026-01-01", "disabled": true },
+                { "key": "endDate", "value": "2026-02-28", "disabled": true }
+              ]
+            },
+            "description": "Exportar analytics en formato PDF"
+          }
+        },
+        {
+          "name": "Compare Practices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/analytics/compare/practices?ids={{practiceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "analytics",
+                "compare",
+                "practices"
+              ],
+              "query": [
+                {
+                  "key": "ids",
+                  "value": "{{practiceId}}",
+                  "description": "Comma-separated practice IDs"
+                },
+                { "key": "startDate", "value": "2026-01-01", "disabled": true },
+                { "key": "endDate", "value": "2026-02-28", "disabled": true }
+              ]
+            },
+            "description": "Comparar métricas entre practices. Pasar IDs separados por comas."
+          }
+        },
+        {
+          "name": "Compare Campaigns",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/analytics/compare/campaigns?ids={{campaignId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "analytics",
+                "compare",
+                "campaigns"
+              ],
+              "query": [
+                {
+                  "key": "ids",
+                  "value": "{{campaignId}}",
+                  "description": "Comma-separated campaign IDs"
+                }
+              ]
+            },
+            "description": "Comparar métricas entre campañas"
+          }
+        },
+        {
+          "name": "Compare Periods",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/analytics/compare/periods?period1Start=2026-01-01&period1End=2026-01-31&period2Start=2026-02-01&period2End=2026-02-28",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "analytics",
+                "compare",
+                "periods"
+              ],
+              "query": [
+                { "key": "period1Start", "value": "2026-01-01" },
+                { "key": "period1End", "value": "2026-01-31" },
+                { "key": "period2Start", "value": "2026-02-01" },
+                { "key": "period2End", "value": "2026-02-28" }
+              ]
+            },
+            "description": "Comparar métricas entre dos períodos de tiempo"
+          }
+        },
+        {
+          "name": "Cohort Analysis",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/analytics/cohorts",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "analytics",
+                "cohorts"
+              ],
+              "query": [{ "key": "months", "value": "6", "disabled": true }]
+            },
+            "description": "Análisis de cohortes por mes. months: 1-24 (default 6)"
+          }
+        },
+        {
+          "name": "Response Rate Trends",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/analytics/trends",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "analytics",
+                "trends"
+              ],
+              "query": [{ "key": "months", "value": "12", "disabled": true }]
+            },
+            "description": "Tendencias de response rate a lo largo del tiempo. months: 1-24 (default 12)"
+          }
+        }
+      ],
+      "description": "Dashboard analytics: NPS, conversion rate, response rate, comparaciones, cohortes, tendencias, exportación CSV/PDF."
+    },
+    {
+      "name": "Billing",
+      "item": [
+        {
+          "name": "Get Billing Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/billing",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workspaces", "{{workspaceId}}", "billing"]
+            },
+            "description": "Obtener info de billing actual: plan, créditos restantes, suscripción activa"
+          }
+        },
+        {
+          "name": "Get Plans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/billing/plans",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "billing",
+                "plans"
+              ]
+            },
+            "description": "Listar planes disponibles con precios y features"
+          }
+        },
+        {
+          "name": "Get Credit Packages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/billing/credit-packages",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "billing",
+                "credit-packages"
+              ]
+            },
+            "description": "Listar paquetes de créditos adicionales disponibles"
+          }
+        },
+        {
+          "name": "Create Subscription",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"STARTER\",\n  \"interval\": \"monthly\",\n  \"successUrl\": \"http://localhost:4000/billing?success=true\",\n  \"cancelUrl\": \"http://localhost:4000/billing?canceled=true\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/billing/subscribe",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "billing",
+                "subscribe"
+              ]
+            },
+            "description": "Crear suscripción via Stripe Checkout. Planes: FREE, STARTER ($39/mo), PROFESSIONAL ($129/mo), ENTERPRISE. Interval: monthly, yearly"
+          }
+        },
+        {
+          "name": "Purchase Credits",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credits\": 500,\n  \"successUrl\": \"http://localhost:4000/billing?credits=success\",\n  \"cancelUrl\": \"http://localhost:4000/billing?credits=canceled\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/billing/credits",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "billing",
+                "credits"
+              ]
+            },
+            "description": "Comprar créditos de mensajes adicionales via Stripe"
+          }
+        },
+        {
+          "name": "Cancel Subscription",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"when\": \"period_end\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/billing/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "billing",
+                "cancel"
+              ]
+            },
+            "description": "Cancelar suscripción. when: 'immediate' (ahora) o 'period_end' (al final del período actual, default)"
+          }
+        },
+        {
+          "name": "Resume Subscription",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/billing/resume",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "billing",
+                "resume"
+              ]
+            },
+            "description": "Reactivar una suscripción que fue cancelada con period_end"
+          }
+        },
+        {
+          "name": "Get Billing Portal",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/billing/portal",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "billing",
+                "portal"
+              ]
+            },
+            "description": "Obtener URL del Customer Portal de Stripe para gestionar método de pago y facturas"
+          }
+        },
+        {
+          "name": "Get Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/billing/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "billing",
+                "transactions"
+              ]
+            },
+            "description": "Historial de transacciones de créditos (compras, consumos, bonificaciones)"
+          }
+        },
+        {
+          "name": "Can Send Messages?",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/billing/can-send",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "billing",
+                "can-send"
+              ]
+            },
+            "description": "Verificar si el workspace tiene créditos suficientes para enviar mensajes"
+          }
+        },
+        {
+          "name": "Credits Alert",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/billing/credits-alert",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "billing",
+                "credits-alert"
+              ]
+            },
+            "description": "Obtener alertas de créditos bajos"
+          }
+        }
+      ],
+      "description": "Sistema de billing con Stripe. Planes: FREE (50 msgs), STARTER ($39, 500 msgs), PROFESSIONAL ($129, 2000 msgs), ENTERPRISE (custom)."
+    },
+    {
+      "name": "Weekly Reports",
+      "item": [
+        {
+          "name": "Get Report Config",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/weekly-reports/config",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "weekly-reports",
+                "config"
+              ]
+            },
+            "description": "Obtener configuración de reportes semanales: habilitado, día de envío, destinatarios"
+          }
+        },
+        {
+          "name": "Update Report Config",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true,\n  \"dayOfWeek\": \"MONDAY\",\n  \"recipients\": [\"doctor@ejemplo.com\", \"admin@ejemplo.com\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/weekly-reports/config",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "weekly-reports",
+                "config"
+              ]
+            },
+            "description": "Actualizar configuración. dayOfWeek: MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY"
+          }
+        },
+        {
+          "name": "Send Test Report",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"testEmail\": \"doctor@ejemplo.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workspaces/{{workspaceId}}/weekly-reports/test",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "workspaces",
+                "{{workspaceId}}",
+                "weekly-reports",
+                "test"
+              ]
+            },
+            "description": "Enviar un reporte semanal de prueba a un email específico"
+          }
+        }
+      ],
+      "description": "Reportes semanales automáticos enviados por email con resumen de métricas."
     },
     {
       "name": "Webhooks",
       "item": [
         {
-          "name": "Verify WhatsApp Webhook",
+          "name": "Twilio SMS Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "MessageSid",
+                  "value": "SM1234567890abcdef",
+                  "type": "text"
+                },
+                { "key": "From", "value": "+593991234567", "type": "text" },
+                { "key": "To", "value": "+593999000000", "type": "text" },
+                { "key": "Body", "value": "5", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/webhooks/twilio/sms",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "webhooks", "twilio", "sms"]
+            },
+            "description": "Webhook de Twilio para SMS entrantes. Endpoint público. En producción, verifica x-twilio-signature."
+          }
+        },
+        {
+          "name": "WhatsApp Webhook Verify",
           "request": {
             "method": "GET",
             "header": [],
@@ -483,33 +1802,22 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "webhooks", "whatsapp"],
               "query": [
-                {
-                  "key": "hub.mode",
-                  "value": "subscribe"
-                },
+                { "key": "hub.mode", "value": "subscribe" },
                 {
                   "key": "hub.verify_token",
                   "value": "random-string-validation"
                 },
-                {
-                  "key": "hub.challenge",
-                  "value": "12345"
-                }
+                { "key": "hub.challenge", "value": "12345" }
               ]
             },
-            "description": "Verificar webhook de WhatsApp (Meta Challenge)"
+            "description": "Verificar webhook de WhatsApp (Meta Challenge). Endpoint público."
           }
         },
         {
-          "name": "Incoming WhatsApp Message",
+          "name": "WhatsApp Incoming Message",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"object\": \"whatsapp_business_account\",\n  \"entry\": [\n    {\n      \"changes\": [\n        {\n          \"value\": {\n            \"messages\": [\n              {\n                \"from\": \"593991234567\",\n                \"text\": {\n                  \"body\": \"5\"\n                }\n              }\n            ]\n          }\n        }\n      ]\n    }\n  ]\n}"
@@ -519,11 +1827,34 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "webhooks", "whatsapp"]
             },
-            "description": "Simular mensaje entrante de WhatsApp"
+            "description": "Simular mensaje entrante de WhatsApp (Meta Cloud API format)"
+          }
+        },
+        {
+          "name": "Stripe Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              {
+                "key": "stripe-signature",
+                "value": "t=1234567890,v1=test_signature"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"evt_test_123\",\n  \"type\": \"customer.subscription.created\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"sub_test_123\",\n      \"customer\": \"cus_test_123\",\n      \"status\": \"active\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/webhooks/stripe",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "webhooks", "stripe"]
+            },
+            "description": "Webhook de Stripe. Eventos: customer.subscription.created/updated/deleted, invoice.paid/payment_failed, payment_intent.succeeded/payment_failed. Requiere stripe-signature header."
           }
         }
       ],
-      "description": "Endpoints de Webhooks (Twilio, WhatsApp)"
+      "description": "Webhooks públicos para Twilio SMS, WhatsApp (Meta) y Stripe. Estos endpoints no requieren autenticación pero verifican firmas en producción."
     }
   ]
 }
