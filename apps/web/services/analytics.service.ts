@@ -95,6 +95,45 @@ export interface PracticeAnalytics {
   };
 }
 
+export interface ComparisonItem {
+  id: string;
+  name: string;
+  messagesSent: number;
+  totalResponses: number;
+  responseRate: number;
+  averageRating: number;
+  npsScore: number;
+  distribution: {
+    rating: Record<string, number>;
+    sentiment: { happy: number; neutral: number; unhappy: number };
+  };
+}
+
+export interface ComparisonResult {
+  type: 'practices' | 'campaigns' | 'periods';
+  items: ComparisonItem[];
+}
+
+export interface CohortEntry {
+  cohort: string;
+  totalMessages: number;
+  totalResponses: number;
+  responseRate: number;
+  averageRating: number;
+  npsScore: number;
+  happyPercent: number;
+  unhappyPercent: number;
+}
+
+export interface CohortAnalysis {
+  cohorts: CohortEntry[];
+  trends: {
+    responseRateTrend: 'up' | 'down' | 'stable';
+    ratingTrend: 'up' | 'down' | 'stable';
+    npsTrend: 'up' | 'down' | 'stable';
+  };
+}
+
 export const analyticsService = {
   /**
    * Obtiene analytics general del workspace
@@ -143,5 +182,93 @@ export const analyticsService = {
     const url = `/workspaces/${workspaceId}/analytics/practices/${practiceId}${queryString ? `?${queryString}` : ''}`;
 
     return apiClient.get<PracticeAnalytics>(url);
+  },
+
+  /**
+   * Compara practices lado a lado
+   */
+  comparePractices: async (
+    workspaceId: string,
+    practiceIds: string[],
+    startDate?: Date,
+    endDate?: Date,
+  ): Promise<ComparisonResult> => {
+    const params = new URLSearchParams();
+    params.append('ids', practiceIds.join(','));
+    if (startDate) params.append('startDate', startDate.toISOString());
+    if (endDate) params.append('endDate', endDate.toISOString());
+
+    return apiClient.get<ComparisonResult>(
+      `/workspaces/${workspaceId}/analytics/compare/practices?${params}`,
+    );
+  },
+
+  /**
+   * Compara campaigns lado a lado
+   */
+  compareCampaigns: async (
+    workspaceId: string,
+    campaignIds: string[],
+  ): Promise<ComparisonResult> => {
+    const params = new URLSearchParams();
+    params.append('ids', campaignIds.join(','));
+
+    return apiClient.get<ComparisonResult>(
+      `/workspaces/${workspaceId}/analytics/compare/campaigns?${params}`,
+    );
+  },
+
+  /**
+   * Compara dos períodos de tiempo
+   */
+  comparePeriods: async (
+    workspaceId: string,
+    period1Start: Date,
+    period1End: Date,
+    period2Start: Date,
+    period2End: Date,
+  ): Promise<ComparisonResult> => {
+    const params = new URLSearchParams({
+      period1Start: period1Start.toISOString(),
+      period1End: period1End.toISOString(),
+      period2Start: period2Start.toISOString(),
+      period2End: period2End.toISOString(),
+    });
+
+    return apiClient.get<ComparisonResult>(
+      `/workspaces/${workspaceId}/analytics/compare/periods?${params}`,
+    );
+  },
+
+  /**
+   * Obtiene análisis de cohortes mensuales
+   */
+  getCohortAnalysis: async (
+    workspaceId: string,
+    months = 6,
+  ): Promise<CohortAnalysis> => {
+    return apiClient.get<CohortAnalysis>(
+      `/workspaces/${workspaceId}/analytics/cohorts?months=${months}`,
+    );
+  },
+
+  /**
+   * Obtiene tendencias de response rate
+   */
+  getResponseRateTrends: async (
+    workspaceId: string,
+    months = 12,
+  ): Promise<
+    Array<{
+      month: string;
+      responseRate: number;
+      averageRating: number;
+      npsScore: number;
+      volume: number;
+    }>
+  > => {
+    return apiClient.get(
+      `/workspaces/${workspaceId}/analytics/trends?months=${months}`,
+    );
   },
 };

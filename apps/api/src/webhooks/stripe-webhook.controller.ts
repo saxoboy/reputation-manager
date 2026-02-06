@@ -8,7 +8,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { StripeService } from '@reputation-manager/integrations';
+import { StripeService, EmailService } from '@reputation-manager/integrations';
 import { PrismaService } from '@reputation-manager/database';
 import { PLAN_PRICES, PlanType } from '../billing/dto';
 import Stripe from 'stripe';
@@ -20,6 +20,7 @@ export class StripeWebhookController {
   constructor(
     private readonly stripe: StripeService,
     private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
   ) {}
 
   @Post()
@@ -298,7 +299,14 @@ export class StripeWebhookController {
 
     this.logger.error(`❌ Invoice payment failed for workspace ${workspaceId}`);
 
-    // TODO: Send email notification to workspace owner
+    // Notify workspace owner about failed payment
+    await this.sendPaymentNotification(workspaceId, {
+      type: 'failed',
+      subject: '⚠️ Pago de suscripción fallido - Reputation Manager',
+      amount: invoice.amount_due,
+      currency: invoice.currency,
+      description: invoice.lines.data[0]?.description || 'Pago de suscripción',
+    });
   }
 
   /**
@@ -336,7 +344,14 @@ export class StripeWebhookController {
       `✅ Added ${credits} credits to workspace ${workspaceId} (payment ${paymentIntent.id})`,
     );
 
-    // TODO: Send email notification
+    // Notify workspace owner about successful credit purchase
+    await this.sendPaymentNotification(workspaceId, {
+      type: 'succeeded',
+      subject: '✅ Compra de créditos exitosa - Reputation Manager',
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency,
+      description: `${credits} créditos de mensajes agregados`,
+    });
   }
 
   /**
@@ -363,6 +378,84 @@ export class StripeWebhookController {
       `❌ Credit purchase failed for workspace ${workspaceId} (payment ${paymentIntent.id})`,
     );
 
-    // TODO: Send email notification
+    // Notify workspace owner about failed credit purchase
+    await this.sendPaymentNotification(workspaceId, {
+      type: 'failed',
+      subject: '⚠️ Compra de créditos fallida - Reputation Manager',
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency,
+      description: 'Compra de créditos de mensajes',
+    });
+  }
+
+  /**
+   * Send payment notification email to workspace owner
+   */
+  private async sendPaymentNotification(
+    workspaceId: string,
+    details: {
+      type: 'succeeded' | 'failed';
+      subject: string;
+      amount: number;
+      currency: string;
+      description: string;
+    },
+  ): Promise<void> {
+    try {
+      const workspace = await this.prisma.workspace.findUnique({
+        where: { id: workspaceId },
+        include: {
+          users: {
+            where: { role: 'OWNER' },
+            include: { user: true },
+            take: 1,
+          },
+        },
+      });
+
+      const owner = workspace?.users[0]?.user;
+      if (!owner?.email) {
+        this.logger.warn(
+          `No owner email found for workspace ${workspaceId}, skipping notification`,
+        );
+        return;
+      }
+
+      if (details.type === 'succeeded') {
+        await this.emailService.sendInvoiceEmail({
+          email: owner.email,
+          name: owner.name || 'Usuario',
+          invoiceUrl: `${process.env['FRONTEND_URL'] || 'http://localhost:4000'}/dashboard/billing`,
+          amount: details.amount,
+          currency: details.currency,
+          date: new Date().toLocaleDateString('es-EC'),
+        });
+      } else {
+        // For failed payments, use a generic email with the failure info
+        await this.emailService.sendLowCreditsAlert({
+          workspaceId,
+          workspaceName: workspace?.name,
+          ownerEmail: owner.email,
+          ownerName: owner.name || 'Usuario',
+          alertLevel: 'critical',
+          remainingCredits: workspace?.messageCredits ?? 0,
+          percentageRemaining: 0,
+          plan: workspace?.plan || 'FREE',
+          planLimit: 0,
+          subject: details.subject,
+          ctaUrl: `${process.env['FRONTEND_URL'] || 'http://localhost:4000'}/dashboard/billing`,
+        });
+      }
+
+      this.logger.log(
+        `📧 Payment notification (${details.type}) sent to ${owner.email}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to send payment notification for workspace ${workspaceId}`,
+        error,
+      );
+      // Don't throw - email failure shouldn't break webhook processing
+    }
   }
 }

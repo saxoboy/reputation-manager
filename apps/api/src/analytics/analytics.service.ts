@@ -91,6 +91,45 @@ export interface PracticeAnalytics {
   }>;
 }
 
+export interface ComparisonItem {
+  id: string;
+  name: string;
+  messagesSent: number;
+  totalResponses: number;
+  responseRate: number;
+  averageRating: number;
+  npsScore: number;
+  distribution: {
+    rating: { [key: string]: number };
+    sentiment: { happy: number; neutral: number; unhappy: number };
+  };
+}
+
+export interface ComparisonResult {
+  type: 'practices' | 'campaigns' | 'periods';
+  items: ComparisonItem[];
+}
+
+export interface CohortEntry {
+  cohort: string; // "2026-01", "2026-02", etc.
+  totalMessages: number;
+  totalResponses: number;
+  responseRate: number;
+  averageRating: number;
+  npsScore: number;
+  happyPercent: number;
+  unhappyPercent: number;
+}
+
+export interface CohortAnalysis {
+  cohorts: CohortEntry[];
+  trends: {
+    responseRateTrend: 'up' | 'down' | 'stable';
+    ratingTrend: 'up' | 'down' | 'stable';
+    npsTrend: 'up' | 'down' | 'stable';
+  };
+}
+
 @Injectable()
 export class AnalyticsService {
   private readonly logger = new Logger(AnalyticsService.name);
@@ -592,5 +631,270 @@ export class AnalyticsService {
     }
 
     return filter;
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Comparison Analytics
+  // ═══════════════════════════════════════════════════════
+
+  /**
+   * Compara múltiples practices lado a lado
+   */
+  async comparePractices(
+    workspaceId: string,
+    practiceIds: string[],
+    startDate?: Date,
+    endDate?: Date,
+  ): Promise<ComparisonResult> {
+    const items: ComparisonItem[] = [];
+
+    for (const practiceId of practiceIds) {
+      try {
+        const analytics = await this.getPracticeAnalytics(
+          workspaceId,
+          practiceId,
+          startDate,
+          endDate,
+        );
+        items.push({
+          id: analytics.practiceId,
+          name: analytics.practiceName,
+          messagesSent: analytics.messagesSent,
+          totalResponses: analytics.totalResponses,
+          responseRate: analytics.responseRate,
+          averageRating: analytics.averageRating,
+          npsScore: analytics.npsScore,
+          distribution: analytics.distribution,
+        });
+      } catch {
+        this.logger.warn(
+          `Practice ${practiceId} not found for comparison, skipping`,
+        );
+      }
+    }
+
+    return { type: 'practices', items };
+  }
+
+  /**
+   * Compara múltiples campaigns lado a lado
+   */
+  async compareCampaigns(
+    workspaceId: string,
+    campaignIds: string[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _startDate?: Date,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _endDate?: Date,
+  ): Promise<ComparisonResult> {
+    const items: ComparisonItem[] = [];
+
+    for (const campaignId of campaignIds) {
+      try {
+        const analytics = await this.getCampaignAnalytics(
+          workspaceId,
+          campaignId,
+        );
+        items.push({
+          id: analytics.campaignId,
+          name: analytics.campaignName,
+          messagesSent: analytics.messagesSent,
+          totalResponses: analytics.totalResponses,
+          responseRate: analytics.responseRate,
+          averageRating: analytics.averageRating,
+          npsScore: analytics.npsScore,
+          distribution: analytics.distribution,
+        });
+      } catch {
+        this.logger.warn(
+          `Campaign ${campaignId} not found for comparison, skipping`,
+        );
+      }
+    }
+
+    return { type: 'campaigns', items };
+  }
+
+  /**
+   * Compara dos períodos de tiempo
+   */
+  async comparePeriods(
+    workspaceId: string,
+    period1Start: Date,
+    period1End: Date,
+    period2Start: Date,
+    period2End: Date,
+  ): Promise<ComparisonResult> {
+    const [analytics1, analytics2] = await Promise.all([
+      this.getWorkspaceAnalytics(workspaceId, period1Start, period1End),
+      this.getWorkspaceAnalytics(workspaceId, period2Start, period2End),
+    ]);
+
+    const formatPeriod = (start: Date, end: Date) =>
+      `${start.toISOString().split('T')[0]} → ${end.toISOString().split('T')[0]}`;
+
+    const mapToItem = (
+      analytics: WorkspaceAnalytics,
+      id: string,
+      name: string,
+    ): ComparisonItem => ({
+      id,
+      name,
+      messagesSent: analytics.overview.totalMessages,
+      totalResponses: analytics.overview.totalResponses,
+      responseRate: analytics.overview.responseRate,
+      averageRating: analytics.overview.averageRating,
+      npsScore: analytics.overview.npsScore,
+      distribution: analytics.distribution,
+    });
+
+    return {
+      type: 'periods',
+      items: [
+        mapToItem(
+          analytics1,
+          'period1',
+          formatPeriod(period1Start, period1End),
+        ),
+        mapToItem(
+          analytics2,
+          'period2',
+          formatPeriod(period2Start, period2End),
+        ),
+      ],
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Cohort Analysis
+  // ═══════════════════════════════════════════════════════
+
+  /**
+   * Análisis de cohortes por mes — muestra tendencias mensuales
+   */
+  async getCohortAnalysis(
+    workspaceId: string,
+    months = 6,
+  ): Promise<CohortAnalysis> {
+    const cohorts: CohortEntry[] = [];
+
+    for (let i = months - 1; i >= 0; i--) {
+      const startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - i, 1);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + 1, 0);
+      endDate.setHours(23, 59, 59, 999);
+
+      const cohortKey = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}`;
+
+      // Mensajes enviados en este mes
+      const messages = await this.prisma.message.findMany({
+        where: {
+          patient: { campaign: { workspaceId } },
+          status: MessageStatus.SENT,
+          sentAt: { gte: startDate, lte: endDate },
+        },
+        select: { rating: true },
+      });
+
+      const totalMessages = messages.length;
+      const ratings = messages
+        .map((m) => m.rating)
+        .filter((r): r is number => r !== null);
+      const totalResponses = ratings.length;
+      const responseRate =
+        totalMessages > 0 ? (totalResponses / totalMessages) * 100 : 0;
+      const averageRating =
+        ratings.length > 0
+          ? ratings.reduce((s, r) => s + r, 0) / ratings.length
+          : 0;
+      const npsScore = this.calculateNPS(ratings);
+
+      const happy = ratings.filter((r) => r >= 4).length;
+      const unhappy = ratings.filter((r) => r <= 2).length;
+
+      cohorts.push({
+        cohort: cohortKey,
+        totalMessages,
+        totalResponses,
+        responseRate: Math.round(responseRate * 10) / 10,
+        averageRating: Math.round(averageRating * 10) / 10,
+        npsScore,
+        happyPercent:
+          totalResponses > 0 ? Math.round((happy / totalResponses) * 100) : 0,
+        unhappyPercent:
+          totalResponses > 0 ? Math.round((unhappy / totalResponses) * 100) : 0,
+      });
+    }
+
+    // Calcular tendencias comparando últimos 2 cohortes con datos
+    const withData = cohorts.filter((c) => c.totalMessages > 0);
+    const trends = this.calculateTrends(withData);
+
+    return { cohorts, trends };
+  }
+
+  /**
+   * Response rate trends — datos mensuales para gráfico de línea
+   */
+  async getResponseRateTrends(
+    workspaceId: string,
+    months = 12,
+  ): Promise<
+    Array<{
+      month: string;
+      responseRate: number;
+      averageRating: number;
+      npsScore: number;
+      volume: number;
+    }>
+  > {
+    const cohorts = await this.getCohortAnalysis(workspaceId, months);
+    return cohorts.cohorts.map((c) => ({
+      month: c.cohort,
+      responseRate: c.responseRate,
+      averageRating: c.averageRating,
+      npsScore: c.npsScore,
+      volume: c.totalMessages,
+    }));
+  }
+
+  /**
+   * Calcula la tendencia entre los últimos cohortes con datos
+   */
+  private calculateTrends(cohorts: CohortEntry[]): CohortAnalysis['trends'] {
+    if (cohorts.length < 2) {
+      return {
+        responseRateTrend: 'stable',
+        ratingTrend: 'stable',
+        npsTrend: 'stable',
+      };
+    }
+
+    const recent = cohorts[cohorts.length - 1];
+    const previous = cohorts[cohorts.length - 2];
+
+    const threshold = 2; // Minimum change to consider a trend
+
+    const getTrend = (
+      current: number,
+      prev: number,
+    ): 'up' | 'down' | 'stable' => {
+      const diff = current - prev;
+      if (diff > threshold) return 'up';
+      if (diff < -threshold) return 'down';
+      return 'stable';
+    };
+
+    return {
+      responseRateTrend: getTrend(recent.responseRate, previous.responseRate),
+      ratingTrend: getTrend(
+        recent.averageRating * 20,
+        previous.averageRating * 20,
+      ), // Scale to compare
+      npsTrend: getTrend(recent.npsScore, previous.npsScore),
+    };
   }
 }
