@@ -6,6 +6,7 @@ import {
   TwilioService,
   WhatsAppService,
   GooglePlacesService,
+  EmailService,
 } from '@reputation-manager/integrations';
 import { QUEUES } from '@reputation-manager/shared-types';
 import { CampaignProcessor } from '../processors/campaign.processor';
@@ -36,6 +37,7 @@ import { WeeklyReportsModule } from '../weekly-reports.module';
     TwilioService,
     WhatsAppService,
     GooglePlacesService,
+    EmailService,
     CampaignProcessor,
   ],
 })

@@ -6,6 +6,7 @@ import {
   TwilioService,
   WhatsAppService,
   GooglePlacesService,
+  EmailService,
 } from '@reputation-manager/integrations';
 import { QUEUES, JOBS } from '@reputation-manager/shared-types';
 
@@ -18,6 +19,7 @@ export class CampaignProcessor extends WorkerHost {
     private readonly twilioService: TwilioService,
     private readonly whatsAppService: WhatsAppService,
     private readonly googlePlacesService: GooglePlacesService,
+    private readonly emailService: EmailService,
     @InjectQueue(QUEUES.CAMPAIGNS) private campaignQueue: Queue,
   ) {
     super();
@@ -120,8 +122,7 @@ export class CampaignProcessor extends WorkerHost {
   }
 
   /**
-   * Check if credits are running low and log warnings
-   * TODO: Send email notifications via EmailService when implemented
+   * Check if credits are running low and send email notifications
    */
   private async checkLowCredits(
     workspaceId: string,
@@ -141,21 +142,64 @@ export class CampaignProcessor extends WorkerHost {
 
     const percentageRemaining = (remainingCredits / planLimit) * 100;
 
+    // Get workspace owner for email notifications
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      include: {
+        users: {
+          where: { role: 'OWNER' },
+          take: 1,
+          include: { user: true },
+        },
+      },
+    });
+
+    if (
+      !workspace ||
+      workspace.users.length === 0 ||
+      !workspace.users[0].user
+    ) {
+      this.logger.warn(
+        `Cannot send low credits alert: Workspace ${workspaceId} has no owner`,
+      );
+      return;
+    }
+
+    const ownerUser = workspace.users[0].user;
+    const billingUrl = `${process.env.FRONTEND_URL || 'http://localhost:4000'}/dashboard/billing`;
+    const baseAlertData = {
+      workspaceId,
+      workspaceName: workspace.name,
+      ownerEmail: ownerUser.email,
+      ownerName: ownerUser.name || 'Doctor',
+      plan,
+      planLimit: planLimit,
+      percentageRemaining,
+      ctaUrl: billingUrl,
+    };
+
     // CRITICAL: No credits left
     if (remainingCredits === 0) {
       this.logger.error(
         `🚨 CRITICAL: Workspace ${workspaceId} has 0 credits remaining! Messages cannot be sent.`,
       );
-      // TODO: Send urgent email to workspace owner
-      // await this.emailService.sendLowCreditsAlert({
-      //   workspaceId,
-      //   alertLevel: 'critical',
-      //   remainingCredits: 0,
-      //   plan,
-      //   subject: 'URGENT: Your message credits have been depleted',
-      //   message: 'You cannot send more messages until you add credits or upgrade your plan.',
-      //   ctaUrl: `${process.env.FRONTEND_URL}/dashboard/billing`
-      // });
+
+      try {
+        await this.emailService.sendLowCreditsAlert({
+          ...baseAlertData,
+          remainingCredits: 0,
+          alertLevel: 'critical',
+          subject: 'URGENTE: Se han agotado tus créditos de mensajes',
+        });
+        this.logger.log(
+          `Email alert sent to ${ownerUser.email} for 0 credits remaining`,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Failed to send email alert: ${error.message}`,
+          error.stack,
+        );
+      }
       return;
     }
 
@@ -164,32 +208,46 @@ export class CampaignProcessor extends WorkerHost {
       this.logger.warn(
         `🚨 CRITICAL: Workspace ${workspaceId} has only ${remainingCredits} credits remaining (${percentageRemaining.toFixed(1)}% of ${plan} plan limit)`,
       );
-      // TODO: Send email alert to workspace owner
-      // await this.emailService.sendLowCreditsAlert({
-      //   workspaceId,
-      //   alertLevel: 'critical',
-      //   remainingCredits,
-      //   percentageRemaining: percentageRemaining.toFixed(1),
-      //   plan,
-      //   subject: 'CRITICAL: Less than 10% of your message credits remain',
-      //   ctaUrl: `${process.env.FRONTEND_URL}/dashboard/billing`
-      // });
+
+      try {
+        await this.emailService.sendLowCreditsAlert({
+          ...baseAlertData,
+          remainingCredits,
+          alertLevel: 'critical',
+          subject: 'CRÍTICO: Menos del 10% de tus créditos disponibles',
+        });
+        this.logger.log(
+          `Email alert sent to ${ownerUser.email} for <10% credits remaining`,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Failed to send email alert: ${error.message}`,
+          error.stack,
+        );
+      }
     }
     // WARNING: < 20% remaining
     else if (percentageRemaining < 20) {
       this.logger.warn(
         `⚠️ WARNING: Workspace ${workspaceId} has ${remainingCredits} credits remaining (${percentageRemaining.toFixed(1)}% of ${plan} plan)`,
       );
-      // TODO: Send email alert to workspace owner
-      // await this.emailService.sendLowCreditsAlert({
-      //   workspaceId,
-      //   alertLevel: 'warning',
-      //   remainingCredits,
-      //   percentageRemaining: percentageRemaining.toFixed(1),
-      //   plan,
-      //   subject: 'Warning: Running low on message credits',
-      //   ctaUrl: `${process.env.FRONTEND_URL}/dashboard/billing`
-      // });
+
+      try {
+        await this.emailService.sendLowCreditsAlert({
+          ...baseAlertData,
+          remainingCredits,
+          alertLevel: 'warning',
+          subject: 'Advertencia: Créditos de mensajes bajando',
+        });
+        this.logger.log(
+          `Email alert sent to ${ownerUser.email} for <20% credits remaining`,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Failed to send email alert: ${error.message}`,
+          error.stack,
+        );
+      }
     }
     // INFO: First time dropping below 50%
     else if (
@@ -199,16 +257,23 @@ export class CampaignProcessor extends WorkerHost {
       this.logger.log(
         `ℹ️ INFO: Workspace ${workspaceId} has used 50% of credits (${remainingCredits} remaining)`,
       );
-      // Optional: Send informational email
-      // await this.emailService.sendLowCreditsAlert({
-      //   workspaceId,
-      //   alertLevel: 'info',
-      //   remainingCredits,
-      //   percentageRemaining: 50,
-      //   plan,
-      //   subject: 'You've used 50% of your message credits',
-      //   ctaUrl: `${process.env.FRONTEND_URL}/dashboard/billing`
-      // });
+
+      try {
+        await this.emailService.sendLowCreditsAlert({
+          ...baseAlertData,
+          remainingCredits,
+          alertLevel: 'info',
+          subject: 'Has usado el 50% de tus créditos de mensajes',
+        });
+        this.logger.log(
+          `Email alert sent to ${ownerUser.email} for 50% credits used`,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Failed to send email alert: ${error.message}`,
+          error.stack,
+        );
+      }
     }
   }
 
