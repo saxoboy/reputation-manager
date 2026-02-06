@@ -1,5 +1,6 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import {
   Tabs,
   TabsContent,
@@ -11,7 +12,15 @@ import { ProfileSettings } from '../../../../components/settings/profile-setting
 import { BillingSettings } from '../../../../components/settings/billing-settings';
 import { WeeklyReportSettings } from '../../../../components/settings/weekly-report-settings';
 
+const VALID_TABS = ['workspace', 'profile', 'reports', 'billing'] as const;
+
 export default function SettingsPage() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const defaultTab = VALID_TABS.includes(tabParam as (typeof VALID_TABS)[number])
+    ? (tabParam as string)
+    : 'workspace';
+
   return (
     <div className="space-y-6">
       <div>
@@ -21,7 +30,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="workspace" className="space-y-6">
+      <Tabs defaultValue={defaultTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="workspace">Workspace</TabsTrigger>
           <TabsTrigger value="profile">Mi Perfil</TabsTrigger>
