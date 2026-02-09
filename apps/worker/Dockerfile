@@ -23,18 +23,19 @@ RUN npx nx build worker --skip-nx-cache
 # Stage 2: Production dependencies
 # ==========================================
 FROM node:22-alpine AS prod-deps
-RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
 # Use the generated package.json with only production dependencies
 COPY --from=builder /app/dist/apps/worker/package.json ./package.json
-COPY --from=builder /app/dist/apps/worker/pnpm-lock.yaml ./pnpm-lock.yaml
 
-RUN pnpm install --frozen-lockfile --prod
+# Copy Prisma schema (needed for generate)
+COPY --from=builder /app/libs/database/prisma/schema.prisma ./prisma/schema.prisma
 
-# Copy Prisma client from builder (generated in node_modules)
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
+# Use npm (runs postinstall scripts needed by Prisma)
+RUN npm install --omit=dev --legacy-peer-deps
+
+# Generate Prisma client (version must match @prisma/client)
+RUN npm install -g prisma@7.2.0 && prisma generate --schema=./prisma/schema.prisma
 
 # ==========================================
 # Stage 3: Production

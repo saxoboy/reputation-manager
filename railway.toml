@@ -1,41 +1,46 @@
 # Railway configuration for Reputation Manager
-# Each service is deployed independently from its Dockerfile
-
-# ==========================================
-# API Service
-# ==========================================
-[deploy]
-# Railway auto-detects Dockerfiles per service
-# Configure each service separately in Railway dashboard
-
-# Environment variables needed per service:
+# ⚠️  Railway monorepos require per-service config in the dashboard
+# This file serves as documentation. See docs/RAILWAY_DEPLOY.md for full guide.
 #
-# === All services ===
+# Project Structure (5 services):
+#   PostgreSQL (managed)  → DATABASE_URL
+#   Redis (managed)       → REDIS_URL
+#   api                   → Dockerfile: apps/api/Dockerfile
+#   worker                → Dockerfile: apps/worker/Dockerfile
+#   web                   → Dockerfile: apps/web/Dockerfile
+#
+# All Dockerfiles use repo root as build context (Root Directory: /)
+#
+# === API Service Variables ===
+# DATABASE_URL=${{Postgres.DATABASE_URL}}
+# REDIS_URL=${{Redis.REDIS_URL}}
 # NODE_ENV=production
-# SENTRY_DSN=<your-sentry-dsn>
+# BETTER_AUTH_SECRET=<openssl rand -base64 32>
+# BETTER_AUTH_URL=https://<api-domain>
+# FRONTEND_URL=https://<web-domain>
+# CORS_ORIGINS=https://<web-domain>
+# TWILIO_ACCOUNT_SID=
+# TWILIO_AUTH_TOKEN=
+# TWILIO_PHONE_NUMBER=
+# STRIPE_SECRET_KEY=
+# STRIPE_WEBHOOK_SECRET=
+# STRIPE_STARTER_PRICE_ID=
+# STRIPE_PROFESSIONAL_PRICE_ID=
+# RESEND_API_KEY=
+# GOOGLE_PLACES_API_KEY=
+# SENTRY_DSN=
 #
-# === API (apps/api) ===
-# DATABASE_URL=<railway-postgres-url>
-# REDIS_URL=<railway-redis-url>
-# API_PORT=3333
-# CORS_ORIGINS=https://your-domain.com
-# BETTER_AUTH_SECRET=<random-32-char-string>
-# BETTER_AUTH_URL=https://your-api-domain.com
-# FRONTEND_URL=https://your-domain.com
-# TWILIO_ACCOUNT_SID=<twilio-sid>
-# TWILIO_AUTH_TOKEN=<twilio-token>
-# TWILIO_PHONE_NUMBER=<twilio-number>
-# STRIPE_SECRET_KEY=<stripe-key>
-# STRIPE_WEBHOOK_SECRET=<stripe-webhook-secret>
-# RESEND_API_KEY=<resend-key>
+# === Worker Service Variables ===
+# DATABASE_URL=${{Postgres.DATABASE_URL}}
+# REDIS_URL=${{Redis.REDIS_URL}}
+# NODE_ENV=production
+# TWILIO_ACCOUNT_SID=
+# TWILIO_AUTH_TOKEN=
+# TWILIO_PHONE_NUMBER=
+# SENTRY_DSN=
 #
-# === Web (apps/web) ===
-# NEXT_PUBLIC_API_URL=https://your-api-domain.com
-# NEXT_PUBLIC_SENTRY_DSN=<your-sentry-dsn>
-#
-# === Worker (apps/worker) ===
-# DATABASE_URL=<railway-postgres-url>
-# REDIS_URL=<railway-redis-url>
-# TWILIO_ACCOUNT_SID=<twilio-sid>
-# TWILIO_AUTH_TOKEN=<twilio-token>
-# TWILIO_PHONE_NUMBER=<twilio-number>
+# === Web Service Variables ===
+# NODE_ENV=production
+# NEXT_PUBLIC_API_URL=https://<api-domain>
+# NEXT_PUBLIC_SENTRY_DSN=
+# NEXT_PUBLIC_BETA_MODE=true
