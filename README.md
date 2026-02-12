@@ -4,235 +4,237 @@
 ![PR Checks](https://github.com/saxoboy/reputation-manager/workflows/PR%20Checks/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Sistema Multi-tenant SaaS de gestión de feedback para profesionales de la salud en Ecuador**
+**Multi-tenant SaaS feedback management system for healthcare professionals**
 
-## 🎯 El Problema
+## 🎯 The Problem
 
-Los profesionales de la salud viven de su reputación online. Los pacientes insatisfechos siempre dejan reseñas negativas, pero los satisfechos rara vez lo hacen.
+Healthcare professionals depend on their online reputation. Unhappy patients always leave negative reviews, but satisfied patients rarely do.
 
-## 💡 La Solución
+## 💡 The Solution
 
-Sistema automatizado que:
+Automated system that:
 
-1. Envía SMS/WhatsApp 2 horas después de la cita
-2. Solicita calificación del 1-5
-3. **Pacientes felices (4-5)**: Redirige a Google Reviews
-4. **Pacientes infelices (1-3)**: Formulario privado para feedback interno
-5. Previene malas reseñas públicas y maximiza las positivas
+1. Sends SMS/WhatsApp 2 hours after the appointment
+2. Requests a rating from 1-5
+3. **Happy patients (4-5)**: Redirects to Google Reviews
+4. **Unhappy patients (1-3)**: Private feedback form for internal use
+5. Prevents bad public reviews and maximizes positive ones
 
-## 🛠 Tech Stack
+# Reputation Manager
 
-- **Frontend**: Next.js 16, React 19, Tailwind CSS v4, shadcn/ui
-- **Backend**: NestJS 11, Prisma 6, PostgreSQL 16, Redis 7, BullMQ
-- **Auth**: Better Auth (Email + Google OAuth)
-- **Integraciones**: Twilio (SMS), WhatsApp Business API, SendGrid, Stripe
-- **Monitoring**: Sentry (error tracking + performance)
-- **Security**: Helmet, CORS dinámico, Rate Limiting, Input validation (Zod)
-- **DevOps**: Nx Monorepo, pnpm, Docker, GitHub Actions, Railway
+**Reputation Manager** is a Multi-tenant SaaS feedback management system for healthcare professionals (doctors, dentists).
 
-## 📁 Estructura del Proyecto
+## The Problem
+
+Healthcare professionals depend on their online reputation. Unhappy patients always leave negative reviews, but satisfied patients rarely do.
+
+## The Solution
+
+Automated system that:
+
+1. Sends SMS/WhatsApp 2 hours after the appointment
+2. Requests a rating from 1-5
+3. **Happy patients (4-5)**: Redirects to Google Reviews
+4. **Unhappy patients (1-3)**: Private feedback form for internal use
+5. Prevents bad public reviews and maximizes positive ones
+
+**Marketing**: "We improve feedback management and patient experience" (not "we filter reviews").
+
+**Current status**: Phase 0 - Initial project setup  
+**Timeline**: 9 months to MVP in production  
+**Beta testers**: 4 doctors/dentists confirmed
+
+## Quick Setup
+
+```bash
+git clone https://github.com/saxoboy/reputation-manager.git
+cd reputation-manager
+pnpm install
+cp .env.example .env
+# Edit .env with your credentials
+docker-compose up -d
+pnpm prisma:migrate
+pnpm prisma:seed
+pnpm dev
+```
+
+## Stack
+
+- Next.js 15 (App Router)
+- NestJS 10 (API + Worker)
+- Prisma 5 (ORM)
+- PostgreSQL 16
+- Redis 7 (BullMQ)
+- Tailwind CSS v4
+- shadcn/ui
+- React Hook Form + Zod
+- Stripe, Twilio, WhatsApp, SendGrid
+- Railway (MVP hosting)
+
+## Monorepo Structure
 
 ```
 reputation-manager/
 ├── apps/
-│   ├── web/      # Next.js 16 - Dashboard del doctor
-│   ├── api/      # NestJS - REST API principal
-│   └── worker/   # NestJS - Background jobs (BullMQ)
+│   ├── web/        # Next.js Dashboard
+│   ├── api/        # NestJS API
+│   └── worker/     # NestJS Worker
 ├── libs/
-│   ├── database/       # Prisma ORM compartido
-│   ├── shared-types/   # DTOs y Types compartidos
-│   ├── shared-utils/   # Utilidades comunes
-│   └── integrations/   # Twilio, WhatsApp, SendGrid, Stripe
-├── docs/               # Documentación del proyecto
-├── scripts/            # Scripts de utilidad y testing
-└── postman/            # Colección Postman para API testing
+│   ├── database/   # Prisma ORM
+│   ├── shared-types/
+│   ├── shared-utils/
+│   └── integrations/
+├── docker-compose.yml
+├── .env.example
+└── docs/
 ```
 
-## 🚀 Quick Start
+## Main Flow
 
-### Prerequisitos
+1. Doctor uploads CSV of patients
+2. API validates and creates Campaign + Patients
+3. Jobs are queued in BullMQ
+4. Worker sends SMS/WhatsApp
+5. Patient replies (1-5)
+6. If happy (4-5): link to Google Reviews
+7. If unhappy (1-3): link to private feedback
 
-- Node.js 22+
-- pnpm 10+
-- Docker & Docker Compose
+## Multi-Tenancy
 
-### Instalación
+- Workspace (root tenant)
+- Users (roles: OWNER, DOCTOR, RECEPTIONIST)
+- Practices (physical locations)
+- Campaigns (per practice)
+- Templates (custom messages)
 
-```bash
-# Clonar repositorio
-git clone https://github.com/saxoboy/reputation-manager.git
-cd reputation-manager
+## Pricing
 
-# Instalar dependencias
-pnpm install
+| Plan             | Price/month | Included messages | Users     | Locations |
+| ---------------- | ----------- | ----------------- | --------- | --------- |
+| **FREE**         | $0          | 50                | 1         | 1         |
+| **STARTER**      | $39         | 500               | 2         | 1         |
+| **PROFESSIONAL** | $129        | 2000              | 5         | 5         |
+| **ENTERPRISE**   | Custom      | Unlimited         | Unlimited | Unlimited |
 
-# Configurar variables de entorno
-cp .env.example .env
-# Editar .env con tus credenciales
+## Compliance
 
-# Levantar servicios (PostgreSQL + Redis)
-docker-compose up -d
+- Explicit patient consent
+- Easy opt-out ("Reply STOP")
+- Secure storage
+- Right to be forgotten
 
-# Ejecutar migraciones
-pnpm prisma:migrate
+## Contact
 
-# Seedear datos de prueba
-pnpm prisma:seed
+**Maintainer**: @saxoboy
 
-# Levantar todas las apps
-pnpm dev
-```
+**Last update**: 2026-02-12
 
-### Apps corriendo en:
+- ✅ Full authentication (Email + Google OAuth via Better Auth)
+- ✅ Professional dashboard with responsive sidebar and metrics
+- ✅ Multi-tenancy enforced on all endpoints
+- ✅ Complete CRUD: Campaigns, Patients, Practices, Templates
+- ✅ CSV upload with Ecuadorian data validation
+- ✅ BullMQ Jobs processing in background
 
-| App        | URL                          | Descripción           |
-| ---------- | ---------------------------- | --------------------- |
-| **Web**    | http://localhost:4000        | Dashboard del doctor  |
-| **API**    | http://localhost:3000/api    | REST API              |
-| **Health** | http://localhost:3000/health | Health check (DB)     |
-| **Worker** | Background                   | Procesamiento de jobs |
+#### Integrations
 
-## 📚 Documentación
-
-- **[SETUP.md](docs/SETUP.md)** - Guía completa de instalación
-- **[DEVELOPMENT.md](docs/DEVELOPMENT.md)** - Workflows y convenciones
-- **[DATABASE.md](docs/DATABASE.md)** - Schema y migraciones
-- **[ROADMAP.md](docs/ROADMAP.md)** - Plan de 9 meses hasta MVP
-- **[BACKEND_INTEGRATION.md](docs/BACKEND_INTEGRATION.md)** - Integración API ↔ Worker
-- **[CHANNEL_CONFIGURATION.md](docs/CHANNEL_CONFIGURATION.md)** - Configuración SMS/WhatsApp
-- **[WEEKLY_REPORTS_GUIDE.md](docs/WEEKLY_REPORTS_GUIDE.md)** - Reportes semanales automáticos
-
-## 🎯 Estado del Proyecto
-
-**Fecha**: Febrero 6, 2026
-**Progreso**: ~85% completado (Phases 0-6 completas, Phase 7 en progreso)
-
-| Phase                  | Estado | Fecha Completado |
-| ---------------------- | ------ | ---------------- |
-| Phase 0: Setup         | ✅     | Ene 17, 2026     |
-| Phase 1: Foundation    | ✅     | Ene 19, 2026     |
-| Phase 2: Core Features | ✅     | Ene 20, 2026     |
-| Phase 3: Integrations  | ✅     | Feb 2, 2026      |
-| Phase 4: Analytics     | ✅     | Feb 4, 2026      |
-| Phase 5: Billing       | ✅     | Feb 5, 2026      |
-| Phase 6: Polish & UX   | ✅     | Feb 5, 2026      |
-| Phase 7: Beta Testing  | 🚧     | En progreso      |
-| Phase 8: Launch        | ⏳     | Ago 2026         |
-
-**Timeline total**: 9 meses hasta MVP
-**Target Launch**: Agosto 15, 2026
-**Beta Testers**: 4 doctores confirmados
-
-### ✨ Funcionalidades Implementadas
-
-#### Core
-
-- ✅ Autenticación completa (Email + Google OAuth via Better Auth)
-- ✅ Dashboard profesional con sidebar responsive y métricas
-- ✅ Multi-tenancy enforced en todos los endpoints
-- ✅ CRUD completo: Campaigns, Patients, Practices, Templates
-- ✅ CSV upload con validación de datos ecuatorianos
-- ✅ BullMQ Jobs procesando en background
-
-#### Integraciones
-
-- ✅ SMS via Twilio con tracking de entrega
-- ✅ WhatsApp Business API integrado
-- ✅ SendGrid emails (4 plantillas transaccionales)
+- ✅ SMS via Twilio with delivery tracking
+- ✅ WhatsApp Business API integrated
+- ✅ SendGrid emails (4 transactional templates)
 - ✅ Google Places API (autocomplete + review URLs)
-- ✅ Stripe billing (planes, suscripciones, créditos)
+- ✅ Stripe billing (plans, subscriptions, credits)
 
-#### Analytics & Reportes
+#### Analytics & Reports
 
 - ✅ Dashboard analytics (NPS, conversion rate, response rate)
-- ✅ Charts interactivos (Recharts)
-- ✅ Exportación CSV/PDF de reportes
-- ✅ Reportes semanales automáticos por email
-- ✅ Reportes por práctica/ubicación
+- ✅ Interactive charts (Recharts)
+- ✅ CSV/PDF export of reports
+- ✅ Automatic weekly reports by email
+- ✅ Reports by practice/location
 
-#### Billing & Créditos
+#### Billing & Credits
 
-- ✅ Sistema de créditos con deducción automática
-- ✅ Planes: Free, Starter, Professional, Enterprise
+- ✅ Credits system with automatic deduction
+- ✅ Plans: Free, Starter, Professional, Enterprise
 - ✅ Stripe Checkout + Customer Portal
-- ✅ Webhooks de Stripe para sincronización
+- ✅ Stripe webhooks for synchronization
 
 #### Production Readiness (Phase 7)
 
 - ✅ Sentry error tracking (web + api + worker)
-- ✅ Dockerfiles multi-stage optimizados
+- ✅ Optimized multi-stage Dockerfiles
 - ✅ Railway deployment config
 - ✅ Helmet security headers
-- ✅ CORS dinámico configurable
-- ✅ Health checks con verificación de DB
-- ✅ Rate limiting por endpoint
+- ✅ Dynamic configurable CORS
+- ✅ Health checks with DB verification
+- ✅ Rate limiting per endpoint
 - ✅ In-app beta feedback widget
 
-### 🚧 En Desarrollo
+### 🚧 In Development
 
-- 🚧 Pruebas de deployment en Railway
-- 🚧 Onboarding de 4 beta testers
-- ⏳ Monitoring & alertas en producción
-- ⏳ Dominio custom + SSL
+- 🚧 Deployment tests on Railway
+- 🚧 Onboarding of 4 beta testers
+- ⏳ Monitoring & alerts in production
+- ⏳ Custom domain + SSL
 
-## 📊 Comandos Útiles
+## 📊 Useful Commands
 
 ```bash
-# Desarrollo
-pnpm dev                  # Levantar web + api
-pnpm dev:all              # Levantar web + api + worker
-pnpm dev:api              # Solo API
-pnpm dev:web              # Solo frontend
+# Development
+pnpm dev                  # Start web + api
+pnpm dev:all              # Start web + api + worker
+pnpm dev:api              # API only
+pnpm dev:web              # Frontend only
 
-# Base de datos
-pnpm prisma:studio        # UI visual
-pnpm prisma:migrate       # Nueva migración
-pnpm prisma:seed          # Seedear datos
-pnpm prisma:deploy        # Aplicar migraciones en producción
+# Database
+pnpm prisma:studio        # Visual UI
+pnpm prisma:migrate       # New migration
+pnpm prisma:seed          # Seed data
+pnpm prisma:deploy        # Apply migrations in production
 
 # Testing
-pnpm test                 # Todos los tests
-pnpm nx test api          # Tests del API
+pnpm test                 # All tests
+pnpm nx test api          # API tests
 pnpm nx test api --watch  # Watch mode
 
 # Build & Deploy
 pnpm build                # Build all
-pnpm format               # Formatear código
+pnpm format               # Format code
 pnpm lint                 # Lint all
 
 # Nx utilities
-pnpm nx graph             # Ver grafo de dependencias
-pnpm nx reset             # Limpiar cache
+pnpm nx graph             # View dependency graph
+pnpm nx reset             # Clear cache
 ```
 
 ## 🐳 Docker
 
 ```bash
-# Servicios de desarrollo (PostgreSQL + Redis)
+# Development services (PostgreSQL + Redis)
 docker-compose up -d
 
-# Build de imágenes de producción
+# Production image builds
 docker build -f apps/api/Dockerfile -t reputation-api .
 docker build -f apps/worker/Dockerfile -t reputation-worker .
 docker build -f apps/web/Dockerfile -t reputation-web .
 ```
 
-## 🤝 Contribuir
+## 🤝 Contributing
 
-Este proyecto sigue **Conventional Commits**:
+This project follows **Conventional Commits**:
 
 ```bash
-feat(campaigns): nueva feature
+feat(campaigns): new feature
 fix(worker): bug fix
-docs(setup): documentación
-refactor(auth): refactorización
+docs(setup): documentation
+refactor(auth): refactor
 test(api): tests
 ```
 
-## 📄 Licencia
+## 📄 License
 
 MIT
 
 ---
 
-**Desarrollado con ❤️ para mejorar la reputación online de profesionales de la salud en Ecuador**
+**Built with ❤️ to improve the online reputation of healthcare professionals**
