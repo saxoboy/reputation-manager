@@ -65,4 +65,4 @@ USER nestjs
 EXPOSE 3000
 
 # Run Prisma migrations then start the app
-CMD ["sh", "-c", "prisma migrate deploy --schema=./prisma/schema.prisma && node main.js"]
+CMD ["sh", "-c", "prisma migrate deploy --schema=./prisma/schema.prisma --config=./prisma/prisma.config.ts && node main.js"]
