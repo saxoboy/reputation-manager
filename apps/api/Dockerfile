@@ -65,5 +65,5 @@ USER nestjs
 EXPOSE 3000
 
 # Run Prisma migrations then start the app
-# Note: prisma migrate deploy reads DATABASE_URL from environment automatically
-CMD ["sh", "-c", "prisma migrate deploy --schema=./prisma/schema.prisma && node main.js"]
+# Prisma 7 requires --url parameter instead of url in schema.prisma
+CMD ["sh", "-c", "prisma migrate deploy --schema=./prisma/schema.prisma --url=\"$DATABASE_URL\" && node main.js"]
