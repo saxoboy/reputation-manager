@@ -54,8 +54,10 @@ COPY --from=builder /app/dist/apps/api/main.js ./main.js
 COPY --from=builder /app/dist/apps/api/assets ./assets
 COPY --from=prod-deps /app/node_modules ./node_modules
 
-# Copy Prisma schema + migrations (needed for migrate deploy in production)
+# Copy Prisma schema + migrations + config (needed for migrate deploy in production)
 COPY --from=builder /app/libs/database/prisma ./prisma
+# Explicitly copy prisma.config.ts for Prisma 7 (workaround for issue #28983)
+COPY --from=builder /app/libs/database/prisma/prisma.config.ts ./prisma.config.ts
 
 # Install Prisma CLI for migrations (version must match @prisma/client)
 RUN npm i -g prisma@7.2.0
@@ -65,5 +67,5 @@ USER nestjs
 EXPOSE 3000
 
 # Run Prisma migrations then start the app
-# Prisma 7 requires --url parameter instead of url in schema.prisma
-CMD ["sh", "-c", "prisma migrate deploy --schema=./prisma/schema.prisma --url=\"$DATABASE_URL\" && node main.js"]
+# Prisma 7 reads DATABASE_URL from prisma.config.ts
+CMD ["sh", "-c", "prisma migrate deploy --schema=./prisma/schema.prisma && node main.js"]
