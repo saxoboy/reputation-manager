@@ -52,6 +52,8 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Copy built app and production dependencies
 COPY --from=builder /app/dist/apps/worker/main.js ./main.js
 COPY --from=builder /app/dist/apps/worker/assets ./assets
+COPY --from=prod-deps /app/package.json ./package.json
+COPY --from=prod-deps /app/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=prod-deps /app/node_modules ./node_modules
 
 # Copy Prisma schema (needed for migrations in production)
