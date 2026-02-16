@@ -33,13 +33,11 @@ COPY --from=builder /app/dist/apps/api/pnpm-lock.yaml ./pnpm-lock.yaml
 # Copy Prisma schema and config before installing
 COPY --from=builder /app/libs/database/prisma ./prisma
 
-RUN pnpm install --frozen-lockfile --prod
+# Install with shamefully-hoist to avoid symlink issues (creates flat node_modules like npm)
+RUN pnpm install --frozen-lockfile --prod --shamefully-hoist
 
 # Generate Prisma client
 RUN pnpx prisma@7.2.0 generate --schema=./prisma/schema.prisma --config=./prisma/prisma.config.ts
-
-# Use pnpm deploy to create a standalone node_modules without symlinks
-RUN pnpm deploy --prod /app
 
 # ==========================================
 # Stage 3: Production
@@ -53,12 +51,12 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nestjs
 
-# Copy deployed dependencies (no symlinks, ready for production)
-COPY --from=prod-deps /app ./
-
-# Copy built app
+# Copy built app and production dependencies
 COPY --from=builder /app/dist/apps/api/main.js ./main.js
 COPY --from=builder /app/dist/apps/api/assets ./assets
+COPY --from=prod-deps /build/node_modules ./node_modules
+COPY --from=prod-deps /build/package.json ./package.json
+COPY --from=prod-deps /build/prisma ./prisma
 
 USER nestjs
 
