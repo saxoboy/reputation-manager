@@ -17,25 +17,18 @@ import { WeeklyReportsModule } from '../weekly-reports.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    BullModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => {
-        const redisUrl = configService.get('REDIS_URL') || 'localhost:6379';
-        return {
-          connection: {
-            host: redisUrl.includes('://')
-              ? new URL(redisUrl).hostname
-              : redisUrl.split(':')[0] || 'localhost',
-            port: redisUrl.includes('://')
-              ? parseInt(new URL(redisUrl).port || '6379')
-              : parseInt(redisUrl.split(':')[1] || '6379'),
-            password: redisUrl.includes('://')
-              ? new URL(redisUrl).password || undefined
-              : undefined,
-          },
-        };
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_URL?.includes('://')
+          ? new URL(process.env.REDIS_URL).hostname
+          : process.env.REDIS_URL?.split(':')[0] || 'localhost',
+        port: process.env.REDIS_URL?.includes('://')
+          ? parseInt(new URL(process.env.REDIS_URL).port || '6379')
+          : parseInt(process.env.REDIS_URL?.split(':')[1] || '6379'),
+        password: process.env.REDIS_URL?.includes('://')
+          ? new URL(process.env.REDIS_URL).password || undefined
+          : undefined,
       },
-      inject: [ConfigService],
     }),
     BullModule.registerQueue({
       name: QUEUES.CAMPAIGNS,
