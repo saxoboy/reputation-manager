@@ -21,7 +21,7 @@
     "prisma:migrate": "prisma migrate dev --schema=libs/database/prisma/schema.prisma --config=libs/database/prisma/prisma.config.ts",
     "prisma:deploy": "prisma migrate deploy --schema=libs/database/prisma/schema.prisma --config=libs/database/prisma/prisma.config.ts",
     "prisma:status": "prisma migrate status --schema=libs/database/prisma/schema.prisma --config=libs/database/prisma/prisma.config.ts",
-    "prisma:generate": "prisma generate --schema=libs/database/prisma/schema.prisma",
+    "prisma:generate": "prisma generate --schema=libs/database/prisma/schema.prisma --config=libs/database/prisma/prisma.config.ts",
     "prisma:seed": "node libs/database/prisma/seed.js",
     "prisma:reset": "prisma migrate reset --schema=libs/database/prisma/schema.prisma --config=libs/database/prisma/prisma.config.ts --force",
     "prisma:validate": "prisma validate --schema=libs/database/prisma/schema.prisma"

@@ -129,7 +129,7 @@ export default function PracticesContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
