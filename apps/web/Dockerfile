@@ -13,8 +13,8 @@ COPY libs ./libs
 # Install all dependencies (dev included, needed for build)
 RUN pnpm install --frozen-lockfile
 
-# Generate Prisma client (needed for server-side code)
-RUN npx prisma generate --schema=libs/database/prisma/schema.prisma
+# Generate Prisma client (needed for server-side code, Prisma 7 requires --config flag)
+RUN npx prisma generate --schema=libs/database/prisma/schema.prisma --config=libs/database/prisma/prisma.config.ts
 
 # Build the Next.js app (standalone output)
 RUN npx nx build web --skip-nx-cache

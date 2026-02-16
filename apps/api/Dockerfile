@@ -13,8 +13,8 @@ COPY libs ./libs
 # Install all dependencies (dev included, needed for build)
 RUN pnpm install --frozen-lockfile
 
-# Generate Prisma client
-RUN npx prisma generate --schema=libs/database/prisma/schema.prisma
+# Generate Prisma client (Prisma 7 requires --config flag)
+RUN npx prisma generate --schema=libs/database/prisma/schema.prisma --config=libs/database/prisma/prisma.config.ts
 
 # Build the API (generates dist/apps/api with package.json + lockfile)
 RUN npx nx build api --skip-nx-cache
