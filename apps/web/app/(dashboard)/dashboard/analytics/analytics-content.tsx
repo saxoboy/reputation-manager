@@ -56,12 +56,14 @@ function KpiCard({ title, value, description, icon, trend }: KpiCardProps) {
         )}
         {trend && (
           <div
-            className={`flex items-center mt-2 text-xs ${trend.isPositive ? 'text-green-600' : 'text-red-600'
-              }`}
+            className={`flex items-center mt-2 text-xs ${
+              trend.isPositive ? 'text-green-600' : 'text-red-600'
+            }`}
           >
             <TrendingUp
-              className={`h-3 w-3 mr-1 ${!trend.isPositive ? 'rotate-180' : ''
-                }`}
+              className={`h-3 w-3 mr-1 ${
+                !trend.isPositive ? 'rotate-180' : ''
+              }`}
             />
             <span>
               {trend.isPositive ? '+' : ''}
