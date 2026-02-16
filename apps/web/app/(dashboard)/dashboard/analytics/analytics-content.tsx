@@ -56,14 +56,12 @@ function KpiCard({ title, value, description, icon, trend }: KpiCardProps) {
         )}
         {trend && (
           <div
-            className={`flex items-center mt-2 text-xs ${
-              trend.isPositive ? 'text-green-600' : 'text-red-600'
-            }`}
+            className={`flex items-center mt-2 text-xs ${trend.isPositive ? 'text-green-600' : 'text-red-600'
+              }`}
           >
             <TrendingUp
-              className={`h-3 w-3 mr-1 ${
-                !trend.isPositive ? 'rotate-180' : ''
-              }`}
+              className={`h-3 w-3 mr-1 ${!trend.isPositive ? 'rotate-180' : ''
+                }`}
             />
             <span>
               {trend.isPositive ? '+' : ''}
@@ -196,7 +194,7 @@ export default function AnalyticsPage() {
   const formatRating = (value: number) => value.toFixed(2);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Analytics</h1>
         {workspace?.id && (

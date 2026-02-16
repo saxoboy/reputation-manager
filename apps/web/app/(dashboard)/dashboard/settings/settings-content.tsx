@@ -24,7 +24,7 @@ export default function SettingsContent() {
     : 'workspace';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold md:text-3xl">Configuración</h1>
         <p className="text-sm text-muted-foreground">
