@@ -32,9 +32,9 @@ COPY --from=builder /app/dist/apps/api/pnpm-lock.yaml ./pnpm-lock.yaml
 
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy Prisma client from builder (generated in node_modules)
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
+# Copy Prisma schema and config, then generate client in production stage
+COPY --from=builder /app/libs/database/prisma ./prisma
+RUN npx prisma generate --schema=./prisma/schema.prisma --config=./prisma/prisma.config.ts
 
 # ==========================================
 # Stage 3: Production
