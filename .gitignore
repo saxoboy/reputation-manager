@@ -58,6 +58,9 @@ libs/database/src/generated
 
 # Environment variables
 .env
+.env.local
+.env.production.local
+.env.*.local
 
 # Scripts (testing/utility scripts, not part of the app)
 scripts/

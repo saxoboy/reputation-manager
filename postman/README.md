@@ -43,10 +43,10 @@
 
 | Variable                          | Value                                          |          Auto-saved          |
 | --------------------------------- | ---------------------------------------------- | :--------------------------: |
-| `baseUrl`                         | `https://api-production-d042.up.railway.app`   |              —               |
-| `apiUrl`                          | `https://api-production-d042.up.railway.app`   |              —               |
-| `workerUrl`                       | N/A (private network only)                     |              —               |
-| `webUrl`                          | `https://your-app.vercel.app` _(update later)_ |              —               |
+| `baseUrl`                         | `https://api-production-d042.up.railway.app`       |              —               |
+| `apiUrl`                          | `https://api-production-d042.up.railway.app`       |              —               |
+| `workerUrl`                       | N/A (private network only)                         |              —               |
+| `webUrl`                          | `https://reputation-manager-six.vercel.app` ✨ |              —               |
 | `workspaceId`                     | —                                              | ✅ (on create/get workspace) |
 | _(other variables same as Local)_ |                                                |                              |
 
