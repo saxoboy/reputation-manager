@@ -19,15 +19,9 @@ import { WeeklyReportsModule } from '../weekly-reports.module';
     }),
     BullModule.forRoot({
       connection: {
-        host: process.env.REDIS_URL?.includes('://')
-          ? new URL(process.env.REDIS_URL).hostname
-          : process.env.REDIS_URL?.split(':')[0] || 'localhost',
-        port: process.env.REDIS_URL?.includes('://')
-          ? parseInt(new URL(process.env.REDIS_URL).port || '6379')
-          : parseInt(process.env.REDIS_URL?.split(':')[1] || '6379'),
-        password: process.env.REDIS_URL?.includes('://')
-          ? new URL(process.env.REDIS_URL).password || undefined
-          : undefined,
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379'),
+        password: process.env.REDIS_PASSWORD || undefined,
       },
     }),
     BullModule.registerQueue({
