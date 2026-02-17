@@ -43,6 +43,7 @@ RUN pnpx prisma@7.2.0 generate --schema=./prisma/schema.prisma --config=./prisma
 # Stage 3: Production
 # ==========================================
 FROM node:22-alpine AS runner
+RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -58,8 +59,12 @@ COPY --from=prod-deps /build/node_modules ./node_modules
 COPY --from=prod-deps /build/package.json ./package.json
 COPY --from=prod-deps /build/prisma ./prisma
 
+# Copy entrypoint script
+COPY apps/api/docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+
 USER nestjs
 
 EXPOSE 3333
 
-CMD ["node", "main.js"]
+CMD ["./docker-entrypoint.sh"]
