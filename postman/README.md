@@ -1,251 +1,285 @@
 # Postman Collection - Reputation Manager API
 
-## 📦 Archivos
+## 📦 Files
 
-| Archivo                                          | Descripción                           |
-| ------------------------------------------------ | ------------------------------------- |
-| `Reputation-Manager-API.postman_collection.json` | Colección completa — **79 endpoints** |
-| `Local.postman_environment.json`                 | Environment para desarrollo local     |
+| File                                             | Description                                |
+| ------------------------------------------------ | ------------------------------------------ |
+| `Reputation-Manager-API.postman_collection.json` | Complete collection — **79 endpoints**     |
+| `Local.postman_environment.json`                 | Environment for local development          |
+| `Production.postman_environment.json`            | Environment for production (Railway) ✨    |
 
-## 🚀 Importar en Postman
+## 🚀 Import into Postman
 
-1. Abre Postman
-2. Click en **Import** (arriba izquierda)
-3. Arrastra ambos archivos JSON o selecciónalos
-4. Click en **Import**
-5. Selecciona el environment **"Reputation Manager - Local"** en el dropdown superior derecho
+1. Open Postman
+2. Click **Import** (top left)
+3. Drag the **3 JSON files** or select them:
+   - `Reputation-Manager-API.postman_collection.json`
+   - `Local.postman_environment.json`
+   - `Production.postman_environment.json`
+4. Click **Import**
+5. Select the environment in the dropdown (top right):
+   - **"Reputation Manager - Local"** for development
+   - **"Reputation Manager - Production"** for Railway
 
-## 🔧 Variables de Environment
+## 🔧 Environment Variables
 
-| Variable      | Valor Default           |          Auto-guardado          |
-| ------------- | ----------------------- | :-----------------------------: |
-| `baseUrl`     | `http://localhost:3000` |                —                |
-| `workspaceId` | —                       | ✅ (al crear/obtener workspace) |
-| `practiceId`  | —                       |     ✅ (al crear practice)      |
-| `campaignId`  | —                       |     ✅ (al crear campaign)      |
-| `patientId`   | —                       |      ✅ (al crear patient)      |
-| `messageId`   | —                       |      ✅ (al crear message)      |
-| `templateId`  | —                       |     ✅ (al crear template)      |
-| `userId`      | —                       |             Manual              |
+### Local (Development)
 
-Las variables se guardan automáticamente al ejecutar los requests de creación (POST).
+| Variable      | Default Value            |          Auto-saved          |
+| ------------- | ------------------------ | :--------------------------: |
+| `baseUrl`     | `http://localhost:3333`  |              —               |
+| `apiUrl`      | `http://localhost:3333`  |              —               |
+| `workerUrl`   | `http://localhost:3001`  |              —               |
+| `webUrl`      | `http://localhost:4000`  |              —               |
+| `workspaceId` | —                        | ✅ (on create/get workspace) |
+| `practiceId`  | —                        |    ✅ (on create practice)   |
+| `campaignId`  | —                        |    ✅ (on create campaign)   |
+| `patientId`   | —                        |     ✅ (on create patient)   |
+| `messageId`   | —                        |    ✅ (on create message)    |
+| `templateId`  | —                        |    ✅ (on create template)   |
+| `userId`      | —                        |            Manual            |
 
-## 🔐 Autenticación
+### Production (Railway)
 
-**Better Auth usa cookies** — no necesitas copiar/pegar tokens.
+| Variable      | Value                                          |          Auto-saved          |
+| ------------- | ---------------------------------------------- | :--------------------------: |
+| `baseUrl`     | `https://api-production-d042.up.railway.app`   |              —               |
+| `apiUrl`      | `https://api-production-d042.up.railway.app`   |              —               |
+| `workerUrl`   | N/A (private network only)                     |              —               |
+| `webUrl`      | `https://your-app.vercel.app` _(update later)_ |              —               |
+| `workspaceId` | —                                              | ✅ (on create/get workspace) |
+| _(other variables same as Local)_ |                                  |                              |
 
-### Configuración importante en Postman:
+**Note:** Worker has no public endpoint in production (private communication with API only).
 
-1. Ve a **Settings** (⚙️) → **General**
-2. Activa **"Automatically follow redirects"**
-3. Activa **"Enable cookie jar"** (crucial)
+Variables are automatically saved when executing creation requests (POST).
 
-### Flujo:
+## 🔐 Authentication
 
-1. Ejecuta **Auth → Sign In** (o Sign Up)
-2. Postman guarda la cookie de sesión automáticamente
-3. Todos los requests siguientes envían la cookie — no necesitas hacer nada más
+**Better Auth uses cookies** — no need to copy/paste tokens.
 
-## 📝 Flujo de Uso Recomendado
+### Important Postman configuration:
+
+1. Go to **Settings** (⚙️) → **General**
+2. Enable **"Automatically follow redirects"**
+3. Enable **"Enable cookie jar"** (crucial)
+
+### Flow:
+
+1. Execute **Auth → Sign In** (or Sign Up)
+2. Postman saves the session cookie automatically
+3. All subsequent requests send the cookie — no additional action needed
+
+## 📝 Recommended Usage Flow
 
 ```
-1. Auth → Sign Up              (crear cuenta)
-2. Auth → Sign In              (o si ya tienes cuenta)
-3. Workspaces → Create         (workspaceId se guarda)
-4. Practices → Create          (practiceId se guarda)
-5. Campaigns → Create          (campaignId se guarda, incluye pacientes)
-6. Messages → List             (ver mensajes generados)
-7. Analytics → Workspace       (ver métricas)
-8. Billing → Get Info          (ver plan y créditos)
+1. Auth → Sign Up              (create account)
+2. Auth → Sign In              (or if you already have an account)
+3. Workspaces → Create         (workspaceId is saved)
+4. Practices → Create          (practiceId is saved)
+5. Campaigns → Create          (campaignId is saved, includes patients)
+6. Messages → List             (view generated messages)
+7. Analytics → Workspace       (view metrics)
+8. Billing → Get Info          (view plan and credits)
 ```
 
-## 📋 Endpoints Disponibles (79 total)
+## 📋 Available Endpoints (79 total)
 
 ### Health (2)
 
-| Método | Endpoint  | Descripción                                   |
-| ------ | --------- | --------------------------------------------- |
-| GET    | `/api`    | API status                                    |
-| GET    | `/health` | Health check con verificación de DB (200/503) |
+| Method | Endpoint  | Description                        |
+| ------ | --------- | ---------------------------------- |
+| GET    | `/api`    | API status                         |
+| GET    | `/health` | Health check with DB verification (200/503) |
 
 ### Auth (4)
 
-| Método | Endpoint                  | Descripción                           |
-| ------ | ------------------------- | ------------------------------------- |
-| POST   | `/api/auth/sign-up/email` | Registro con email/password           |
-| POST   | `/api/auth/sign-in/email` | Login (guarda cookie automáticamente) |
-| GET    | `/api/auth/get-session`   | Obtener sesión actual                 |
-| POST   | `/api/auth/sign-out`      | Cerrar sesión                         |
+| Method | Endpoint                  | Description                          |
+| ------ | ------------------------- | ------------------------------------ |
+| POST   | `/api/auth/sign-up/email` | Register with email/password         |
+| POST   | `/api/auth/sign-in/email` | Login (saves cookie automatically)   |
+| GET    | `/api/auth/get-session`   | Get current session                  |
+| POST   | `/api/auth/sign-out`      | Sign out                             |
 
 ### Workspaces (7)
 
-| Método | Endpoint                               | Descripción                         |
-| ------ | -------------------------------------- | ----------------------------------- |
-| GET    | `/api/workspaces`                      | Listar mis workspaces               |
-| POST   | `/api/workspaces`                      | Crear workspace                     |
-| GET    | `/api/workspaces/current`              | Workspace activo                    |
-| GET    | `/api/workspaces/:id`                  | Ver workspace                       |
-| PUT    | `/api/workspaces/:id`                  | Actualizar (OWNER)                  |
-| DELETE | `/api/workspaces/:id`                  | Eliminar (OWNER)                    |
-| PATCH  | `/api/workspaces/:id/channel-settings` | Config canales (SMS/WhatsApp/Email) |
+| Method | Endpoint                               | Description                           |
+| ------ | -------------------------------------- | ------------------------------------- |
+| GET    | `/api/workspaces`                      | List my workspaces                    |
+| POST   | `/api/workspaces`                      | Create workspace                      |
+| GET    | `/api/workspaces/current`              | Active workspace                      |
+| GET    | `/api/workspaces/:id`                  | View workspace                        |
+| PUT    | `/api/workspaces/:id`                  | Update (OWNER)                        |
+| DELETE | `/api/workspaces/:id`                  | Delete (OWNER)                        |
+| PATCH  | `/api/workspaces/:id/channel-settings` | Configure channels (SMS/WhatsApp/Email) |
 
 ### Practices (8)
 
-| Método | Endpoint                                                    | Descripción             |
-| ------ | ----------------------------------------------------------- | ----------------------- |
-| GET    | `/api/workspaces/:wId/practices`                            | Listar practices        |
-| POST   | `/api/workspaces/:wId/practices`                            | Crear practice          |
-| GET    | `/api/workspaces/:wId/practices/:id`                        | Ver practice            |
-| PUT    | `/api/workspaces/:wId/practices/:id`                        | Actualizar              |
-| DELETE | `/api/workspaces/:wId/practices/:id`                        | Eliminar                |
-| GET    | `/api/workspaces/:wId/practices/search/google-places`       | Buscar en Google Places |
-| GET    | `/api/workspaces/:wId/practices/autocomplete/google-places` | Autocomplete Google     |
-| GET    | `/api/workspaces/:wId/practices/google-places/:placeId`     | Detalles de lugar       |
+| Method | Endpoint                                                    | Description              |
+| ------ | ----------------------------------------------------------- | ------------------------ |
+| GET    | `/api/workspaces/:wId/practices`                            | List practices           |
+| POST   | `/api/workspaces/:wId/practices`                            | Create practice          |
+| GET    | `/api/workspaces/:wId/practices/:id`                        | View practice            |
+| PUT    | `/api/workspaces/:wId/practices/:id`                        | Update                   |
+| DELETE | `/api/workspaces/:wId/practices/:id`                        | Delete                   |
+| GET    | `/api/workspaces/:wId/practices/search/google-places`       | Search Google Places     |
+| GET    | `/api/workspaces/:wId/practices/autocomplete/google-places` | Google autocomplete      |
+| GET    | `/api/workspaces/:wId/practices/google-places/:placeId`     | Place details            |
 
 ### Workspace Users (4)
 
-| Método | Endpoint                                  | Descripción     |
-| ------ | ----------------------------------------- | --------------- |
-| GET    | `/api/workspaces/:wId/users`              | Listar usuarios |
-| POST   | `/api/workspaces/:wId/users/invite`       | Invitar usuario |
-| PUT    | `/api/workspaces/:wId/users/:userId/role` | Cambiar rol     |
-| DELETE | `/api/workspaces/:wId/users/:userId`      | Remover usuario |
+| Method | Endpoint                                  | Description   |
+| ------ | ----------------------------------------- | ------------- |
+| GET    | `/api/workspaces/:wId/users`              | List users    |
+| POST   | `/api/workspaces/:wId/users/invite`       | Invite user   |
+| PUT    | `/api/workspaces/:wId/users/:userId/role` | Change role   |
+| DELETE | `/api/workspaces/:wId/users/:userId`      | Remove user   |
 
 ### Campaigns (7)
 
-| Método | Endpoint                                    | Descripción                   |
+| Method | Endpoint                                    | Description                   |
 | ------ | ------------------------------------------- | ----------------------------- |
-| GET    | `/api/workspaces/:wId/campaigns`            | Listar campañas               |
-| POST   | `/api/workspaces/:wId/campaigns`            | Crear campaña (con pacientes) |
-| GET    | `/api/workspaces/:wId/campaigns/:id`        | Ver campaña                   |
-| PUT    | `/api/workspaces/:wId/campaigns/:id`        | Actualizar                    |
-| DELETE | `/api/workspaces/:wId/campaigns/:id`        | Eliminar                      |
-| POST   | `/api/workspaces/:wId/campaigns/:id/upload` | Upload CSV de pacientes       |
-| GET    | `/api/workspaces/:wId/campaigns/:id/export` | Exportar campaña              |
+| GET    | `/api/workspaces/:wId/campaigns`            | List campaigns                |
+| POST   | `/api/workspaces/:wId/campaigns`            | Create campaign (with patients) |
+| GET    | `/api/workspaces/:wId/campaigns/:id`        | View campaign                 |
+| PUT    | `/api/workspaces/:wId/campaigns/:id`        | Update                        |
+| DELETE | `/api/workspaces/:wId/campaigns/:id`        | Delete                        |
+| POST   | `/api/workspaces/:wId/campaigns/:id/upload` | Upload CSV of patients        |
+| GET    | `/api/workspaces/:wId/campaigns/:id/export` | Export campaign               |
 
 ### Patients (8)
 
-| Método | Endpoint                                       | Descripción                                        |
-| ------ | ---------------------------------------------- | -------------------------------------------------- |
-| GET    | `/api/workspaces/:wId/patients`                | Listar (filtros: campaignId, hasConsent, optedOut) |
-| GET    | `/api/workspaces/:wId/patients/stats`          | Estadísticas                                       |
-| GET    | `/api/workspaces/:wId/patients/:id`            | Ver paciente                                       |
-| POST   | `/api/workspaces/:wId/patients`                | Crear paciente                                     |
-| PUT    | `/api/workspaces/:wId/patients/:id`            | Actualizar                                         |
-| DELETE | `/api/workspaces/:wId/patients/:id`            | Eliminar                                           |
-| POST   | `/api/workspaces/:wId/patients/:id/opt-out`    | Opt-out (no más mensajes)                          |
-| GET    | `/api/workspaces/:wId/campaigns/:cId/patients` | Listar por campaña                                 |
+| Method | Endpoint                                       | Description                                    |
+| ------ | ---------------------------------------------- | ---------------------------------------------- |
+| GET    | `/api/workspaces/:wId/patients`                | List (filters: campaignId, hasConsent, optedOut) |
+| GET    | `/api/workspaces/:wId/patients/stats`          | Statistics                                     |
+| GET    | `/api/workspaces/:wId/patients/:id`            | View patient                                   |
+| POST   | `/api/workspaces/:wId/patients`                | Create patient                                 |
+| PUT    | `/api/workspaces/:wId/patients/:id`            | Update                                         |
+| DELETE | `/api/workspaces/:wId/patients/:id`            | Delete                                         |
+| POST   | `/api/workspaces/:wId/patients/:id/opt-out`    | Opt-out (no more messages)                     |
+| GET    | `/api/workspaces/:wId/campaigns/:cId/patients` | List by campaign                               |
 
 ### Messages (9)
 
-| Método | Endpoint                                       | Descripción                                           |
-| ------ | ---------------------------------------------- | ----------------------------------------------------- |
-| GET    | `/api/workspaces/:wId/messages`                | Listar (filtros: campaignId, patientId, status, type) |
-| GET    | `/api/workspaces/:wId/messages/stats`          | Estadísticas                                          |
-| GET    | `/api/workspaces/:wId/messages/:id`            | Ver mensaje                                           |
-| POST   | `/api/workspaces/:wId/messages`                | Crear mensaje                                         |
-| PUT    | `/api/workspaces/:wId/messages/:id`            | Actualizar                                            |
-| DELETE | `/api/workspaces/:wId/messages/:id`            | Eliminar                                              |
-| POST   | `/api/workspaces/:wId/messages/:id/response`   | Simular respuesta de paciente                         |
-| GET    | `/api/workspaces/:wId/campaigns/:cId/messages` | Listar por campaña                                    |
-| GET    | `/api/workspaces/:wId/patients/:pId/messages`  | Listar por paciente                                   |
+| Method | Endpoint                                       | Description                                            |
+| ------ | ---------------------------------------------- | ------------------------------------------------------ |
+| GET    | `/api/workspaces/:wId/messages`                | List (filters: campaignId, patientId, status, type)    |
+| GET    | `/api/workspaces/:wId/messages/stats`          | Statistics                                             |
+| GET    | `/api/workspaces/:wId/messages/:id`            | View message                                           |
+| POST   | `/api/workspaces/:wId/messages`                | Create message                                         |
+| PUT    | `/api/workspaces/:wId/messages/:id`            | Update                                                 |
+| DELETE | `/api/workspaces/:wId/messages/:id`            | Delete                                                 |
+| POST   | `/api/workspaces/:wId/messages/:id/response`   | Simulate patient response                              |
+| GET    | `/api/workspaces/:wId/campaigns/:cId/messages` | List by campaign                                       |
+| GET    | `/api/workspaces/:wId/patients/:pId/messages`  | List by patient                                        |
 
 ### Templates (6)
 
-| Método | Endpoint                                       | Descripción        |
+| Method | Endpoint                                       | Description        |
 | ------ | ---------------------------------------------- | ------------------ |
-| GET    | `/api/workspaces/:wId/templates`               | Listar plantillas  |
-| POST   | `/api/workspaces/:wId/templates`               | Crear plantilla    |
-| GET    | `/api/workspaces/:wId/templates/:id`           | Ver plantilla      |
-| PUT    | `/api/workspaces/:wId/templates/:id`           | Actualizar         |
-| DELETE | `/api/workspaces/:wId/templates/:id`           | Eliminar           |
-| POST   | `/api/workspaces/:wId/templates/:id/duplicate` | Duplicar plantilla |
+| GET    | `/api/workspaces/:wId/templates`               | List templates     |
+| POST   | `/api/workspaces/:wId/templates`               | Create template    |
+| GET    | `/api/workspaces/:wId/templates/:id`           | View template      |
+| PUT    | `/api/workspaces/:wId/templates/:id`           | Update             |
+| DELETE | `/api/workspaces/:wId/templates/:id`           | Delete             |
+| POST   | `/api/workspaces/:wId/templates/:id/duplicate` | Duplicate template |
 
 ### Analytics (10)
 
-| Método | Endpoint                                           | Descripción                      |
-| ------ | -------------------------------------------------- | -------------------------------- |
-| GET    | `/api/workspaces/:wId/analytics`                   | Analytics generales (NPS, rates) |
-| GET    | `/api/workspaces/:wId/analytics/campaigns/:cId`    | Analytics de campaña             |
-| GET    | `/api/workspaces/:wId/analytics/practices/:pId`    | Analytics de practice            |
-| GET    | `/api/workspaces/:wId/analytics/export/csv`        | Exportar CSV                     |
-| GET    | `/api/workspaces/:wId/analytics/export/pdf`        | Exportar PDF                     |
-| GET    | `/api/workspaces/:wId/analytics/compare/practices` | Comparar practices               |
-| GET    | `/api/workspaces/:wId/analytics/compare/campaigns` | Comparar campañas                |
-| GET    | `/api/workspaces/:wId/analytics/compare/periods`   | Comparar períodos                |
-| GET    | `/api/workspaces/:wId/analytics/cohorts`           | Análisis de cohortes             |
-| GET    | `/api/workspaces/:wId/analytics/trends`            | Tendencias response rate         |
+| Method | Endpoint                                           | Description                |
+| ------ | -------------------------------------------------- | -------------------------- |
+| GET    | `/api/workspaces/:wId/analytics`                   | General analytics (NPS, rates) |
+| GET    | `/api/workspaces/:wId/analytics/campaigns/:cId`    | Campaign analytics         |
+| GET    | `/api/workspaces/:wId/analytics/practices/:pId`    | Practice analytics         |
+| GET    | `/api/workspaces/:wId/analytics/export/csv`        | Export CSV                 |
+| GET    | `/api/workspaces/:wId/analytics/export/pdf`        | Export PDF                 |
+| GET    | `/api/workspaces/:wId/analytics/compare/practices` | Compare practices          |
+| GET    | `/api/workspaces/:wId/analytics/compare/campaigns` | Compare campaigns          |
+| GET    | `/api/workspaces/:wId/analytics/compare/periods`   | Compare periods            |
+| GET    | `/api/workspaces/:wId/analytics/cohorts`           | Cohort analysis            |
+| GET    | `/api/workspaces/:wId/analytics/trends`            | Response rate trends       |
 
 ### Billing (11)
 
-| Método | Endpoint                                       | Descripción                |
-| ------ | ---------------------------------------------- | -------------------------- |
-| GET    | `/api/workspaces/:wId/billing`                 | Info billing actual        |
-| GET    | `/api/workspaces/:wId/billing/plans`           | Planes disponibles         |
-| GET    | `/api/workspaces/:wId/billing/credit-packages` | Paquetes de créditos       |
-| POST   | `/api/workspaces/:wId/billing/subscribe`       | Crear suscripción (Stripe) |
-| POST   | `/api/workspaces/:wId/billing/credits`         | Comprar créditos           |
-| POST   | `/api/workspaces/:wId/billing/cancel`          | Cancelar suscripción       |
-| POST   | `/api/workspaces/:wId/billing/resume`          | Reactivar suscripción      |
-| GET    | `/api/workspaces/:wId/billing/portal`          | URL Stripe Customer Portal |
-| GET    | `/api/workspaces/:wId/billing/transactions`    | Historial de transacciones |
-| GET    | `/api/workspaces/:wId/billing/can-send`        | ¿Tiene créditos?           |
-| GET    | `/api/workspaces/:wId/billing/credits-alert`   | Alerta de créditos bajos   |
+| Method | Endpoint                                       | Description                  |
+| ------ | ---------------------------------------------- | ---------------------------- |
+| GET    | `/api/workspaces/:wId/billing`                 | Current billing info         |
+| GET    | `/api/workspaces/:wId/billing/plans`           | Available plans              |
+| GET    | `/api/workspaces/:wId/billing/credit-packages` | Credit packages              |
+| POST   | `/api/workspaces/:wId/billing/subscribe`       | Create subscription (Stripe) |
+| POST   | `/api/workspaces/:wId/billing/credits`         | Purchase credits             |
+| POST   | `/api/workspaces/:wId/billing/cancel`          | Cancel subscription          |
+| POST   | `/api/workspaces/:wId/billing/resume`          | Resume subscription          |
+| GET    | `/api/workspaces/:wId/billing/portal`          | Stripe Customer Portal URL   |
+| GET    | `/api/workspaces/:wId/billing/transactions`    | Transaction history          |
+| GET    | `/api/workspaces/:wId/billing/can-send`        | Has credits?                 |
+| GET    | `/api/workspaces/:wId/billing/credits-alert`   | Low credits alert            |
 
 ### Weekly Reports (3)
 
-| Método | Endpoint                                     | Descripción              |
-| ------ | -------------------------------------------- | ------------------------ |
-| GET    | `/api/workspaces/:wId/weekly-reports/config` | Config de reportes       |
-| PUT    | `/api/workspaces/:wId/weekly-reports/config` | Actualizar config        |
-| POST   | `/api/workspaces/:wId/weekly-reports/test`   | Enviar reporte de prueba |
+| Method | Endpoint                                     | Description           |
+| ------ | -------------------------------------------- | --------------------- |
+| GET    | `/api/workspaces/:wId/weekly-reports/config` | Report configuration  |
+| PUT    | `/api/workspaces/:wId/weekly-reports/config` | Update configuration  |
+| POST   | `/api/workspaces/:wId/weekly-reports/test`   | Send test report      |
 
 ### Webhooks (4)
 
-| Método | Endpoint                   | Descripción                            |
-| ------ | -------------------------- | -------------------------------------- |
-| POST   | `/api/webhooks/twilio/sms` | SMS entrante (Twilio)                  |
-| GET    | `/api/webhooks/whatsapp`   | Verificación WhatsApp (Meta Challenge) |
-| POST   | `/api/webhooks/whatsapp`   | Mensaje entrante WhatsApp              |
-| POST   | `/api/webhooks/stripe`     | Eventos Stripe (suscripciones, pagos)  |
+| Method | Endpoint                   | Description                           |
+| ------ | -------------------------- | ------------------------------------- |
+| POST   | `/api/webhooks/twilio/sms` | Incoming SMS (Twilio)                 |
+| GET    | `/api/webhooks/whatsapp`   | WhatsApp verification (Meta Challenge) |
+| POST   | `/api/webhooks/whatsapp`   | Incoming WhatsApp message             |
+| POST   | `/api/webhooks/stripe`     | Stripe events (subscriptions, payments) |
 
-## 🔄 Roles y Permisos
+## 🔄 Roles & Permissions
 
-| Rol              | CRUD Workspace |  CRUD Practices   |       Invite Users       | Ver Analytics | Billing |
-| ---------------- | :------------: | :---------------: | :----------------------: | :-----------: | :-----: |
-| **OWNER**        |       ✅       |        ✅         |        ✅ (todos)        |      ✅       |   ✅    |
-| **DOCTOR**       |       ❌       |        ✅         | ✅ (DOCTOR/RECEPTIONIST) |      ✅       |   ❌    |
-| **RECEPTIONIST** |       ❌       | 👁️ (solo lectura) |            ❌            |      👁️       |   ❌    |
+| Role             | CRUD Workspace | CRUD Practices  |      Invite Users       | View Analytics | Billing |
+| ---------------- | :------------: | :-------------: | :---------------------: | :------------: | :-----: |
+| **OWNER**        |       ✅       |       ✅        |       ✅ (all)         |       ✅       |   ✅    |
+| **DOCTOR**       |       ❌       |       ✅        | ✅ (DOCTOR/RECEPTIONIST) |       ✅       |   ❌    |
+| **RECEPTIONIST** |       ❌       | 👁️ (read only) |           ❌            |       👁️       |   ❌    |
 
 ## 🐛 Troubleshooting
 
 ### "404 Not Found"
 
-- Verifica que el API esté corriendo: `pnpm dev`
-- Debe aparecer: `🚀 API is running on: http://localhost:3000/api`
+**Local:**
+- Verify API is running: `pnpm dev:all`
+- Should show: `🚀 API is running on: http://localhost:3333/api`
+
+**Production:**
+- Verify API service is "Online" in Railway
+- Correct URL: `https://api-production-d042.up.railway.app`
 
 ### "Unauthorized"
 
-1. Ejecuta primero **Auth → Sign In**
-2. Verifica que Cookie Jar esté habilitado en Settings
-3. Las sesiones duran 7 días — vuelve a hacer login si expiró
+1. Execute **Auth → Sign In** first
+2. Verify Cookie Jar is enabled in Settings
+3. Sessions last 7 days — log in again if expired
 
 ### "Workspace not found"
 
-- Verifica que `{{workspaceId}}` tiene valor (usa Quick Look 👁️)
-- Ejecuta **Workspaces → Get Current** para obtenerlo
+- Verify `{{workspaceId}}` has a value (use Quick Look 👁️)
+- Execute **Workspaces → Get Current** to retrieve it
 
 ### "Cannot connect to server"
 
+**Local:**
 ```bash
-# Levantar servicios
+# Start services
 docker-compose up -d   # PostgreSQL + Redis
-pnpm dev               # API + Web
+pnpm dev:all           # API + Worker + Web
 ```
+
+**Production:**
+- Check status in Railway Dashboard
+- Review API service logs in Railway
 
 ## 💡 Tips
 
-1. Los requests de creación (POST) auto-guardan IDs en las variables
-2. Usa **Quick Look** (👁️) para ver valores actuales de variables
-3. Query params opcionales están deshabilitados por default — habilítalos según necesites
-4. El endpoint `Simulate Patient Response` es útil para testing sin SMS reales
+1. Creation requests (POST) auto-save IDs to variables
+2. Use **Quick Look** (👁️) to see current variable values
+3. Optional query params are disabled by default — enable them as needed
+4. The `Simulate Patient Response` endpoint is useful for testing without real SMS
