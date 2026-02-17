@@ -31,11 +31,11 @@ export const auth = betterAuth({
 
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3333',
 
-  trustedOrigins: ['http://localhost:4000', 'http://localhost:3333'],
-
-  advanced: {
-    disableCSRFCheck: process.env.NODE_ENV === 'development', // Solo en dev
-  },
+  trustedOrigins: [
+    'http://localhost:4000',
+    'http://localhost:3333',
+    ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim()) : []),
+  ],
 
   hooks: {}, // Requerido para usar @Hook decorators
 });
