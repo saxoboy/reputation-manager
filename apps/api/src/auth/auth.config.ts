@@ -34,7 +34,9 @@ export const auth = betterAuth({
   trustedOrigins: [
     'http://localhost:4000',
     'http://localhost:3333',
-    ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim()) : []),
+    ...(process.env.CORS_ORIGINS
+      ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
+      : []),
   ],
 
   hooks: {}, // Requerido para usar @Hook decorators
