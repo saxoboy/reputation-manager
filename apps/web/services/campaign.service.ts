@@ -1,4 +1,5 @@
 import { apiClient } from '../lib/api-client';
+import { getBaseUrl } from '../lib/get-base-url';
 
 export interface Campaign {
   id: string;
@@ -85,7 +86,7 @@ export const campaignService = {
     formData.append('file', file);
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/campaigns/${campaignId}/upload`,
+      `${getBaseUrl()}/api/workspaces/${workspaceId}/campaigns/${campaignId}/upload`,
       {
         method: 'POST',
         body: formData,
