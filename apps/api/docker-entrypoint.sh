@@ -2,7 +2,7 @@
 set -e
 
 echo "🔄 Running database migrations..."
-npx prisma migrate deploy --schema=./prisma/schema.prisma --config=./prisma/prisma.config.ts
+pnpx prisma@7.2.0 migrate deploy --schema=./prisma/schema.prisma --config=./prisma/prisma.config.ts
 
 echo "✅ Migrations completed"
 echo "🚀 Starting API server..."

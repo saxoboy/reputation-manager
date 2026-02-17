@@ -43,6 +43,7 @@ RUN pnpx prisma@7.2.0 generate --schema=./prisma/schema.prisma --config=./prisma
 # Stage 3: Production
 # ==========================================
 FROM node:22-alpine AS runner
+RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
 ENV NODE_ENV=production
