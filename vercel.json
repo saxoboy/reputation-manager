@@ -3,6 +3,6 @@
   "buildCommand": "nx build web --prod",
   "devCommand": "nx serve web",
   "installCommand": "pnpm install",
-  "framework": null,
+  "framework": "nextjs",
   "outputDirectory": "dist/apps/web/.next"
 }
