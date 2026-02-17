@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { AlertCircle, CheckCircle2, Loader2, XCircle } from 'lucide-react';
+import { getBaseUrl } from '../lib/get-base-url';
 
 type ConnectionStatus = 'connecting' | 'connected' | 'error' | 'disconnected';
 
@@ -19,11 +20,8 @@ export function ApiConnectionStatus() {
 
     const checkConnection = async () => {
       try {
-        const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333';
-
         // Health check está en /health (sin /api prefix)
-        const response = await fetch(`${apiUrl}/health`, {
+        const response = await fetch(`${getBaseUrl()}/health`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

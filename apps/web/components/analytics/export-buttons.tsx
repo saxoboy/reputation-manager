@@ -5,6 +5,7 @@ import { FileSpreadsheet, FileText } from 'lucide-react';
 import { useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { useToast } from '../../hooks/use-toast';
+import { getBaseUrl } from '../../lib/get-base-url';
 
 interface ExportButtonsProps {
   workspaceId: string;
@@ -28,8 +29,7 @@ export function ExportButtons({ workspaceId, dateRange }: ExportButtonsProps) {
       }
 
       const queryString = params.toString();
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333';
-      const url = `${apiUrl}/api/workspaces/${workspaceId}/analytics/export/${format}${queryString ? `?${queryString}` : ''}`;
+      const url = `${getBaseUrl()}/api/workspaces/${workspaceId}/analytics/export/${format}${queryString ? `?${queryString}` : ''}`;
 
       // Hacer download del archivo
       const response = await fetch(url, {

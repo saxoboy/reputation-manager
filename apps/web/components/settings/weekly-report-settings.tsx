@@ -23,6 +23,7 @@ import { Alert, AlertDescription } from '../ui/alert';
 import { Badge } from '../ui/badge';
 import { CalendarDays, Mail, Send, X } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
+import { getBaseUrl } from '../../lib/get-base-url';
 
 interface WeeklyReportConfig {
   id: string;
@@ -68,7 +69,7 @@ export function WeeklyReportSettings() {
     try {
       const workspaceId = 'test-workspace-id'; // TODO: Get from context
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/weekly-reports/config`,
+        `${getBaseUrl()}/api/workspaces/${workspaceId}/weekly-reports/config`,
         {
           credentials: 'include',
         },
@@ -100,7 +101,7 @@ export function WeeklyReportSettings() {
     try {
       const workspaceId = 'test-workspace-id'; // TODO: Get from context
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/weekly-reports/config`,
+        `${getBaseUrl()}/api/workspaces/${workspaceId}/weekly-reports/config`,
         {
           method: 'PUT',
           headers: {
@@ -187,7 +188,7 @@ export function WeeklyReportSettings() {
     try {
       const workspaceId = 'test-workspace-id'; // TODO: Get from context
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/weekly-reports/test`,
+        `${getBaseUrl()}/api/workspaces/${workspaceId}/weekly-reports/test`,
         {
           method: 'POST',
           headers: {
