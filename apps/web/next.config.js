@@ -9,8 +9,8 @@ const nextConfig = {
   // Use this to set Nx-specific options
   // See: https://nx.dev/recipes/next/next-config-setup
   nx: {},
-  // Required for Docker standalone build
-  output: 'standalone',
+  // Use standalone output only for Docker builds (not Vercel)
+  ...(process.env.STANDALONE === 'true' ? { output: 'standalone' } : {}),
 };
 
 const plugins = [
