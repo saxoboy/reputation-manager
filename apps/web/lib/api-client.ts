@@ -3,7 +3,7 @@ import { authClient } from './auth-client';
 // Use relative URL so requests go through Vercel rewrites (same domain = cookies work)
 const BASE_URL =
   typeof window === 'undefined'
-    ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333')
+    ? process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'
     : '';
 const API_URL = `${BASE_URL}/api`;
 
