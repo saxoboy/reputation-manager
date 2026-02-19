@@ -3,6 +3,7 @@
 # AI agent instructions (auto-generated / local only)
 AGENTS.md
 ARCHITECTURE.md
+.agents/
 
 # compiled output
 dist
