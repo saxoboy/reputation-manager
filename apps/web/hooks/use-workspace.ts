@@ -7,8 +7,9 @@ export type { Workspace } from '../services/workspace.service';
 
 export function useWorkspace() {
   const { data, isLoading, error } = useQuery({
-    queryKey: ['workspace', 'current'],
-    queryFn: () => workspaceService.getCurrent(),
+    queryKey: ['workspaces'],
+    queryFn: () => workspaceService.getAll(),
+    select: (workspaces) => workspaces[0] ?? null,
   });
 
   return {
