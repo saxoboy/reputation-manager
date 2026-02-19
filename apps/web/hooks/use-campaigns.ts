@@ -90,8 +90,8 @@ export function useUploadCsv(workspaceId: string, campaignId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (file: File) =>
-      campaignService.uploadCsv(workspaceId, campaignId, file),
+    mutationFn: (csvContent: string) =>
+      campaignService.uploadCsv(workspaceId, campaignId, csvContent),
     onSuccess: (result) => {
       queryClient.invalidateQueries({
         queryKey: ['campaigns', workspaceId, campaignId],

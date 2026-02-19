@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -19,28 +18,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
-
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Plus, FileSpreadsheet } from 'lucide-react';
-import { Campaign } from '../../types/mock-types';
+import { Plus, FileSpreadsheet, X } from 'lucide-react';
+import { useCreateCampaign } from '../../hooks/use-campaigns';
+import { usePractices, useCreatePractice } from '../../hooks/use-practices';
+import { campaignService } from '../../services/campaign.service';
 
 interface CreateCampaignDialogProps {
-  onCreate: (campaign: Campaign) => void;
+  workspaceId: string;
 }
 
-const MOCK_PRACTICES = [
-  { id: '1', name: 'Consultorio Norte' },
-  { id: '2', name: 'Consultorio Centro' },
-];
-
-export function CreateCampaignDialog({ onCreate }: CreateCampaignDialogProps) {
+export function CreateCampaignDialog({
+  workspaceId,
+}: CreateCampaignDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    practiceId: '',
-  });
+  const [formData, setFormData] = useState({ name: '', practiceId: '' });
+  const [showNewPractice, setShowNewPractice] = useState(false);
+  const [newPracticeName, setNewPracticeName] = useState('');
+
+  const { data: practices = [] } = usePractices(workspaceId);
+  const createCampaign = useCreateCampaign(workspaceId);
+  const createPractice = useCreatePractice(workspaceId);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -48,36 +48,62 @@ export function CreateCampaignDialog({ onCreate }: CreateCampaignDialogProps) {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSelectPractice = (val: string) => {
+    if (val === '__new__') {
+      setShowNewPractice(true);
+      return;
+    }
+    setFormData((curr) => ({ ...curr, practiceId: val }));
+  };
+
+  const handleCreatePractice = async () => {
+    if (!newPracticeName.trim()) return;
+    try {
+      const practice = await createPractice.mutateAsync({
+        name: newPracticeName.trim(),
+      });
+      setFormData((curr) => ({ ...curr, practiceId: practice.id }));
+      setShowNewPractice(false);
+      setNewPracticeName('');
+    } catch {
+      // error handled by mutation hook
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+      const campaign = await createCampaign.mutateAsync({
+        name: formData.name,
+        practiceId: formData.practiceId,
+        patients: [],
+      });
 
-    // Simulate campaign creation with file processing
-    const practiceName =
-      MOCK_PRACTICES.find((p) => p.id === formData.practiceId)?.name ||
-      'Desconocido';
+      if (selectedFile) {
+        const csvContent = await selectedFile.text();
+        await campaignService.uploadCsv(workspaceId, campaign.id, csvContent);
+      }
 
-    const newCampaign: Campaign = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: formData.name,
-      practiceName,
-      status: 'DRAFT',
-      patientsCount: selectedFile ? Math.floor(Math.random() * 50) + 10 : 0, // Mock parsed count
-      respondedCount: 0,
-      nps: 0,
-      createdAt: new Date().toISOString().split('T')[0],
-    };
+      setIsOpen(false);
+      setFormData({ name: '', practiceId: '' });
+      setSelectedFile(null);
+    } catch {
+      // errors handled by mutation hooks
+    }
+  };
 
-    onCreate(newCampaign);
-    toast.success('Campaña creada exitosamente');
-    setIsOpen(false);
-
-    // Reset form
-    setFormData({ name: '', practiceId: '' });
-    setSelectedFile(null);
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      setFormData({ name: '', practiceId: '' });
+      setSelectedFile(null);
+      setShowNewPractice(false);
+      setNewPracticeName('');
+    }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
@@ -88,8 +114,8 @@ export function CreateCampaignDialog({ onCreate }: CreateCampaignDialogProps) {
         <DialogHeader>
           <DialogTitle>Crear Nueva Campaña</DialogTitle>
           <DialogDescription>
-            Importa un archivo CSV con tus pacientes para iniciar el proceso de
-            feedback.
+            Crea la campaña y opcionalmente importa tu lista de pacientes en
+            CSV.
           </DialogDescription>
         </DialogHeader>
 
@@ -109,29 +135,76 @@ export function CreateCampaignDialog({ onCreate }: CreateCampaignDialogProps) {
 
           <div className="space-y-2">
             <Label>Consultorio</Label>
-            <Select
-              value={formData.practiceId}
-              onValueChange={(val: string) =>
-                setFormData((curr) => ({ ...curr, practiceId: val }))
-              }
-              required
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecciona el consultorio" />
-              </SelectTrigger>
-              <SelectContent>
-                {MOCK_PRACTICES.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
+
+            {showNewPractice ? (
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Nombre del consultorio"
+                  value={newPracticeName}
+                  onChange={(e) => setNewPracticeName(e.target.value)}
+                  onKeyDown={(e) =>
+                    e.key === 'Enter' &&
+                    (e.preventDefault(), handleCreatePractice())
+                  }
+                  autoFocus
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleCreatePractice}
+                  disabled={!newPracticeName.trim() || createPractice.isPending}
+                >
+                  {createPractice.isPending ? '...' : 'Crear'}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setShowNewPractice(false);
+                    setNewPracticeName('');
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Select
+                value={formData.practiceId}
+                onValueChange={handleSelectPractice}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona el consultorio" />
+                </SelectTrigger>
+                <SelectContent>
+                  {practices.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                  <SelectItem
+                    value="__new__"
+                    className="text-primary font-medium"
+                  >
+                    + Nuevo consultorio
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label>Lista de Pacientes (CSV)</Label>
-            <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/50 transition-colors">
+            <Label>
+              Lista de Pacientes (CSV){' '}
+              <span className="text-muted-foreground font-normal">
+                (opcional)
+              </span>
+            </Label>
+            <label
+              htmlFor="csv-upload"
+              className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/50 transition-colors"
+            >
               <FileSpreadsheet className="h-8 w-8 text-muted-foreground mb-2" />
               {selectedFile ? (
                 <div className="text-sm">
@@ -154,22 +227,25 @@ export function CreateCampaignDialog({ onCreate }: CreateCampaignDialogProps) {
                 className="hidden"
                 id="csv-upload"
                 onChange={handleFileChange}
-                required // For now mandatory
               />
-              <Label
-                htmlFor="csv-upload"
-                className="absolute inset-0 cursor-pointer"
-                aria-label="Subir archivo CSV"
-              />
-            </div>
+            </label>
             <p className="text-xs text-muted-foreground">
-              Formato requerido: Nombre, Teléfono, Email (opcional)
+              Formato: Nombre, Teléfono, Email (opcional) — puedes agregar
+              pacientes después
             </p>
           </div>
 
           <DialogFooter>
-            <Button type="submit" disabled={!selectedFile || !formData.name}>
-              Crear Campaña
+            <Button
+              type="submit"
+              disabled={
+                !formData.name ||
+                !formData.practiceId ||
+                showNewPractice ||
+                createCampaign.isPending
+              }
+            >
+              {createCampaign.isPending ? 'Creando...' : 'Crear Campaña'}
             </Button>
           </DialogFooter>
         </form>

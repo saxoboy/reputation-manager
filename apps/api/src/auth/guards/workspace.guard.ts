@@ -59,9 +59,10 @@ export class WorkspaceGuard implements CanActivate {
       throw new ForbiddenException('No tienes acceso a este workspace');
     }
 
-    // Adjuntar workspace y role al request
+    // Adjuntar workspace, role y workspaceUserId al request
     request['workspace'] = workspaceUser.workspace;
     request['workspaceRole'] = workspaceUser.role;
+    request['workspaceUserId'] = workspaceUser.id;
 
     return true;
   }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { formatDateTime } from '../../lib/utils';
 import {
   Card,
   CardContent,
@@ -135,18 +136,18 @@ export function CampaignsList({ campaigns, workspaceId }: CampaignsListProps) {
                       )}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
-                      {campaign.createdAt}
+                      {formatDateTime(campaign.createdAt)}
                     </TableCell>
-                    <TableCell className="text-right space-x-2">
+                    <TableCell className="text-right flex items-center justify-end gap-2">
                       <Button
-                        variant="ghost"
+                        variant="secondary"
                         size="sm"
                         onClick={() => handleOpenUpload(campaign)}
                       >
                         <Upload className="h-4 w-4 mr-1" />
                         Importar CSV
                       </Button>
-                      <Button variant="ghost" size="sm" asChild>
+                      <Button variant="secondary" size="sm" asChild>
                         <Link href={`/dashboard/campaigns/${campaign.id}`}>
                           Ver Detalles
                         </Link>

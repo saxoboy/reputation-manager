@@ -1,5 +1,4 @@
 import { apiClient } from '../lib/api-client';
-import { getBaseUrl } from '../lib/get-base-url';
 
 export interface Campaign {
   id: string;
@@ -80,23 +79,11 @@ export const campaignService = {
   async uploadCsv(
     workspaceId: string,
     campaignId: string,
-    file: File,
+    csvContent: string,
   ): Promise<{ imported: number; errors: string[] }> {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await fetch(
-      `${getBaseUrl()}/api/workspaces/${workspaceId}/campaigns/${campaignId}/upload`,
-      {
-        method: 'POST',
-        body: formData,
-      },
+    return apiClient.post<{ imported: number; errors: string[] }>(
+      `/workspaces/${workspaceId}/campaigns/${campaignId}/upload`,
+      { csvContent },
     );
-
-    if (!response.ok) {
-      throw new Error('Error uploading CSV');
-    }
-
-    return response.json();
   },
 };

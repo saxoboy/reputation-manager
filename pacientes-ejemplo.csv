@@ -1,0 +1,6 @@
+name,phone,email,appointmentTime,appointmentType,hasConsent
+Ana María García,0998765432,ana.garcia@gmail.com,2026-03-15T09:00:00,Consulta General,true
+Carlos Andrés Morales,0987654321,carlos.morales@yahoo.com,2026-03-15T10:30:00,Control Anual,true
+María Elena Torres,0976543210,,2026-03-16T08:00:00,Limpieza Dental,true
+Pedro Luis Romero,0965432109,pedro.romero@hotmail.com,2026-03-16T11:00:00,Extracción,true
+Lucía Fernanda Vásquez,0954321098,lucia.vasquez@gmail.com,2026-03-17T14:00:00,Consulta General,true

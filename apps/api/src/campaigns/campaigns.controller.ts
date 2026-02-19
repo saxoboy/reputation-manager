@@ -16,7 +16,7 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { WorkspaceGuard } from '../auth/guards/workspace.guard';
 import { RoleGuard, Roles } from '../auth/guards/role.guard';
 import { CurrentWorkspace } from '../auth/decorators/current-workspace.decorator';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { CurrentWorkspaceUserId } from '../auth/decorators/current-workspace-user-id.decorator';
 import { UserRole } from '@prisma/client';
 
 @Controller('workspaces/:workspaceId/campaigns')
@@ -42,10 +42,14 @@ export class CampaignsController {
   @Roles(UserRole.OWNER, UserRole.DOCTOR)
   async create(
     @CurrentWorkspace('id') workspaceId: string,
-    @CurrentUser('id') userId: string,
+    @CurrentWorkspaceUserId() workspaceUserId: string,
     @Body() createCampaignDto: CreateCampaignDto,
   ) {
-    return this.campaignsService.create(workspaceId, userId, createCampaignDto);
+    return this.campaignsService.create(
+      workspaceId,
+      workspaceUserId,
+      createCampaignDto,
+    );
   }
 
   /**
