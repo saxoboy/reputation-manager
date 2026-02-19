@@ -99,9 +99,10 @@ export function CreateCampaignDialog({ onCreate }: CreateCampaignDialogProps) {
             <Input
               placeholder="Ej. Visitas Enero 2026"
               value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                setFormData((curr) => ({ ...curr, name: value }));
+              }}
               required
             />
           </div>
@@ -111,7 +112,7 @@ export function CreateCampaignDialog({ onCreate }: CreateCampaignDialogProps) {
             <Select
               value={formData.practiceId}
               onValueChange={(val: string) =>
-                setFormData({ ...formData, practiceId: val })
+                setFormData((curr) => ({ ...curr, practiceId: val }))
               }
               required
             >

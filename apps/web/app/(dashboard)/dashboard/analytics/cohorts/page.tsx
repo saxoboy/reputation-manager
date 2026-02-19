@@ -18,8 +18,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../../../../components/ui/select';
-import { CohortTable } from '../../../../../components/analytics/cohort-table';
-import { TrendsChart } from '../../../../../components/analytics/trends-chart';
+import dynamic from 'next/dynamic';
+
+const CohortTable = dynamic(
+  () =>
+    import('../../../../../components/analytics/cohort-table').then(
+      (m) => m.CohortTable,
+    ),
+  { ssr: false },
+);
+const TrendsChart = dynamic(
+  () =>
+    import('../../../../../components/analytics/trends-chart').then(
+      (m) => m.TrendsChart,
+    ),
+  { ssr: false },
+);
 import { analyticsService } from '../../../../../services/analytics.service';
 import { useCurrentWorkspace } from '../../../../../hooks/use-workspaces';
 

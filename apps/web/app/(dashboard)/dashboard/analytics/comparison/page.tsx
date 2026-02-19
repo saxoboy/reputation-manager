@@ -27,7 +27,15 @@ import {
   TableHeader,
   TableRow,
 } from '../../../../../components/ui/table';
-import { ComparisonChart } from '../../../../../components/analytics/comparison-chart';
+import dynamic from 'next/dynamic';
+
+const ComparisonChart = dynamic(
+  () =>
+    import('../../../../../components/analytics/comparison-chart').then(
+      (m) => m.ComparisonChart,
+    ),
+  { ssr: false },
+);
 import { analyticsService } from '../../../../../services/analytics.service';
 import { practiceService } from '../../../../../services/practice.service';
 import { campaignService } from '../../../../../services/campaign.service';
