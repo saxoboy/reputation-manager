@@ -9,6 +9,8 @@ import {
   Param,
   UseGuards,
   NotFoundException,
+  Logger,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { WorkspacesService } from './workspaces.service';
 import {
@@ -22,6 +24,8 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 @Controller('workspaces')
 @UseGuards(AuthGuard)
 export class WorkspacesController {
+  private readonly logger = new Logger(WorkspacesController.name);
+
   constructor(private readonly workspacesService: WorkspacesService) {}
 
   /**
@@ -52,14 +56,26 @@ export class WorkspacesController {
    */
   @Get('current')
   async findCurrent(@CurrentUser('id') userId: string) {
-    const workspaces = await this.workspacesService.findUserWorkspaces(userId);
-    if (!workspaces || workspaces.length === 0) {
-      throw new NotFoundException(
-        'No se encontraron workspaces para este usuario',
+    try {
+      const workspaces =
+        await this.workspacesService.findUserWorkspaces(userId);
+      if (!workspaces || workspaces.length === 0) {
+        throw new NotFoundException(
+          'No se encontraron workspaces para este usuario',
+        );
+      }
+      return workspaces[0];
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      this.logger.error('Error en findCurrent', {
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      throw new InternalServerErrorException(
+        error instanceof Error ? error.message : 'Error al obtener workspace',
       );
     }
-    // Devolver el primero (más reciente según la query en service)
-    return workspaces[0];
   }
 
   /**
