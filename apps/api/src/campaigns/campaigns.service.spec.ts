@@ -70,6 +70,9 @@ describe('CampaignsService - Credit Pre-check', () => {
         patients: [],
         _count: { patients: 0, messages: 0 },
       });
+
+      // No existing patients in campaign by default (deduplication query)
+      mockPrisma.patient.findMany.mockResolvedValue([]);
     });
 
     it('should allow CSV upload when enough credits', async () => {

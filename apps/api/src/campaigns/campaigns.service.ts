@@ -3,11 +3,20 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  InternalServerErrorException,
+  HttpException,
 } from '@nestjs/common';
 import { PrismaService } from '@reputation-manager/database';
 import { CreateCampaignDto, UpdateCampaignDto, UploadCsvDto } from './dto';
-import { parsePatientsCSV } from '@reputation-manager/shared-utils';
+import {
+  parsePatientsCSV,
+  normalizeEcuadorPhone,
+  ParsedPatient,
+  CsvValidationError,
+} from '@reputation-manager/shared-utils';
 import { BillingService } from '../billing/billing.service';
+import * as ExcelJS from 'exceljs';
+import Anthropic from '@anthropic-ai/sdk';
 
 @Injectable()
 export class CampaignsService {
@@ -31,7 +40,7 @@ export class CampaignsService {
         },
         _count: {
           select: {
-            patients: true,
+            patients: { where: { dataDeletedAt: null } },
             messages: true,
           },
         },
@@ -63,7 +72,7 @@ export class CampaignsService {
         },
         _count: {
           select: {
-            patients: true,
+            patients: { where: { dataDeletedAt: null } },
             messages: true,
           },
         },
@@ -127,7 +136,7 @@ export class CampaignsService {
         },
         _count: {
           select: {
-            patients: true,
+            patients: { where: { dataDeletedAt: null } },
             messages: true,
           },
         },
@@ -160,7 +169,7 @@ export class CampaignsService {
         },
         _count: {
           select: {
-            patients: true,
+            patients: { where: { dataDeletedAt: null } },
             messages: true,
           },
         },
@@ -236,9 +245,34 @@ export class CampaignsService {
       });
     }
 
-    // Crear pacientes válidos en bulk
+    // Deduplicar por teléfono: obtener teléfonos existentes en la campaña
+    const existingPatients = await this.prisma.patient.findMany({
+      where: { campaignId, dataDeletedAt: null },
+      select: { phone: true },
+    });
+
+    const existingPhones = new Set(
+      existingPatients.map((p) => normalizeEcuadorPhone(p.phone)),
+    );
+
+    // Deduplicar también dentro del mismo batch por teléfono
+    const batchPhones = new Set<string>();
+    const uniquePatients: ParsedPatient[] = [];
+    let duplicatesSkipped = 0;
+
+    for (const patient of parseResult.patients) {
+      const phone = patient.phone; // ya normalizado por parsePatientsCSV
+      if (existingPhones.has(phone) || batchPhones.has(phone)) {
+        duplicatesSkipped++;
+      } else {
+        batchPhones.add(phone);
+        uniquePatients.push(patient);
+      }
+    }
+
+    // Crear pacientes únicos en bulk
     const createdPatients = await this.prisma.$transaction(
-      parseResult.patients.map((patient) =>
+      uniquePatients.map((patient) =>
         this.prisma.patient.create({
           data: {
             name: patient.name,
@@ -262,6 +296,7 @@ export class CampaignsService {
         invalidRows: parseResult.invalidRows,
         patientsCreated: createdPatients.length,
       },
+      duplicatesSkipped,
       patients: createdPatients,
       errors: parseResult.errors.length > 0 ? parseResult.errors : undefined,
     };
@@ -341,5 +376,278 @@ export class CampaignsService {
     ];
 
     return csvLines.join('\n');
+  }
+
+  /**
+   * Genera una plantilla Excel (.xlsx) con columnas y datos de ejemplo
+   */
+  async getExcelTemplate(): Promise<Buffer> {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Pacientes');
+
+    sheet.columns = [
+      { header: 'Nombre Completo', key: 'name', width: 28 },
+      { header: 'Teléfono', key: 'phone', width: 16 },
+      { header: 'Email', key: 'email', width: 28 },
+      { header: 'Fecha y Hora de Cita', key: 'appointmentTime', width: 24 },
+      { header: 'Tipo de Cita', key: 'appointmentType', width: 22 },
+      { header: 'Tiene Consentimiento', key: 'hasConsent', width: 22 },
+    ];
+
+    // Estilo para la cabecera
+    const headerRow = sheet.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE8F4FD' },
+    };
+
+    // Filas de ejemplo
+    sheet.addRow({
+      name: 'Ana María García',
+      phone: '0998765432',
+      email: 'ana.garcia@gmail.com',
+      appointmentTime: '2026-03-15T09:00:00',
+      appointmentType: 'Consulta General',
+      hasConsent: 'true',
+    });
+    sheet.addRow({
+      name: 'Carlos Andrés Morales',
+      phone: '0987654321',
+      email: 'carlos.morales@yahoo.com',
+      appointmentTime: '2026-03-15T10:30:00',
+      appointmentType: 'Control Anual',
+      hasConsent: 'true',
+    });
+    sheet.addRow({
+      name: 'María Elena Torres',
+      phone: '0976543210',
+      email: '',
+      appointmentTime: '2026-03-16T08:00:00',
+      appointmentType: 'Limpieza Dental',
+      hasConsent: 'true',
+    });
+
+    // Nota informativa al final
+    sheet.addRow([]);
+    const noteRow = sheet.addRow([
+      '* Teléfono: formato 0999999999 o +593999999999',
+    ]);
+    noteRow.font = { italic: true, color: { argb: 'FF666666' } };
+    const dateRow = sheet.addRow([
+      '* Fecha y Hora: formato YYYY-MM-DDTHH:mm:ss  (ej: 2026-03-15T09:00:00)',
+    ]);
+    dateRow.font = { italic: true, color: { argb: 'FF666666' } };
+    const consentRow = sheet.addRow([
+      '* Consentimiento: escribir  true  para autorizar el envío de mensajes',
+    ]);
+    consentRow.font = { italic: true, color: { argb: 'FF666666' } };
+
+    const arrayBuffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(arrayBuffer);
+  }
+
+  /**
+   * Parsea un archivo Excel con AI (Claude Haiku) y retorna pacientes normalizados
+   */
+  async parseExcelWithAI(
+    campaignId: string,
+    workspaceId: string,
+    base64Content: string,
+  ): Promise<{ patients: ParsedPatient[]; errors: CsvValidationError[] }> {
+    // Verificar que la campaña existe y pertenece al workspace
+    await this.findOne(campaignId, workspaceId);
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new InternalServerErrorException(
+        'ANTHROPIC_API_KEY no está configurada en el servidor',
+      );
+    }
+
+    try {
+      // 1. Decodificar base64 → Buffer → Excel
+      const decoded = Buffer.from(base64Content, 'base64');
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(decoded as unknown as ArrayBuffer);
+
+      const sheet = workbook.worksheets[0];
+      if (!sheet) {
+        throw new BadRequestException(
+          'El archivo Excel no contiene hojas de datos',
+        );
+      }
+
+      // 2. Extraer cabeceras y filas como JSON crudo
+      const rows: Record<string, string>[] = [];
+      let headers: string[] = [];
+
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const formatCellValue = (v: unknown): string => {
+        if (v == null) return '';
+        // exceljs devuelve celdas de fecha como Date objects.
+        // Usamos métodos UTC para preservar el valor exacto sin conversión de zona horaria.
+        if (v instanceof Date) {
+          return `${v.getUTCFullYear()}-${pad(v.getUTCMonth() + 1)}-${pad(v.getUTCDate())}T${pad(v.getUTCHours())}:${pad(v.getUTCMinutes())}:${pad(v.getUTCSeconds())}`;
+        }
+        return String(v);
+      };
+
+      sheet.eachRow((row, rowNumber) => {
+        const values = row.values as unknown[];
+        // row.values[0] es undefined (exceljs es 1-indexed)
+        const cells = values.slice(1).map(formatCellValue);
+
+        if (rowNumber === 1) {
+          headers = cells;
+        } else {
+          // Ignorar filas vacías
+          if (cells.some((c) => c.trim() !== '')) {
+            const rowObj: Record<string, string> = {};
+            headers.forEach((h, i) => {
+              rowObj[h] = cells[i] ?? '';
+            });
+            rows.push(rowObj);
+          }
+        }
+      });
+
+      if (rows.length === 0) {
+        throw new BadRequestException(
+          'El archivo Excel no contiene datos de pacientes',
+        );
+      }
+
+      // 3. Llamar a Claude Haiku con tool_use para structured output
+      const anthropic = new Anthropic({
+        apiKey: process.env.ANTHROPIC_API_KEY,
+      });
+
+      const rawData = JSON.stringify({ headers, rows }, null, 2);
+
+      const message = await anthropic.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 4096,
+        tools: [
+          {
+            name: 'import_patients',
+            description:
+              'Mapea los datos del Excel a la estructura estándar de pacientes',
+            input_schema: {
+              type: 'object' as const,
+              properties: {
+                patients: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      name: {
+                        type: 'string',
+                        description: 'Nombre completo del paciente',
+                      },
+                      phone: {
+                        type: 'string',
+                        description:
+                          'Teléfono. Normaliza a formato ecuatoriano: si empieza en 0 y tiene 10 dígitos → +593XXXXXXXXX. Si ya tiene +593 → dejarlo igual.',
+                      },
+                      email: {
+                        type: 'string',
+                        description: 'Email del paciente (puede estar vacío)',
+                      },
+                      appointmentTime: {
+                        type: 'string',
+                        description:
+                          'Fecha y hora en formato ISO 8601: YYYY-MM-DDTHH:mm:ss. Convierte el formato de fecha si es necesario pero NUNCA cambies la hora — copia el valor de hora exactamente como aparece en los datos originales, sin conversión de zona horaria.',
+                      },
+                      appointmentType: {
+                        type: 'string',
+                        description: 'Tipo de cita (puede estar vacío)',
+                      },
+                      hasConsent: {
+                        type: 'boolean',
+                        description:
+                          'Consentimiento. true si el valor es: true, si, sí, 1, yes. false en cualquier otro caso.',
+                      },
+                    },
+                    required: [
+                      'name',
+                      'phone',
+                      'appointmentTime',
+                      'hasConsent',
+                    ],
+                  },
+                },
+              },
+              required: ['patients'],
+            },
+          },
+        ],
+        tool_choice: { type: 'any' },
+        messages: [
+          {
+            role: 'user',
+            content: `Eres un asistente que importa datos de pacientes desde Excel.
+Analiza los siguientes datos crudos del Excel y mapea cada fila al formato estándar de paciente.
+Las columnas pueden estar en español, inglés o con nombres no estándar — infiere el significado correcto.
+Normaliza teléfonos ecuatorianos: formato 0XXXXXXXXX (10 dígitos) → +593XXXXXXXXX.
+Normaliza fechas a formato ISO 8601 (YYYY-MM-DDTHH:mm:ss) PERO copia la hora EXACTAMENTE como aparece, sin ninguna conversión de zona horaria. Si el Excel dice 09:00, el output debe decir 09:00.
+Ignora filas que sean notas o comentarios (ej: filas que empiecen con *).
+
+Datos del Excel:
+${rawData}`,
+          },
+        ],
+      });
+
+      // 4. Extraer resultado del tool_use
+      const toolUse = message.content.find((c) => c.type === 'tool_use');
+      if (!toolUse || toolUse.type !== 'tool_use') {
+        throw new InternalServerErrorException(
+          'La IA no pudo procesar el archivo Excel',
+        );
+      }
+
+      const aiResult = toolUse.input as {
+        patients: {
+          name: string;
+          phone: string;
+          email?: string;
+          appointmentTime: string;
+          appointmentType?: string;
+          hasConsent: boolean;
+        }[];
+      };
+
+      // 5. Convertir a CSV y validar con el parser existente
+      const csvLines = [
+        'name,phone,email,appointmentTime,appointmentType,hasConsent',
+        ...aiResult.patients.map((p) => {
+          const name = (p.name ?? '').replace(/,/g, ' ');
+          const phone = (p.phone ?? '').replace(/,/g, '');
+          const email = (p.email ?? '').replace(/,/g, '');
+          const time = (p.appointmentTime ?? '').replace(/,/g, '');
+          const type = (p.appointmentType ?? '').replace(/,/g, ' ');
+          const consent = p.hasConsent ? 'true' : 'false';
+          return `${name},${phone},${email},${time},${type},${consent}`;
+        }),
+      ];
+      const csvContent = csvLines.join('\n');
+      const parseResult = parsePatientsCSV(csvContent, { skipHeader: true });
+
+      return {
+        patients: parseResult.patients,
+        errors: parseResult.errors,
+      };
+    } catch (error) {
+      // Re-throw NestJS HTTP exceptions (BadRequestException, etc.) unchanged
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('[parseExcelWithAI] Error:', message, error);
+      throw new InternalServerErrorException(
+        `Error procesando el archivo Excel: ${message}`,
+      );
+    }
   }
 }

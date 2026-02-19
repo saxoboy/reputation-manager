@@ -4,6 +4,7 @@ import {
   campaignService,
   type CreateCampaignDto,
   type UpdateCampaignDto,
+  type ParseExcelResult,
 } from '../services/campaign.service';
 
 export function useCampaigns(workspaceId: string) {
@@ -96,14 +97,36 @@ export function useUploadCsv(workspaceId: string, campaignId: string) {
       queryClient.invalidateQueries({
         queryKey: ['campaigns', workspaceId, campaignId],
       });
-      toast.success(`${result.imported} pacientes importados`);
-      if (result.errors.length > 0) {
+      queryClient.invalidateQueries({
+        queryKey: ['patients', 'campaign', workspaceId, campaignId],
+      });
+      toast.success(`${result.summary.patientsCreated} pacientes importados`);
+      if (result.duplicatesSkipped > 0) {
+        toast.info(
+          `${result.duplicatesSkipped} paciente(s) duplicados omitidos`,
+        );
+      }
+      if (result.errors && result.errors.length > 0) {
         toast.warning(`${result.errors.length} errores en la importación`);
       }
     },
     onError: (error) => {
       toast.error(
         error instanceof Error ? error.message : 'Error al subir el archivo',
+      );
+    },
+  });
+}
+
+export function useParseExcel(workspaceId: string, campaignId: string) {
+  return useMutation<ParseExcelResult, Error, string>({
+    mutationFn: (base64Content: string) =>
+      campaignService.parseExcel(workspaceId, campaignId, base64Content),
+    onError: (error) => {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Error al procesar el archivo Excel',
       );
     },
   });

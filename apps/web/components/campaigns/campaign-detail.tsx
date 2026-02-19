@@ -4,7 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/use-auth';
 import { useCampaign } from '../../hooks/use-campaigns';
-import { useCampaignPatients } from '../../hooks/use-patients';
+import {
+  useCampaignPatients,
+  useDeletePatient,
+} from '../../hooks/use-patients';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   useCampaignMessages,
   useSimulateResponse,
@@ -57,10 +61,12 @@ import {
   Play,
   Upload,
   Pencil,
+  Trash2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CsvUploadDialog } from './csv-upload-dialog';
+import { ExcelUploadDialog } from './excel-upload-dialog';
 import { AddPatientDialog } from './add-patient-dialog';
 import { MessageStatus, MessageType } from '../../types/mock-types';
 
@@ -93,14 +99,18 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
     campaignId,
   );
 
+  const queryClient = useQueryClient();
+  const deletePatient = useDeletePatient(workspaceId);
   const simulateResponse = useSimulateResponse(workspaceId);
   const [simulateOpen, setSimulateOpen] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
     null,
   );
   const [rating, setRating] = useState<string>('5');
   const [feedback, setFeedback] = useState('');
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [excelUploadOpen, setExcelUploadOpen] = useState(false);
   const [addPatientOpen, setAddPatientOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | undefined>(
     undefined,
@@ -243,6 +253,10 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
             <Upload className="mr-2 h-4 w-4" />
             Importar CSV
           </Button>
+          <Button variant="outline" onClick={() => setExcelUploadOpen(true)}>
+            <Upload className="mr-2 h-4 w-4" />
+            Importar Excel
+          </Button>
           <Button>Configuración</Button>
         </div>
       </div>
@@ -329,11 +343,18 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
                       Agregar uno por uno
                     </Button>
                     <Button
-                      variant="link"
+                      variant="outline"
                       size="sm"
                       onClick={() => setUploadDialogOpen(true)}
                     >
                       Importar CSV
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setExcelUploadOpen(true)}
+                    >
+                      Importar Excel
                     </Button>
                   </div>
                 </div>
@@ -370,16 +391,62 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              setSelectedPatient(patient);
-                              setAddPatientOpen(true);
-                            }}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                setSelectedPatient(patient);
+                                setAddPatientOpen(true);
+                              }}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            {confirmDeleteId === patient.id ? (
+                              <>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  className="h-8 px-2 text-xs"
+                                  disabled={deletePatient.isPending}
+                                  onClick={() => {
+                                    deletePatient.mutate(patient.id, {
+                                      onSuccess: () => {
+                                        queryClient.invalidateQueries({
+                                          queryKey: [
+                                            'patients',
+                                            'campaign',
+                                            workspaceId,
+                                            campaignId,
+                                          ],
+                                        });
+                                        setConfirmDeleteId(null);
+                                      },
+                                    });
+                                  }}
+                                >
+                                  Confirmar
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 px-2 text-xs"
+                                  onClick={() => setConfirmDeleteId(null)}
+                                >
+                                  Cancelar
+                                </Button>
+                              </>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:text-destructive"
+                                onClick={() => setConfirmDeleteId(patient.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -476,6 +543,14 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
       <CsvUploadDialog
         open={uploadDialogOpen}
         onOpenChange={setUploadDialogOpen}
+        workspaceId={workspaceId}
+        campaignId={campaignId}
+        campaignName={campaign.name}
+      />
+
+      <ExcelUploadDialog
+        open={excelUploadOpen}
+        onOpenChange={setExcelUploadOpen}
         workspaceId={workspaceId}
         campaignId={campaignId}
         campaignName={campaign.name}

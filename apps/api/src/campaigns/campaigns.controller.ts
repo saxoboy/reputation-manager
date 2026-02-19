@@ -11,7 +11,12 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { CampaignsService } from './campaigns.service';
-import { CreateCampaignDto, UpdateCampaignDto, UploadCsvDto } from './dto';
+import {
+  CreateCampaignDto,
+  UpdateCampaignDto,
+  UploadCsvDto,
+  ParseExcelDto,
+} from './dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { WorkspaceGuard } from '../auth/guards/workspace.guard';
 import { RoleGuard, Roles } from '../auth/guards/role.guard';
@@ -49,6 +54,40 @@ export class CampaignsController {
       workspaceId,
       workspaceUserId,
       createCampaignDto,
+    );
+  }
+
+  /**
+   * GET /workspaces/:workspaceId/campaigns/excel-template
+   * Descarga plantilla Excel de pacientes (debe ir antes de :id)
+   */
+  @Get('excel-template')
+  async getExcelTemplate(@Res() res: Response) {
+    const buffer = await this.campaignsService.getExcelTemplate();
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="plantilla-pacientes.xlsx"',
+    });
+    res.send(buffer);
+  }
+
+  /**
+   * POST /workspaces/:workspaceId/campaigns/:id/parse-excel
+   * Parsea un Excel con AI y retorna preview de pacientes
+   */
+  @Post(':id/parse-excel')
+  @UseGuards(RoleGuard)
+  @Roles(UserRole.OWNER, UserRole.DOCTOR, UserRole.RECEPTIONIST)
+  async parseExcel(
+    @CurrentWorkspace('id') workspaceId: string,
+    @Param('id') id: string,
+    @Body() dto: ParseExcelDto,
+  ) {
+    return this.campaignsService.parseExcelWithAI(
+      id,
+      workspaceId,
+      dto.fileContent,
     );
   }
 
