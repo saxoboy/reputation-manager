@@ -24,9 +24,29 @@ import { Button } from '../../../../components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsService } from '../../../../services/analytics.service';
 import { practiceService } from '../../../../services/practice.service';
-import { TimelineChart } from '../../../../components/analytics/timeline-chart';
-import { RatingDistributionChart } from '../../../../components/analytics/rating-distribution-chart';
-import { SentimentChart } from '../../../../components/analytics/sentiment-chart';
+import dynamic from 'next/dynamic';
+
+const TimelineChart = dynamic(
+  () =>
+    import('../../../../components/analytics/timeline-chart').then(
+      (m) => m.TimelineChart,
+    ),
+  { ssr: false },
+);
+const RatingDistributionChart = dynamic(
+  () =>
+    import('../../../../components/analytics/rating-distribution-chart').then(
+      (m) => m.RatingDistributionChart,
+    ),
+  { ssr: false },
+);
+const SentimentChart = dynamic(
+  () =>
+    import('../../../../components/analytics/sentiment-chart').then(
+      (m) => m.SentimentChart,
+    ),
+  { ssr: false },
+);
 import { AnalyticsFilters } from '../../../../components/analytics/analytics-filters';
 import { ExportButtons } from '../../../../components/analytics/export-buttons';
 import { useCurrentWorkspace } from '../../../../hooks/use-workspaces';

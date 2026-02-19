@@ -1,11 +1,19 @@
 'use client';
 
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useAuth } from '../../../hooks/use-auth';
 import { Button } from '../../../components/ui/button';
 import { OverviewStats } from '../../../components/dashboard/overview-stats';
-import { FeedbackCharts } from '../../../components/dashboard/feedback-charts';
 import { RecentActivity } from '../../../components/dashboard/recent-activity';
+
+const FeedbackCharts = dynamic(
+  () =>
+    import('../../../components/dashboard/feedback-charts').then(
+      (m) => m.FeedbackCharts,
+    ),
+  { ssr: false, loading: () => <div className="h-80 animate-pulse bg-muted rounded-lg" /> },
+);
 
 export default function DashboardContent() {
   const { user, isPending } = useAuth();
