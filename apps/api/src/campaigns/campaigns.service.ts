@@ -85,7 +85,11 @@ export class CampaignsService {
   /**
    * Crear una nueva campaña
    */
-  async create(workspaceId: string, userId: string, dto: CreateCampaignDto) {
+  async create(
+    workspaceId: string,
+    workspaceUserId: string,
+    dto: CreateCampaignDto,
+  ) {
     // Verificar que la práctica pertenezca al workspace
     const practice = await this.prisma.practice.findUnique({
       where: { id: dto.practiceId },
@@ -105,7 +109,7 @@ export class CampaignsService {
         scheduledHoursAfter: dto.scheduledHoursAfter || 2,
         workspaceId,
         practiceId: dto.practiceId,
-        createdById: userId,
+        createdById: workspaceUserId,
         patients: {
           create: dto.patients.map((patient) => ({
             ...patient,

@@ -56,10 +56,12 @@ import {
   Users,
   Play,
   Upload,
+  Pencil,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CsvUploadDialog } from './csv-upload-dialog';
+import { AddPatientDialog } from './add-patient-dialog';
 import { MessageStatus, MessageType } from '../../types/mock-types';
 
 interface CampaignDetailProps {
@@ -99,6 +101,10 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
   const [rating, setRating] = useState<string>('5');
   const [feedback, setFeedback] = useState('');
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [addPatientOpen, setAddPatientOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | undefined>(
+    undefined,
+  );
 
   if (!workspaceId) return null;
 
@@ -294,11 +300,17 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
 
         <TabsContent value="patients">
           <Card>
-            <CardHeader>
-              <CardTitle>Pacientes</CardTitle>
-              <CardDescription>
-                Lista de pacientes importados a esta campaña.
-              </CardDescription>
+            <CardHeader className="flex flex-row items-start justify-between">
+              <div>
+                <CardTitle>Pacientes</CardTitle>
+                <CardDescription>
+                  Lista de pacientes en esta campaña.
+                </CardDescription>
+              </div>
+              <Button size="sm" onClick={() => setAddPatientOpen(true)}>
+                <Users className="mr-2 h-4 w-4" />
+                Agregar Paciente
+              </Button>
             </CardHeader>
             <CardContent>
               {isPatientsLoading ? (
@@ -308,12 +320,22 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
                   <p className="text-muted-foreground">
                     No hay pacientes en esta campaña.
                   </p>
-                  <Button
-                    variant="link"
-                    onClick={() => setUploadDialogOpen(true)}
-                  >
-                    Importar pacientes ahora
-                  </Button>
+                  <div className="mt-2 flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAddPatientOpen(true)}
+                    >
+                      Agregar uno por uno
+                    </Button>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={() => setUploadDialogOpen(true)}
+                    >
+                      Importar CSV
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <Table>
@@ -324,6 +346,7 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
                       <TableHead>Email</TableHead>
                       <TableHead>Cita</TableHead>
                       <TableHead>Estado</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -345,6 +368,18 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
                           ) : (
                             <Badge variant="outline">Suscrito</Badge>
                           )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setSelectedPatient(patient);
+                              setAddPatientOpen(true);
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -444,6 +479,17 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
         workspaceId={workspaceId}
         campaignId={campaignId}
         campaignName={campaign.name}
+      />
+
+      <AddPatientDialog
+        open={addPatientOpen}
+        onOpenChange={(open) => {
+          setAddPatientOpen(open);
+          if (!open) setSelectedPatient(undefined);
+        }}
+        workspaceId={workspaceId}
+        campaignId={campaignId}
+        patient={selectedPatient}
       />
 
       <Dialog open={simulateOpen} onOpenChange={setSimulateOpen}>

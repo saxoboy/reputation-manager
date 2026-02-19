@@ -78,11 +78,7 @@ export default function CampaignsContent() {
           </p>
         </div>
 
-        <CreateCampaignDialog
-          onCreate={() => {
-            // Campaign creation handled by React Query mutation
-          }}
-        />
+        <CreateCampaignDialog workspaceId={workspace?.id || ''} />
       </div>
 
       <div className="grid gap-6">
