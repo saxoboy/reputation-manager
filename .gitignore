@@ -4,6 +4,9 @@
 AGENTS.md
 ARCHITECTURE.md
 .agents/
+.claude
+.codex
+.cursor
 
 # compiled output
 dist

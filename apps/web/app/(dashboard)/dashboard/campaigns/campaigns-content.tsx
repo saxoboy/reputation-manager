@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import dynamicImport from 'next/dynamic';
 import { useWorkspace } from '../../../../hooks/use-workspace';
 import { useCampaigns } from '../../../../hooks/use-campaigns';
@@ -7,7 +8,10 @@ import { CampaignStats } from '../../../../components/campaigns/campaign-stats';
 import { CampaignsList } from '../../../../components/campaigns/campaigns-list';
 import { Skeleton } from '../../../../components/ui/skeleton';
 import { Alert, AlertDescription } from '../../../../components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { Button } from '../../../../components/ui/button';
+import { AlertCircle, Download, Loader2 } from 'lucide-react';
+import { campaignService } from '../../../../services/campaign.service';
+import { toast } from 'sonner';
 
 const CreateCampaignDialog = dynamicImport(
   () =>
@@ -19,6 +23,19 @@ const CreateCampaignDialog = dynamicImport(
 
 export default function CampaignsContent() {
   const { workspace, loading: workspaceLoading } = useWorkspace();
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadTemplate = async () => {
+    if (!workspace?.id) return;
+    setIsDownloading(true);
+    try {
+      await campaignService.downloadExcelTemplate(workspace.id);
+    } catch {
+      toast.error('Error al descargar la plantilla');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
   const {
     data: campaignsData = [],
     isLoading: campaignsLoading,
@@ -78,11 +95,27 @@ export default function CampaignsContent() {
           </p>
         </div>
 
-        <CreateCampaignDialog workspaceId={workspace?.id || ''} />
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDownloadTemplate}
+            disabled={isDownloading || !workspace?.id}
+            className="text-muted-foreground"
+          >
+            {isDownloading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            Descargar plantilla Excel
+          </Button>
+          <CreateCampaignDialog workspaceId={workspace?.id || ''} />
+        </div>
       </div>
 
       <div className="grid gap-6">
-        <CampaignStats />
+        <CampaignStats workspaceId={workspace?.id || ''} />
         <CampaignsList
           campaigns={campaigns}
           workspaceId={workspace?.id || ''}
