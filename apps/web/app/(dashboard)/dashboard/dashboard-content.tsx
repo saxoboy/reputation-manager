@@ -12,7 +12,10 @@ const FeedbackCharts = dynamic(
     import('../../../components/dashboard/feedback-charts').then(
       (m) => m.FeedbackCharts,
     ),
-  { ssr: false, loading: () => <div className="h-80 animate-pulse bg-muted rounded-lg" /> },
+  {
+    ssr: false,
+    loading: () => <div className="h-80 animate-pulse bg-muted rounded-lg" />,
+  },
 );
 
 export default function DashboardContent() {
