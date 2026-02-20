@@ -14,9 +14,17 @@ export interface WorkspaceUser {
   createdAt: string;
 }
 
+export interface PendingInvitation {
+  id: string;
+  email: string;
+  role: 'DOCTOR' | 'RECEPTIONIST';
+  expiresAt: string;
+  createdAt: string;
+  invitedBy: string;
+}
+
 export interface InviteUserDto {
   email: string;
-  name: string;
   role: 'DOCTOR' | 'RECEPTIONIST';
 }
 
@@ -32,6 +40,23 @@ export const userService = {
     return apiClient.post<WorkspaceUser>(
       `/workspaces/${workspaceId}/users/invite`,
       data,
+    );
+  },
+
+  async getPendingInvitations(
+    workspaceId: string,
+  ): Promise<PendingInvitation[]> {
+    return apiClient.get<PendingInvitation[]>(
+      `/workspaces/${workspaceId}/users/invitations`,
+    );
+  },
+
+  async cancelInvitation(
+    workspaceId: string,
+    invitationId: string,
+  ): Promise<void> {
+    return apiClient.delete<void>(
+      `/workspaces/${workspaceId}/users/invitations/${invitationId}`,
     );
   },
 

@@ -7,6 +7,8 @@ import {
   Body,
   Param,
   UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { WorkspaceUsersService } from './workspace-users.service';
 import { InviteUserDto, UpdateUserRoleDto } from './dto';
@@ -47,6 +49,35 @@ export class WorkspaceUsersController {
       workspaceId,
       userId,
       inviteUserDto,
+    );
+  }
+
+  /**
+   * GET /workspaces/:workspaceId/users/invitations
+   * Listar invitaciones pendientes (OWNER y DOCTOR)
+   */
+  @Get('invitations')
+  @UseGuards(RoleGuard)
+  @Roles(UserRole.OWNER, UserRole.DOCTOR)
+  async getPendingInvitations(@CurrentWorkspace('id') workspaceId: string) {
+    return this.workspaceUsersService.getPendingInvitations(workspaceId);
+  }
+
+  /**
+   * DELETE /workspaces/:workspaceId/users/invitations/:invitationId
+   * Cancelar una invitación pendiente (OWNER y DOCTOR)
+   */
+  @Delete('invitations/:invitationId')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(RoleGuard)
+  @Roles(UserRole.OWNER, UserRole.DOCTOR)
+  async cancelInvitation(
+    @CurrentWorkspace('id') workspaceId: string,
+    @Param('invitationId') invitationId: string,
+  ) {
+    return this.workspaceUsersService.cancelInvitation(
+      invitationId,
+      workspaceId,
     );
   }
 

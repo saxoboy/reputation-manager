@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -19,48 +20,60 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '../ui/sheet';
 import { Input } from '../ui/input';
 import {
   MoreHorizontal,
   Search,
   Filter,
-  MessageSquare,
   History,
   Ban,
   Download,
+  ExternalLink,
+  Trash2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Patient } from '../../services/patient.service';
+import { useDeletePatient, useOptOutPatient } from '../../hooks/use-patients';
 
 interface PatientsListProps {
   initialPatients?: Patient[];
+  workspaceId: string;
 }
 
-export function PatientsList({ initialPatients = [] }: PatientsListProps) {
+export function PatientsList({
+  initialPatients = [],
+  workspaceId,
+}: PatientsListProps) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [historyPatient, setHistoryPatient] = useState<Patient | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmOptOutId, setConfirmOptOutId] = useState<string | null>(null);
 
-  // Use local state if we want to support client-side filtering on the initial data
-  // In a real app with pagination, filtering would happen server-side/API-side
+  const deletePatient = useDeletePatient(workspaceId);
+  const optOutPatient = useOptOutPatient(workspaceId);
+
   const patients = initialPatients;
 
-  // Filter patients based on search and status
   const filteredPatients = patients.filter((patient) => {
-    // Search filter
     const matchesSearch =
       patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       patient.phone?.includes(searchTerm) ||
       patient.email?.toLowerCase().includes(searchTerm.toLowerCase());
 
     if (!matchesSearch) return false;
-
-    // Status filter logic
     if (statusFilter === 'all') return true;
-
     if (statusFilter === 'opt-out') return !!patient.optedOutAt;
 
-    // Check last message for status
     const lastMessage =
       patient.messages && patient.messages.length > 0
         ? patient.messages[patient.messages.length - 1]
@@ -78,8 +91,8 @@ export function PatientsList({ initialPatients = [] }: PatientsListProps) {
     if (statusFilter === 'responded') {
       return (
         !patient.optedOutAt &&
-        lastMessage &&
-        (lastMessage.status === 'RESPONDED' || lastMessage.rating)
+        lastMessage != null &&
+        (lastMessage.status === 'RESPONDED' || !!lastMessage.rating)
       );
     }
 
@@ -90,7 +103,6 @@ export function PatientsList({ initialPatients = [] }: PatientsListProps) {
     if (patient.optedOutAt) {
       return <Badge variant="destructive">Baja (Stop)</Badge>;
     }
-
     if (patient.dataDeletedAt) {
       return (
         <Badge variant="outline" className="text-gray-500">
@@ -98,8 +110,6 @@ export function PatientsList({ initialPatients = [] }: PatientsListProps) {
         </Badge>
       );
     }
-
-    // Check message history
     if (!patient.messages || patient.messages.length === 0) {
       return <Badge variant="outline">Sin contactos</Badge>;
     }
@@ -109,7 +119,6 @@ export function PatientsList({ initialPatients = [] }: PatientsListProps) {
     if (lastMessage.status === 'FAILED') {
       return <Badge variant="destructive">Error envío</Badge>;
     }
-
     if (lastMessage.rating) {
       if (lastMessage.rating >= 4) {
         return (
@@ -125,11 +134,9 @@ export function PatientsList({ initialPatients = [] }: PatientsListProps) {
         );
       }
     }
-
     if (lastMessage.status === 'RESPONDED') {
       return <Badge variant="secondary">Respondió</Badge>;
     }
-
     return (
       <Badge
         variant="outline"
@@ -142,11 +149,44 @@ export function PatientsList({ initialPatients = [] }: PatientsListProps) {
 
   const getLastContactDate = (patient: Patient) => {
     if (!patient.messages || patient.messages.length === 0) return 'Nunca';
-
     const lastMessage = patient.messages[patient.messages.length - 1];
     return format(new Date(lastMessage.createdAt), 'd MMM, HH:mm', {
       locale: es,
     });
+  };
+
+  const getMessageTypelabel = (type: string) => {
+    switch (type) {
+      case 'INITIAL':
+        return 'Mensaje inicial';
+      case 'FOLLOWUP_HAPPY':
+        return 'Seguimiento positivo';
+      case 'FOLLOWUP_UNHAPPY':
+        return 'Seguimiento negativo';
+      case 'REMINDER':
+        return 'Recordatorio';
+      default:
+        return type;
+    }
+  };
+
+  const getMessageStatusBadge = (status: string) => {
+    switch (status) {
+      case 'PENDING':
+        return <Badge variant="outline">Pendiente</Badge>;
+      case 'SCHEDULED':
+        return <Badge variant="secondary">Programado</Badge>;
+      case 'SENT':
+        return <Badge className="bg-blue-500">Enviado</Badge>;
+      case 'DELIVERED':
+        return <Badge className="bg-green-500">Entregado</Badge>;
+      case 'FAILED':
+        return <Badge variant="destructive">Error</Badge>;
+      case 'REPLIED':
+        return <Badge className="bg-purple-500">Respondido</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
   };
 
   return (
@@ -198,7 +238,7 @@ export function PatientsList({ initialPatients = [] }: PatientsListProps) {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" title="Exportar CSV" disabled>
             <Download className="h-4 w-4" />
           </Button>
         </div>
@@ -262,28 +302,99 @@ export function PatientsList({ initialPatients = [] }: PatientsListProps) {
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menú</span>
-                            <MoreHorizontal className="h-4 w-4" />
+                      {confirmDeleteId === patient.id ? (
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            disabled={deletePatient.isPending}
+                            onClick={() =>
+                              deletePatient.mutate(patient.id, {
+                                onSuccess: () => setConfirmDeleteId(null),
+                              })
+                            }
+                          >
+                            Confirmar
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                          <DropdownMenuItem>
-                            <History className="mr-2 h-4 w-4" /> Ver historial
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <MessageSquare className="mr-2 h-4 w-4" /> Enviar
-                            mensaje
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600 focus:text-red-600">
-                            <Ban className="mr-2 h-4 w-4" /> Dar de baja
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => setConfirmDeleteId(null)}
+                          >
+                            Cancelar
+                          </Button>
+                        </div>
+                      ) : confirmOptOutId === patient.id ? (
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            disabled={optOutPatient.isPending}
+                            onClick={() =>
+                              optOutPatient.mutate(patient.id, {
+                                onSuccess: () => setConfirmOptOutId(null),
+                              })
+                            }
+                          >
+                            Confirmar baja
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => setConfirmOptOutId(null)}
+                          >
+                            Cancelar
+                          </Button>
+                        </div>
+                      ) : (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Abrir menú</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                            <DropdownMenuItem
+                              onClick={() => setHistoryPatient(patient)}
+                            >
+                              <History className="mr-2 h-4 w-4" /> Ver historial
+                            </DropdownMenuItem>
+                            {patient.campaignId && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  router.push(
+                                    `/dashboard/campaigns/${patient.campaignId}`,
+                                  )
+                                }
+                              >
+                                <ExternalLink className="mr-2 h-4 w-4" /> Ir a
+                                campaña
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            {!patient.optedOutAt && (
+                              <DropdownMenuItem
+                                className="text-orange-600 focus:text-orange-600"
+                                onClick={() => setConfirmOptOutId(patient.id)}
+                              >
+                                <Ban className="mr-2 h-4 w-4" /> Dar de baja
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem
+                              className="text-red-600 focus:text-red-600"
+                              onClick={() => setConfirmDeleteId(patient.id)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
@@ -296,6 +407,57 @@ export function PatientsList({ initialPatients = [] }: PatientsListProps) {
       <div className="text-xs text-gray-500 text-center py-2">
         Mostrando {filteredPatients.length} de {patients.length} pacientes
       </div>
+
+      {/* Historial de mensajes */}
+      <Sheet
+        open={!!historyPatient}
+        onOpenChange={(open) => !open && setHistoryPatient(null)}
+      >
+        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{historyPatient?.name}</SheetTitle>
+            <SheetDescription>
+              {historyPatient?.phone}
+              {historyPatient?.email ? ` · ${historyPatient.email}` : ''}
+              {historyPatient?.campaign
+                ? ` · Campaña: ${historyPatient.campaign.name}`
+                : ''}
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="mt-6 space-y-3">
+            {!historyPatient?.messages ||
+            historyPatient.messages.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Este paciente no tiene mensajes registrados.
+              </p>
+            ) : (
+              historyPatient.messages.map((msg) => (
+                <div key={msg.id} className="rounded-lg border p-3 space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-medium">
+                      {getMessageTypelabel(msg.type)}
+                    </span>
+                    {getMessageStatusBadge(msg.status)}
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <span>
+                      {format(new Date(msg.createdAt), 'd MMM yyyy, HH:mm', {
+                        locale: es,
+                      })}
+                    </span>
+                    {msg.rating && (
+                      <span className="font-medium text-foreground">
+                        Rating: {msg.rating}★
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

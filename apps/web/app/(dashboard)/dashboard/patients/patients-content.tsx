@@ -80,7 +80,10 @@ export default function PatientsContent() {
           <CardTitle>Listado de Pacientes</CardTitle>
         </CardHeader>
         <CardContent>
-          <PatientsList initialPatients={patients || []} />
+          <PatientsList
+            initialPatients={patients || []}
+            workspaceId={workspaceId}
+          />
         </CardContent>
       </Card>
     </div>

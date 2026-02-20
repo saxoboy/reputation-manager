@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { signUp, signIn } from '../../lib/auth-client';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -18,6 +18,9 @@ import {
 
 export function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,7 +32,6 @@ export function RegisterForm() {
     e.preventDefault();
     setError('');
 
-    // Validaciones
     if (password !== confirmPassword) {
       setError('Las contraseñas no coinciden');
       return;
@@ -55,8 +57,7 @@ export function RegisterForm() {
         return;
       }
 
-      // Redirigir al dashboard
-      router.push('/dashboard');
+      router.push(redirectTo ? decodeURIComponent(redirectTo) : '/dashboard');
     } catch (err) {
       console.error('Register error:', err);
       setError('Error al conectar con el servidor');
@@ -71,7 +72,7 @@ export function RegisterForm() {
     try {
       await signIn.social({
         provider: 'google',
-        callbackURL: '/dashboard',
+        callbackURL: redirectTo ? decodeURIComponent(redirectTo) : '/dashboard',
       });
     } catch (err) {
       console.error('Google sign up error:', err);
@@ -79,6 +80,8 @@ export function RegisterForm() {
       setLoading(false);
     }
   };
+
+  const loginHref = redirectTo ? `/login?redirect=${redirectTo}` : '/login';
 
   return (
     <Card className="w-full max-w-md">
@@ -191,7 +194,7 @@ export function RegisterForm() {
 
           <p className="text-sm text-muted-foreground text-center">
             ¿Ya tienes cuenta?{' '}
-            <a href="/login" className="text-primary hover:underline">
+            <a href={loginHref} className="text-primary hover:underline">
               Inicia sesión
             </a>
           </p>

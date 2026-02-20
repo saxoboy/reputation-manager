@@ -35,8 +35,8 @@ export class PatientsController {
   ) {
     return this.patientsService.findAll(workspaceId, {
       campaignId,
-      hasConsent: hasConsent === 'true',
-      optedOut: optedOut === 'true',
+      hasConsent: hasConsent !== undefined ? hasConsent === 'true' : undefined,
+      optedOut: optedOut !== undefined ? optedOut === 'true' : undefined,
     });
   }
 

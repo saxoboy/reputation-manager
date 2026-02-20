@@ -122,7 +122,7 @@ export default function UsersContent() {
         onRoleChange={handleRoleChange}
       />
 
-      <PendingInvitations />
+      <PendingInvitations workspaceId={workspace?.id || ''} />
 
       <InviteUserDialog
         open={inviteDialogOpen}

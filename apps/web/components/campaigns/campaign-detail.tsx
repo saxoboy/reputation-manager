@@ -68,6 +68,7 @@ import { es } from 'date-fns/locale';
 import { CsvUploadDialog } from './csv-upload-dialog';
 import { ExcelUploadDialog } from './excel-upload-dialog';
 import { AddPatientDialog } from './add-patient-dialog';
+import { CampaignSettingsDialog } from './campaign-settings-dialog';
 import { MessageStatus, MessageType } from '../../types/mock-types';
 
 interface CampaignDetailProps {
@@ -112,6 +113,7 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [excelUploadOpen, setExcelUploadOpen] = useState(false);
   const [addPatientOpen, setAddPatientOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | undefined>(
     undefined,
   );
@@ -121,7 +123,7 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
   if (isCampaignLoading) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
       </div>
     );
   }
@@ -257,7 +259,9 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
             <Upload className="mr-2 h-4 w-4" />
             Importar Excel
           </Button>
-          <Button>Configuración</Button>
+          <Button onClick={() => setSettingsOpen(true)}>
+            Configuración de Campaña
+          </Button>
         </div>
       </div>
 
@@ -265,12 +269,12 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Resumen</TabsTrigger>
-          <TabsTrigger value="patients">Pacientes</TabsTrigger>
           <TabsTrigger value="messages">Mensajes</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {/* Stat cards */}
+          <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
@@ -292,9 +296,7 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
                 <MessageSquare className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {/* TODO: Add stats endpoint */}0
-                </div>
+                <div className="text-2xl font-bold">0</div>
                 <p className="text-xs text-muted-foreground">
                   0% tasa de respuesta
                 </p>
@@ -310,9 +312,8 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
 
-        <TabsContent value="patients">
+          {/* Patient list */}
           <Card>
             <CardHeader className="flex flex-row items-start justify-between">
               <div>
@@ -462,8 +463,10 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
             <CardHeader>
               <CardTitle>Mensajes</CardTitle>
               <CardDescription>
-                Historial de mensajes enviados y respuestas. Use "Simular" para
-                probar el flujo.
+                Historial de mensajes enviados a los pacientes. Cuando haya
+                mensajes iniciales pendientes de respuesta, aparecerá el botón
+                "Simular Respuesta" para probar el flujo sin necesitar un
+                teléfono real.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -471,7 +474,8 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
                 <div className="flex justify-center p-4">Cargando...</div>
               ) : messages?.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">
-                  No hay mensajes generados aún.
+                  No hay mensajes aún. Los mensajes se generan cuando el Worker
+                  procesa los pacientes de la campaña activa.
                 </div>
               ) : (
                 <Table>
@@ -539,6 +543,15 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {campaign && (
+        <CampaignSettingsDialog
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          workspaceId={workspaceId}
+          campaign={campaign}
+        />
+      )}
 
       <CsvUploadDialog
         open={uploadDialogOpen}
