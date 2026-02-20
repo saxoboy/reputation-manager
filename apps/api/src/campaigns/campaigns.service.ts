@@ -14,6 +14,7 @@ import {
   ParsedPatient,
   CsvValidationError,
 } from '@reputation-manager/shared-utils';
+import { PaginatedResponse } from '@reputation-manager/shared-types';
 import { BillingService } from '../billing/billing.service';
 import * as ExcelJS from 'exceljs';
 import Anthropic from '@anthropic-ai/sdk';
@@ -26,27 +27,87 @@ export class CampaignsService {
   ) {}
 
   /**
-   * Obtener todas las campañas de un workspace
+   * Obtener todas las campañas de un workspace (paginado)
    */
-  async findAll(workspaceId: string) {
-    return this.prisma.campaign.findMany({
-      where: { workspaceId },
-      include: {
-        practice: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        _count: {
-          select: {
-            patients: { where: { dataDeletedAt: null } },
-            messages: true,
-          },
+  async findAll(
+    workspaceId: string,
+    page = 1,
+    limit = 20,
+  ): Promise<PaginatedResponse<unknown>> {
+    const skip = (page - 1) * limit;
+    const where = { workspaceId };
+    const include = {
+      practice: {
+        select: {
+          id: true,
+          name: true,
         },
       },
-      orderBy: { createdAt: 'desc' },
+      _count: {
+        select: {
+          patients: { where: { dataDeletedAt: null } },
+          messages: true,
+        },
+      },
+    };
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.campaign.findMany({
+        where,
+        include,
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip,
+      }),
+      this.prisma.campaign.count({ where }),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  /**
+   * Verificación ligera de permisos (sin cargar pacientes ni mensajes)
+   */
+  private async verifyOwnership(
+    campaignId: string,
+    workspaceId: string,
+  ): Promise<void> {
+    const campaign = await this.prisma.campaign.findUnique({
+      where: { id: campaignId },
+      select: { workspaceId: true },
     });
+    if (!campaign) {
+      throw new NotFoundException('Campaña no encontrada');
+    }
+    if (campaign.workspaceId !== workspaceId) {
+      throw new ForbiddenException('No tienes acceso a esta campaña');
+    }
+  }
+
+  /**
+   * Obtener solo el nombre de una campaña (para el export filename)
+   */
+  async findNameOnly(
+    campaignId: string,
+    workspaceId: string,
+  ): Promise<{ name: string }> {
+    const campaign = await this.prisma.campaign.findUnique({
+      where: { id: campaignId },
+      select: { name: true, workspaceId: true },
+    });
+    if (!campaign) {
+      throw new NotFoundException('Campaña no encontrada');
+    }
+    if (campaign.workspaceId !== workspaceId) {
+      throw new ForbiddenException('No tienes acceso a esta campaña');
+    }
+    return { name: campaign.name };
   }
 
   /**
@@ -154,8 +215,8 @@ export class CampaignsService {
     workspaceId: string,
     dto: UpdateCampaignDto,
   ) {
-    // Primero verificar que exista y pertenezca al workspace
-    await this.findOne(campaignId, workspaceId);
+    // Verificar que exista y pertenezca al workspace (sin cargar pacientes)
+    await this.verifyOwnership(campaignId, workspaceId);
 
     return this.prisma.campaign.update({
       where: { id: campaignId },
@@ -181,8 +242,8 @@ export class CampaignsService {
    * Eliminar una campaña
    */
   async remove(campaignId: string, workspaceId: string) {
-    // Primero verificar que exista y pertenezca al workspace
-    await this.findOne(campaignId, workspaceId);
+    // Verificar que exista y pertenezca al workspace (sin cargar pacientes)
+    await this.verifyOwnership(campaignId, workspaceId);
 
     await this.prisma.campaign.delete({
       where: { id: campaignId },
@@ -201,8 +262,8 @@ export class CampaignsService {
     workspaceId: string,
     uploadDto: UploadCsvDto,
   ) {
-    // Verificar que la campaña existe y pertenece al workspace
-    await this.findOne(campaignId, workspaceId);
+    // Verificar que la campaña existe y pertenece al workspace (sin cargar pacientes)
+    await this.verifyOwnership(campaignId, workspaceId);
 
     // Parsear CSV
     const parseResult = parsePatientsCSV(uploadDto.csvContent, {
@@ -309,8 +370,8 @@ export class CampaignsService {
     campaignId: string,
     workspaceId: string,
   ): Promise<string> {
-    // Verificar que la campaña existe y pertenece al workspace
-    await this.findOne(campaignId, workspaceId);
+    // Verificar que la campaña existe y pertenece al workspace (sin cargar pacientes)
+    await this.verifyOwnership(campaignId, workspaceId);
 
     // Obtener pacientes con sus mensajes
     const patients = await this.prisma.patient.findMany({
@@ -456,8 +517,8 @@ export class CampaignsService {
     workspaceId: string,
     base64Content: string,
   ): Promise<{ patients: ParsedPatient[]; errors: CsvValidationError[] }> {
-    // Verificar que la campaña existe y pertenece al workspace
-    await this.findOne(campaignId, workspaceId);
+    // Verificar que la campaña existe y pertenece al workspace (sin cargar pacientes)
+    await this.verifyOwnership(campaignId, workspaceId);
 
     if (!process.env.ANTHROPIC_API_KEY) {
       throw new InternalServerErrorException(

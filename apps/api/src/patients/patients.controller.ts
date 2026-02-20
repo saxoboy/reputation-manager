@@ -7,6 +7,8 @@ import {
   Body,
   Param,
   Query,
+  DefaultValuePipe,
+  ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
 import { PatientsService } from './patients.service';
@@ -23,8 +25,8 @@ export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
 
   /**
-   * GET /workspaces/:workspaceId/patients
-   * Listar todos los pacientes del workspace con filtros opcionales
+   * GET /workspaces/:workspaceId/patients?page=1&limit=20
+   * Listar todos los pacientes del workspace con filtros opcionales (paginado)
    */
   @Get()
   async findAll(
@@ -32,12 +34,20 @@ export class PatientsController {
     @Query('campaignId') campaignId?: string,
     @Query('hasConsent') hasConsent?: string,
     @Query('optedOut') optedOut?: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit = 20,
   ) {
-    return this.patientsService.findAll(workspaceId, {
-      campaignId,
-      hasConsent: hasConsent !== undefined ? hasConsent === 'true' : undefined,
-      optedOut: optedOut !== undefined ? optedOut === 'true' : undefined,
-    });
+    return this.patientsService.findAll(
+      workspaceId,
+      {
+        campaignId,
+        hasConsent:
+          hasConsent !== undefined ? hasConsent === 'true' : undefined,
+        optedOut: optedOut !== undefined ? optedOut === 'true' : undefined,
+      },
+      page,
+      Math.min(limit, 100),
+    );
   }
 
   /**

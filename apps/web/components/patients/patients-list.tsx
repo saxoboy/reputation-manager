@@ -42,15 +42,23 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Patient } from '../../services/patient.service';
 import { useDeletePatient, useOptOutPatient } from '../../hooks/use-patients';
+import { PaginationControls } from '../ui/pagination-controls';
 
 interface PatientsListProps {
   initialPatients?: Patient[];
   workspaceId: string;
+  pagination?: {
+    page: number;
+    totalPages: number;
+    total: number;
+    onPageChange: (page: number) => void;
+  };
 }
 
 export function PatientsList({
   initialPatients = [],
   workspaceId,
+  pagination,
 }: PatientsListProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
@@ -252,8 +260,12 @@ export function PatientsList({
               <TableRow>
                 <TableHead>Paciente</TableHead>
                 <TableHead>Estado</TableHead>
-                <TableHead>Última Campaña</TableHead>
-                <TableHead>Último Contacto</TableHead>
+                <TableHead className="hidden md:table-cell">
+                  Última Campaña
+                </TableHead>
+                <TableHead className="hidden md:table-cell">
+                  Último Contacto
+                </TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -282,7 +294,7 @@ export function PatientsList({
                       </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(patient)}</TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       <div className="flex flex-col">
                         <span className="text-sm font-medium">
                           {patient.campaign ? patient.campaign.name : 'N/A'}
@@ -296,7 +308,7 @@ export function PatientsList({
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       <span className="text-sm text-gray-500">
                         {getLastContactDate(patient)}
                       </span>
@@ -404,9 +416,18 @@ export function PatientsList({
         </div>
       </div>
 
-      <div className="text-xs text-gray-500 text-center py-2">
-        Mostrando {filteredPatients.length} de {patients.length} pacientes
-      </div>
+      {pagination ? (
+        <PaginationControls
+          page={pagination.page}
+          totalPages={pagination.totalPages}
+          total={pagination.total}
+          onPageChange={pagination.onPageChange}
+        />
+      ) : (
+        <div className="text-xs text-gray-500 text-center py-2">
+          Mostrando {filteredPatients.length} de {patients.length} pacientes
+        </div>
+      )}
 
       {/* Historial de mensajes */}
       <Sheet

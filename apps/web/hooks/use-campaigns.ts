@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
   campaignService,
@@ -7,11 +12,12 @@ import {
   type ParseExcelResult,
 } from '../services/campaign.service';
 
-export function useCampaigns(workspaceId: string) {
+export function useCampaigns(workspaceId: string, page = 1, limit = 20) {
   return useQuery({
-    queryKey: ['campaigns', workspaceId],
-    queryFn: () => campaignService.getAll(workspaceId),
+    queryKey: ['campaigns', workspaceId, page, limit],
+    queryFn: () => campaignService.getAll(workspaceId, page, limit),
     enabled: !!workspaceId,
+    placeholderData: keepPreviousData,
   });
 }
 

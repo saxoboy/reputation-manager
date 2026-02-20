@@ -23,13 +23,24 @@ import { Badge } from '../ui/badge';
 import { Building2, MessageSquare, Upload } from 'lucide-react';
 import { Campaign, CampaignStatus } from '../../types/mock-types';
 import { CsvUploadDialog } from './csv-upload-dialog';
+import { PaginationControls } from '../ui/pagination-controls';
 
 interface CampaignsListProps {
   campaigns: Campaign[];
   workspaceId: string;
+  pagination?: {
+    page: number;
+    totalPages: number;
+    total: number;
+    onPageChange: (page: number) => void;
+  };
 }
 
-export function CampaignsList({ campaigns, workspaceId }: CampaignsListProps) {
+export function CampaignsList({
+  campaigns,
+  workspaceId,
+  pagination,
+}: CampaignsListProps) {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
     null,
@@ -87,10 +98,16 @@ export function CampaignsList({ campaigns, workspaceId }: CampaignsListProps) {
                 <TableRow>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead>Pacientes</TableHead>
-                  <TableHead>Respuestas</TableHead>
-                  <TableHead>NPS</TableHead>
-                  <TableHead>Fecha Creación</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    Pacientes
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    Respuestas
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">NPS</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    Fecha Creación
+                  </TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -105,8 +122,10 @@ export function CampaignsList({ campaigns, workspaceId }: CampaignsListProps) {
                       </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(campaign.status)}</TableCell>
-                    <TableCell>{campaign.patientsCount}</TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {campaign.patientsCount}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
                       {campaign.respondedCount}
                       <span className="text-xs text-muted-foreground ml-1">
                         (
@@ -120,7 +139,7 @@ export function CampaignsList({ campaigns, workspaceId }: CampaignsListProps) {
                         %)
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       {campaign.nps > 0 ? (
                         <span
                           className={
@@ -135,7 +154,7 @@ export function CampaignsList({ campaigns, workspaceId }: CampaignsListProps) {
                         '-'
                       )}
                     </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
+                    <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
                       {formatDateTime(campaign.createdAt)}
                     </TableCell>
                     <TableCell className="text-right flex items-center justify-end gap-2">
@@ -144,12 +163,15 @@ export function CampaignsList({ campaigns, workspaceId }: CampaignsListProps) {
                         size="sm"
                         onClick={() => handleOpenUpload(campaign)}
                       >
-                        <Upload className="h-4 w-4 mr-1" />
-                        Importar CSV
+                        <Upload className="h-4 w-4" />
+                        <span className="hidden sm:inline ml-1">
+                          Importar CSV
+                        </span>
                       </Button>
                       <Button variant="secondary" size="sm" asChild>
                         <Link href={`/dashboard/campaigns/${campaign.id}`}>
-                          Ver Detalles
+                          <span className="hidden sm:inline">Ver Detalles</span>
+                          <span className="sm:hidden">Ver</span>
                         </Link>
                       </Button>
                     </TableCell>
@@ -158,6 +180,14 @@ export function CampaignsList({ campaigns, workspaceId }: CampaignsListProps) {
               </TableBody>
             </Table>
           </div>
+        )}
+        {pagination && (
+          <PaginationControls
+            page={pagination.page}
+            totalPages={pagination.totalPages}
+            total={pagination.total}
+            onPageChange={pagination.onPageChange}
+          />
         )}
         {selectedCampaign && (
           <CsvUploadDialog

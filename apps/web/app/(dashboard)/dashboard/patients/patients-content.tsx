@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -18,12 +19,14 @@ import { Alert, AlertDescription } from '../../../../components/ui/alert';
 export default function PatientsContent() {
   const { workspace, loading: workspaceLoading } = useWorkspace();
   const workspaceId = workspace?.id || '';
+  const [page, setPage] = useState(1);
+  const LIMIT = 20;
 
   const {
-    data: patients,
+    data: patientsResponse,
     isLoading: patientsLoading,
     error,
-  } = usePatients(workspaceId);
+  } = usePatients(workspaceId, undefined, page, LIMIT);
   const createPatientMutation = useCreatePatient(workspaceId);
 
   const isLoading = workspaceLoading || patientsLoading;
@@ -81,8 +84,18 @@ export default function PatientsContent() {
         </CardHeader>
         <CardContent>
           <PatientsList
-            initialPatients={patients || []}
+            initialPatients={patientsResponse?.data ?? []}
             workspaceId={workspaceId}
+            pagination={
+              patientsResponse
+                ? {
+                    page: patientsResponse.page,
+                    totalPages: patientsResponse.totalPages,
+                    total: patientsResponse.total,
+                    onPageChange: setPage,
+                  }
+                : undefined
+            }
           />
         </CardContent>
       </Card>

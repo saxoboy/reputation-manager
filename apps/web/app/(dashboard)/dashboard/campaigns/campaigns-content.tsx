@@ -24,6 +24,8 @@ const CreateCampaignDialog = dynamicImport(
 export default function CampaignsContent() {
   const { workspace, loading: workspaceLoading } = useWorkspace();
   const [isDownloading, setIsDownloading] = useState(false);
+  const [page, setPage] = useState(1);
+  const LIMIT = 20;
 
   const handleDownloadTemplate = async () => {
     if (!workspace?.id) return;
@@ -37,15 +39,15 @@ export default function CampaignsContent() {
     }
   };
   const {
-    data: campaignsData = [],
+    data: campaignsResponse,
     isLoading: campaignsLoading,
     error,
-  } = useCampaigns(workspace?.id || '');
+  } = useCampaigns(workspace?.id || '', page, LIMIT);
 
   const isLoading = workspaceLoading || campaignsLoading;
 
   // Transform backend data to match component expectations
-  const campaigns = campaignsData.map((campaign) => ({
+  const campaigns = (campaignsResponse?.data ?? []).map((campaign) => ({
     ...campaign,
     practiceName: campaign.practice?.name || 'Sin consultorio',
     patientsCount: campaign._count?.patients || 0,
@@ -119,6 +121,16 @@ export default function CampaignsContent() {
         <CampaignsList
           campaigns={campaigns}
           workspaceId={workspace?.id || ''}
+          pagination={
+            campaignsResponse
+              ? {
+                  page: campaignsResponse.page,
+                  totalPages: campaignsResponse.totalPages,
+                  total: campaignsResponse.total,
+                  onPageChange: setPage,
+                }
+              : undefined
+          }
         />
       </div>
     </div>

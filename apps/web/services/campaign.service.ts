@@ -61,9 +61,23 @@ export interface UpdateCampaignDto {
   status?: 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'ARCHIVED';
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export const campaignService = {
-  async getAll(workspaceId: string): Promise<Campaign[]> {
-    return apiClient.get<Campaign[]>(`/workspaces/${workspaceId}/campaigns`);
+  async getAll(
+    workspaceId: string,
+    page = 1,
+    limit = 20,
+  ): Promise<PaginatedResponse<Campaign>> {
+    return apiClient.get<PaginatedResponse<Campaign>>(
+      `/workspaces/${workspaceId}/campaigns?page=${page}&limit=${limit}`,
+    );
   },
 
   async getById(workspaceId: string, id: string): Promise<Campaign> {

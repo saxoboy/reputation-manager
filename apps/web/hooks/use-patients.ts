@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
   patientService,
@@ -13,11 +18,14 @@ export function usePatients(
     hasConsent?: boolean;
     optedOut?: boolean;
   },
+  page = 1,
+  limit = 20,
 ) {
   return useQuery({
-    queryKey: ['patients', workspaceId, filters],
-    queryFn: () => patientService.getAll(workspaceId, filters),
+    queryKey: ['patients', workspaceId, filters, page, limit],
+    queryFn: () => patientService.getAll(workspaceId, filters, page, limit),
     enabled: !!workspaceId,
+    placeholderData: keepPreviousData,
   });
 }
 

@@ -6,6 +6,9 @@ import {
   Delete,
   Body,
   Param,
+  Query,
+  DefaultValuePipe,
+  ParseIntPipe,
   UseGuards,
   Res,
 } from '@nestjs/common';
@@ -30,12 +33,20 @@ export class CampaignsController {
   constructor(private readonly campaignsService: CampaignsService) {}
 
   /**
-   * GET /workspaces/:workspaceId/campaigns
-   * Listar todas las campañas del workspace
+   * GET /workspaces/:workspaceId/campaigns?page=1&limit=20
+   * Listar todas las campañas del workspace (paginado)
    */
   @Get()
-  async findAll(@CurrentWorkspace('id') workspaceId: string) {
-    return this.campaignsService.findAll(workspaceId);
+  async findAll(
+    @CurrentWorkspace('id') workspaceId: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    return this.campaignsService.findAll(
+      workspaceId,
+      page,
+      Math.min(limit, 100),
+    );
   }
 
   /**
@@ -157,15 +168,11 @@ export class CampaignsController {
     @Param('id') campaignId: string,
     @Res() res: Response,
   ) {
-    const csvContent = await this.campaignsService.exportCampaignCsv(
-      campaignId,
-      workspaceId,
-    );
+    const [csvContent, campaign] = await Promise.all([
+      this.campaignsService.exportCampaignCsv(campaignId, workspaceId),
+      this.campaignsService.findNameOnly(campaignId, workspaceId),
+    ]);
 
-    const campaign = await this.campaignsService.findOne(
-      campaignId,
-      workspaceId,
-    );
     const timestamp = new Date().toISOString().split('T')[0];
     const filename = `campaign-${campaign.name.replace(/\s+/g, '-')}-${timestamp}.csv`;
 

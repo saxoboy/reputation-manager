@@ -11,6 +11,9 @@ const nextConfig = {
   nx: {},
   // Use standalone output only for Docker builds (not Vercel)
   ...(process.env.STANDALONE === 'true' ? { output: 'standalone' } : {}),
+  experimental: {
+    optimizePackageImports: ['recharts', 'lucide-react'],
+  },
 };
 
 const plugins = [

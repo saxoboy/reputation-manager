@@ -42,8 +42,12 @@ export function CreatePatientDialog({
     campaignId: '',
   });
 
-  const { data: campaigns, isLoading: loadingCampaigns } =
-    useCampaigns(workspaceId);
+  const { data: campaignsResponse, isLoading: loadingCampaigns } = useCampaigns(
+    workspaceId,
+    1,
+    100,
+  );
+  const campaigns = campaignsResponse?.data ?? [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
