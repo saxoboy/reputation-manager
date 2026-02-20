@@ -1,11 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WorkspaceUsersService } from './workspace-users.service';
 import { PrismaService } from '@reputation-manager/database';
-import {
-  ConflictException,
-  ForbiddenException,
-  NotFoundException,
-} from '@nestjs/common';
+import { EmailService } from '@reputation-manager/integrations';
+import { ConfigService } from '@nestjs/config';
+import { ConflictException, ForbiddenException } from '@nestjs/common';
 
 describe('WorkspaceUsersService', () => {
   let service: WorkspaceUsersService;
@@ -13,6 +11,9 @@ describe('WorkspaceUsersService', () => {
 
   const mockPrisma = {
     user: {
+      findUnique: jest.fn(),
+    },
+    workspace: {
       findUnique: jest.fn(),
     },
     workspaceUser: {
@@ -24,16 +25,32 @@ describe('WorkspaceUsersService', () => {
       delete: jest.fn(),
       count: jest.fn(),
     },
+    invitation: {
+      findFirst: jest.fn(),
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      delete: jest.fn(),
+      update: jest.fn(),
+    },
+    $transaction: jest.fn(),
+  };
+
+  const mockEmailService = {
+    sendInvitationEmail: jest.fn().mockResolvedValue(undefined),
+  };
+
+  const mockConfigService = {
+    get: jest.fn().mockReturnValue('http://localhost:4000'),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WorkspaceUsersService,
-        {
-          provide: PrismaService,
-          useValue: mockPrisma,
-        },
+        { provide: PrismaService, useValue: mockPrisma },
+        { provide: EmailService, useValue: mockEmailService },
+        { provide: ConfigService, useValue: mockConfigService },
       ],
     }).compile();
 
@@ -81,7 +98,6 @@ describe('WorkspaceUsersService', () => {
 
       const result = await service.findAll(workspaceId);
 
-      // El servicio no retorna userId ni joinedAt, solo filtramos esos campos
       expect(result).toHaveLength(2);
       expect(result[0]).toMatchObject({
         id: 'wu-1',
@@ -112,29 +128,69 @@ describe('WorkspaceUsersService', () => {
   });
 
   describe('invite', () => {
-    it('should allow OWNER to invite any role', async () => {
+    it('should add user directly when they already have an account', async () => {
       const workspaceId = 'ws-1';
       const requesterId = 'user-owner';
       const dto = { email: 'newdoc@example.com', role: 'DOCTOR' as const };
 
       mockPrisma.workspaceUser.findUnique.mockResolvedValueOnce({
         role: 'OWNER',
+        user: { name: 'Owner', email: 'owner@example.com' },
+      });
+      mockPrisma.workspace.findUnique.mockResolvedValue({
+        name: 'Test Workspace',
       });
       mockPrisma.user.findUnique.mockResolvedValue({
         id: 'user-new',
         email: dto.email,
       });
-      mockPrisma.workspaceUser.findFirst.mockResolvedValueOnce(null); // No existe
+      mockPrisma.workspaceUser.findUnique.mockResolvedValueOnce(null); // no es miembro
       mockPrisma.workspaceUser.create.mockResolvedValue({
-        userId: 'user-new',
-        workspaceId,
+        id: 'wu-new',
         role: 'DOCTOR',
+        createdAt: new Date(),
+        user: {
+          id: 'user-new',
+          email: dto.email,
+          name: 'New Doc',
+          image: null,
+        },
       });
 
       const result = await service.invite(workspaceId, requesterId, dto);
 
       expect(result).toBeDefined();
+      expect(result.invited).toBe(false);
       expect(prisma.workspaceUser.create).toHaveBeenCalled();
+    });
+
+    it('should send invitation email when user does not have an account', async () => {
+      const workspaceId = 'ws-1';
+      const requesterId = 'user-owner';
+      const dto = { email: 'nuevo@example.com', role: 'RECEPTIONIST' as const };
+
+      mockPrisma.workspaceUser.findUnique.mockResolvedValueOnce({
+        role: 'OWNER',
+        user: { name: 'Owner', email: 'owner@example.com' },
+      });
+      mockPrisma.workspace.findUnique.mockResolvedValue({
+        name: 'Test Workspace',
+      });
+      mockPrisma.user.findUnique.mockResolvedValue(null); // no tiene cuenta
+      mockPrisma.invitation.findFirst.mockResolvedValue(null);
+      mockPrisma.invitation.create.mockResolvedValue({
+        id: 'inv-1',
+        token: 'abc123',
+        email: dto.email,
+        role: dto.role,
+      });
+
+      const result = await service.invite(workspaceId, requesterId, dto);
+
+      expect(result.invited).toBe(true);
+      expect(mockEmailService.sendInvitationEmail).toHaveBeenCalledWith(
+        expect.objectContaining({ email: dto.email }),
+      );
     });
 
     it('should allow DOCTOR to invite DOCTOR or RECEPTIONIST', async () => {
@@ -147,26 +203,22 @@ describe('WorkspaceUsersService', () => {
 
       mockPrisma.workspaceUser.findUnique.mockResolvedValueOnce({
         role: 'DOCTOR',
+        user: { name: 'Doctor', email: 'doctor@example.com' },
       });
-      mockPrisma.user.findUnique.mockResolvedValue({
-        id: 'user-new',
-        email: dto.email,
-      });
-      mockPrisma.workspaceUser.findFirst.mockResolvedValueOnce(null);
-      mockPrisma.workspaceUser.create.mockResolvedValue({
-        userId: 'user-new',
-        workspaceId,
-        role: 'RECEPTIONIST',
-      });
+      mockPrisma.workspace.findUnique.mockResolvedValue({ name: 'Clínica' });
+      mockPrisma.user.findUnique.mockResolvedValue(null);
+      mockPrisma.invitation.findFirst.mockResolvedValue(null);
+      mockPrisma.invitation.create.mockResolvedValue({ id: 'inv-2' });
 
       const result = await service.invite(workspaceId, requesterId, dto);
 
-      expect(result).toBeDefined();
+      expect(result.invited).toBe(true);
     });
 
     it('should prevent DOCTOR from inviting OWNER', async () => {
       mockPrisma.workspaceUser.findUnique.mockResolvedValue({
         role: 'DOCTOR',
+        user: { name: 'Doctor', email: 'doctor@example.com' },
       });
 
       await expect(
@@ -177,31 +229,19 @@ describe('WorkspaceUsersService', () => {
       ).rejects.toThrow(ForbiddenException);
     });
 
-    it('should prevent inviting user that does not exist', async () => {
-      mockPrisma.workspaceUser.findUnique.mockResolvedValue({
-        role: 'OWNER',
-      });
-      mockPrisma.user.findUnique.mockResolvedValue(null);
-
-      await expect(
-        service.invite('ws-1', 'user-owner', {
-          email: 'notfound@example.com',
-          role: 'DOCTOR',
-        }),
-      ).rejects.toThrow(NotFoundException);
-    });
-
     it('should prevent inviting user already in workspace', async () => {
       mockPrisma.workspaceUser.findUnique.mockResolvedValueOnce({
         role: 'OWNER',
+        user: { name: 'Owner', email: 'owner@example.com' },
       });
+      mockPrisma.workspace.findUnique.mockResolvedValue({ name: 'Clínica' });
       mockPrisma.user.findUnique.mockResolvedValue({
         id: 'user-exists',
         email: 'exists@example.com',
       });
-      mockPrisma.workspaceUser.findFirst.mockResolvedValueOnce({
+      mockPrisma.workspaceUser.findUnique.mockResolvedValueOnce({
         userId: 'user-exists',
-      }); // Ya existe
+      }); // ya es miembro
 
       await expect(
         service.invite('ws-1', 'user-owner', {
@@ -224,12 +264,13 @@ describe('WorkspaceUsersService', () => {
       });
       mockPrisma.workspaceUser.findUnique.mockResolvedValueOnce({
         role: 'RECEPTIONIST',
+        user: { id: targetUserId, email: 'target@example.com', name: 'Target' },
       });
-      mockPrisma.workspaceUser.count.mockResolvedValue(2); // 2 OWNERs
+      mockPrisma.workspaceUser.count.mockResolvedValue(2);
       mockPrisma.workspaceUser.update.mockResolvedValue({
-        userId: targetUserId,
-        workspaceId,
+        id: 'wu-target',
         role: 'DOCTOR',
+        user: { id: targetUserId, email: 'target@example.com', name: 'Target' },
       });
 
       const result = await service.updateRole(
@@ -257,15 +298,16 @@ describe('WorkspaceUsersService', () => {
     it('should prevent changing last OWNER role', async () => {
       const workspaceId = 'ws-1';
       const requesterId = 'user-owner';
-      const targetUserId = 'user-owner'; // Mismo usuario
+      const targetUserId = 'user-owner';
 
       mockPrisma.workspaceUser.findUnique.mockResolvedValueOnce({
         role: 'OWNER',
       });
       mockPrisma.workspaceUser.findUnique.mockResolvedValueOnce({
         role: 'OWNER',
+        user: { id: targetUserId, email: 'owner@example.com', name: 'Owner' },
       });
-      mockPrisma.workspaceUser.count.mockResolvedValue(1); // Solo 1 OWNER
+      mockPrisma.workspaceUser.count.mockResolvedValue(1);
 
       await expect(
         service.updateRole(workspaceId, requesterId, targetUserId, {
@@ -292,7 +334,7 @@ describe('WorkspaceUsersService', () => {
         workspaceId,
       });
 
-      await service.remove(workspaceId, requesterId, targetUserId);
+      await service.remove(workspaceId, targetUserId, requesterId);
 
       expect(prisma.workspaceUser.delete).toHaveBeenCalled();
     });
@@ -306,17 +348,20 @@ describe('WorkspaceUsersService', () => {
       });
       mockPrisma.workspaceUser.delete.mockResolvedValue({});
 
-      await service.remove('ws-1', 'user-doctor', 'user-receptionist');
+      await service.remove('ws-1', 'user-receptionist', 'user-doctor');
 
       expect(prisma.workspaceUser.delete).toHaveBeenCalled();
     });
 
     it('should allow self-removal', async () => {
       const userId = 'user-self';
-      mockPrisma.workspaceUser.findUnique.mockResolvedValue({
+      mockPrisma.workspaceUser.findUnique.mockResolvedValueOnce({
         role: 'DOCTOR',
       });
-      mockPrisma.workspaceUser.count.mockResolvedValue(2); // Otros OWNERs
+      mockPrisma.workspaceUser.findUnique.mockResolvedValueOnce({
+        role: 'DOCTOR',
+      });
+      mockPrisma.workspaceUser.count.mockResolvedValue(2);
       mockPrisma.workspaceUser.delete.mockResolvedValue({});
 
       await service.remove('ws-1', userId, userId);
@@ -326,10 +371,13 @@ describe('WorkspaceUsersService', () => {
 
     it('should prevent removing last OWNER', async () => {
       const userId = 'user-owner';
-      mockPrisma.workspaceUser.findUnique.mockResolvedValue({
+      mockPrisma.workspaceUser.findUnique.mockResolvedValueOnce({
         role: 'OWNER',
       });
-      mockPrisma.workspaceUser.count.mockResolvedValue(1); // Solo 1 OWNER
+      mockPrisma.workspaceUser.findUnique.mockResolvedValueOnce({
+        role: 'OWNER',
+      });
+      mockPrisma.workspaceUser.count.mockResolvedValue(1);
 
       await expect(service.remove('ws-1', userId, userId)).rejects.toThrow(
         ConflictException,
@@ -345,7 +393,7 @@ describe('WorkspaceUsersService', () => {
       });
 
       await expect(
-        service.remove('ws-1', 'user-doctor', 'user-owner'),
+        service.remove('ws-1', 'user-owner', 'user-doctor'),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -358,7 +406,7 @@ describe('WorkspaceUsersService', () => {
       });
 
       await expect(
-        service.remove('ws-1', 'user-receptionist', 'user-doctor'),
+        service.remove('ws-1', 'user-doctor', 'user-receptionist'),
       ).rejects.toThrow(ForbiddenException);
     });
   });

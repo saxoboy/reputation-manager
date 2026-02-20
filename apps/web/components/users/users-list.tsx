@@ -19,6 +19,10 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { Button } from '../ui/button';
@@ -134,11 +138,31 @@ export function UsersList({ users, onDelete, onRoleChange }: UsersListProps) {
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => onRoleChange(user.id, 'DOCTOR')} // Simplified for now
-                          >
-                            Cambiar Rol
-                          </DropdownMenuItem>
+                          <DropdownMenuSub>
+                            <DropdownMenuSubTrigger>
+                              Cambiar Rol
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuPortal>
+                              <DropdownMenuSubContent>
+                                <DropdownMenuItem
+                                  disabled={user.role === 'DOCTOR'}
+                                  onClick={() =>
+                                    onRoleChange(user.id, 'DOCTOR')
+                                  }
+                                >
+                                  Doctor
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  disabled={user.role === 'RECEPTIONIST'}
+                                  onClick={() =>
+                                    onRoleChange(user.id, 'RECEPTIONIST')
+                                  }
+                                >
+                                  Recepcionista
+                                </DropdownMenuItem>
+                              </DropdownMenuSubContent>
+                            </DropdownMenuPortal>
+                          </DropdownMenuSub>
                           <DropdownMenuItem
                             className="text-destructive"
                             onClick={() => onDelete(user.id)}

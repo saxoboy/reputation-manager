@@ -35,7 +35,7 @@ export function CampaignStats({ workspaceId }: CampaignStatsProps) {
   const totalPatients = patientStats?.total ?? 0;
   const responseRate = analytics?.overview.responseRate ?? 0;
   const npsScore = analytics?.overview.npsScore ?? 0;
-  const hasAnalytics = !!analytics;
+  const hasAnalytics = !!analytics && analytics.overview.totalMessages > 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

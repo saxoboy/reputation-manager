@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from '../../lib/auth-client';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -18,6 +18,9 @@ import {
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -40,8 +43,7 @@ export function LoginForm() {
         return;
       }
 
-      // Redirigir al dashboard
-      router.push('/dashboard');
+      router.push(redirectTo ? decodeURIComponent(redirectTo) : '/dashboard');
     } catch (err) {
       console.error('Login error:', err);
       setError('Error al conectar con el servidor');
@@ -56,7 +58,9 @@ export function LoginForm() {
     try {
       await signIn.social({
         provider: 'google',
-        callbackURL: `${window.location.origin}/dashboard`,
+        callbackURL: redirectTo
+          ? decodeURIComponent(redirectTo)
+          : `${window.location.origin}/dashboard`,
       });
     } catch (err) {
       console.error('Google login error:', err);
@@ -64,6 +68,10 @@ export function LoginForm() {
       setLoading(false);
     }
   };
+
+  const registerHref = redirectTo
+    ? `/register?redirect=${redirectTo}`
+    : '/register';
 
   return (
     <Card className="w-full max-w-md">
@@ -151,7 +159,7 @@ export function LoginForm() {
 
           <p className="text-sm text-muted-foreground text-center">
             ¿No tienes cuenta?{' '}
-            <a href="/register" className="text-primary hover:underline">
+            <a href={registerHref} className="text-primary hover:underline">
               Regístrate
             </a>
           </p>

@@ -10,6 +10,14 @@ export function useWorkspaceUsers(workspaceId: string) {
   });
 }
 
+export function usePendingInvitations(workspaceId: string) {
+  return useQuery({
+    queryKey: ['pending-invitations', workspaceId],
+    queryFn: () => userService.getPendingInvitations(workspaceId),
+    enabled: !!workspaceId,
+  });
+}
+
 export function useInviteUser(workspaceId: string) {
   const queryClient = useQueryClient();
 
@@ -20,12 +28,35 @@ export function useInviteUser(workspaceId: string) {
       queryClient.invalidateQueries({
         queryKey: ['workspace-users', workspaceId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['pending-invitations', workspaceId],
+      });
       toast.success('Invitación enviada', {
         description: 'El usuario ha sido invitado al workspace.',
       });
     },
     onError: (error: Error) => {
       toast.error('Error al invitar usuario', {
+        description: error.message,
+      });
+    },
+  });
+}
+
+export function useCancelInvitation(workspaceId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (invitationId: string) =>
+      userService.cancelInvitation(workspaceId, invitationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['pending-invitations', workspaceId],
+      });
+      toast.success('Invitación cancelada');
+    },
+    onError: (error: Error) => {
+      toast.error('Error al cancelar invitación', {
         description: error.message,
       });
     },

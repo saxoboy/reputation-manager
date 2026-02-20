@@ -144,14 +144,15 @@ model Workspace {
   updatedAt            DateTime       @updatedAt
 
   // Relations
-  users     WorkspaceUser[]
-  practices Practice[]
-  campaigns Campaign[]
-  patients  Patient[]
-  templates Template[]
-  messages  Message[]
+  users       WorkspaceUser[]
+  practices   Practice[]
+  campaigns   Campaign[]
+  patients    Patient[]
+  templates   Template[]
+  messages    Message[]
   weeklyReportConfig WeeklyReportConfig?
   transactions Transaction[]
+  invitations  Invitation[]
 
   @@index([plan])
   @@index([stripeCustomerId])
@@ -166,13 +167,36 @@ model WorkspaceUser {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  workspace        Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace        Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   campaignsCreated Campaign[]
+  invitationsSent  Invitation[]
 
   @@unique([workspaceId, userId])
   @@index([workspaceId])
   @@index([userId])
+}
+
+model Invitation {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  email       String
+  role        UserRole
+  token       String    @unique
+
+  invitedById String
+  invitedBy   WorkspaceUser @relation(fields: [invitedById], references: [id], onDelete: Cascade)
+
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+
+  createdAt   DateTime  @default(now())
+
+  @@index([token])
+  @@index([email])
+  @@index([workspaceId])
 }
 
 model Practice {

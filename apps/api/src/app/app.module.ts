@@ -47,7 +47,7 @@ import { BillingModule } from '../billing/billing.module';
     AuthModule.forRoot({
       auth,
       basePath: '/api/auth', // Especificar la ruta completa incluyendo el prefijo global
-      publicRoutes: ['/health'], // Rutas que no requieren autenticación
+      publicRoutes: ['/health', '/api/invitations'], // Rutas que no requieren autenticación
     }),
     WorkspacesModule,
     PracticesModule,

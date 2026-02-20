@@ -32,7 +32,6 @@ import {
 import { useInviteUser } from '../../hooks/use-users';
 
 const inviteFormSchema = z.object({
-  name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
   email: z.string().email('Email inválido'),
   role: z.enum(['DOCTOR', 'RECEPTIONIST'] as const),
 });
@@ -57,7 +56,6 @@ export function InviteUserDialog({
   const form = useForm<InviteFormValues>({
     resolver: zodResolver(inviteFormSchema),
     defaultValues: {
-      name: '',
       email: '',
       role: 'DOCTOR',
     },
@@ -91,20 +89,6 @@ export function InviteUserDialog({
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-4 py-4"
           >
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre Completo</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Dr. Carlos Méndez" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <FormField
               control={form.control}
               name="email"

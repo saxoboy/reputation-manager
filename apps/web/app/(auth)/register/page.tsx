@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { RegisterForm } from '../../../components/auth/register-form';
 
 export default function RegisterPage() {
@@ -10,7 +11,9 @@ export default function RegisterPage() {
             Crea tu cuenta y comienza a mejorar tu reputación online
           </p>
         </div>
-        <RegisterForm />
+        <Suspense fallback={null}>
+          <RegisterForm />
+        </Suspense>
       </div>
     </div>
   );
