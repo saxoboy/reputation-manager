@@ -65,8 +65,12 @@ export function TemplatesList({
           <TableRow>
             <TableHead>Nombre</TableHead>
             <TableHead>Tipo</TableHead>
-            <TableHead className="w-[40%]">Contenido</TableHead>
-            <TableHead>Última Actualización</TableHead>
+            <TableHead className="hidden md:table-cell w-[40%]">
+              Contenido
+            </TableHead>
+            <TableHead className="hidden md:table-cell">
+              Última Actualización
+            </TableHead>
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -82,12 +86,12 @@ export function TemplatesList({
               <TableCell>
                 <Badge variant="outline">{TEMPLATE_TYPES[template.type]}</Badge>
               </TableCell>
-              <TableCell>
+              <TableCell className="hidden md:table-cell">
                 <p className="text-sm text-muted-foreground truncate max-w-75">
                   {template.content}
                 </p>
               </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
+              <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                 {template.updatedAt}
               </TableCell>
               <TableCell className="text-right">

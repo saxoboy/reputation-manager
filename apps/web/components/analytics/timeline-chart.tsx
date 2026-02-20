@@ -38,45 +38,47 @@ export function TimelineChart({ data }: TimelineChartProps) {
         <CardTitle>Timeline de Mensajes</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={formattedData}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis
-              dataKey="date"
-              className="text-xs"
-              tick={{ fill: 'hsl(var(--muted-foreground))' }}
-            />
-            <YAxis
-              className="text-xs"
-              tick={{ fill: 'hsl(var(--muted-foreground))' }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '6px',
-              }}
-              labelStyle={{ color: 'hsl(var(--foreground))' }}
-            />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="sent"
-              name="Enviados"
-              stroke="hsl(var(--primary))"
-              strokeWidth={2}
-              dot={{ fill: 'hsl(var(--primary))' }}
-            />
-            <Line
-              type="monotone"
-              dataKey="responses"
-              name="Respuestas"
-              stroke="hsl(142.1 76.2% 36.3%)"
-              strokeWidth={2}
-              dot={{ fill: 'hsl(142.1 76.2% 36.3%)' }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <div className="h-50 md:h-75">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={formattedData}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis
+                dataKey="date"
+                className="text-xs"
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
+              />
+              <YAxis
+                className="text-xs"
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '6px',
+                }}
+                labelStyle={{ color: 'hsl(var(--foreground))' }}
+              />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="sent"
+                name="Enviados"
+                stroke="hsl(var(--primary))"
+                strokeWidth={2}
+                dot={{ fill: 'hsl(var(--primary))' }}
+              />
+              <Line
+                type="monotone"
+                dataKey="responses"
+                name="Respuestas"
+                stroke="hsl(142.1 76.2% 36.3%)"
+                strokeWidth={2}
+                dot={{ fill: 'hsl(142.1 76.2% 36.3%)' }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );

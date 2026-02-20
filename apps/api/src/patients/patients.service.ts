@@ -7,13 +7,14 @@ import {
 import { PrismaService } from '@reputation-manager/database';
 import { CreatePatientDto, UpdatePatientDto } from './dto';
 import { Prisma } from '@prisma/client';
+import { PaginatedResponse } from '@reputation-manager/shared-types';
 
 @Injectable()
 export class PatientsService {
   constructor(private prisma: PrismaService) {}
 
   /**
-   * Obtener todos los pacientes de un workspace
+   * Obtener todos los pacientes de un workspace (paginado)
    * Incluye filtros opcionales
    */
   async findAll(
@@ -23,10 +24,13 @@ export class PatientsService {
       hasConsent?: boolean;
       optedOut?: boolean;
     },
-  ) {
+    page = 1,
+    limit = 20,
+  ): Promise<PaginatedResponse<unknown>> {
+    const skip = (page - 1) * limit;
     const where: Prisma.PatientWhereInput = {
       workspaceId,
-      dataDeletedAt: null, // No incluir soft-deleted
+      dataDeletedAt: null,
     };
 
     if (filters?.campaignId) {
@@ -45,32 +49,45 @@ export class PatientsService {
       }
     }
 
-    return this.prisma.patient.findMany({
-      where,
-      include: {
-        campaign: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        messages: {
-          select: {
-            id: true,
-            type: true,
-            status: true,
-            rating: true,
-            createdAt: true,
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
+    const include = {
+      campaign: {
+        select: {
+          id: true,
+          name: true,
         },
       },
-      orderBy: {
-        createdAt: 'desc',
+      messages: {
+        select: {
+          id: true,
+          type: true,
+          status: true,
+          rating: true,
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: 'desc' as const,
+        },
       },
-    });
+    };
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.patient.findMany({
+        where,
+        include,
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip,
+      }),
+      this.prisma.patient.count({ where }),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   /**

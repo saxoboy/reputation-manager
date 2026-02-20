@@ -85,9 +85,11 @@ export function UsersList({ users, onDelete, onRoleChange }: UsersListProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Usuario</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead className="hidden md:table-cell">Email</TableHead>
                   <TableHead>Rol</TableHead>
-                  <TableHead>Fecha de Ingreso</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    Fecha de Ingreso
+                  </TableHead>
                   <TableHead className="w-17.5"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -104,7 +106,7 @@ export function UsersList({ users, onDelete, onRoleChange }: UsersListProps) {
                         <span className="font-medium">{user.name}</span>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       <div className="flex items-center gap-2">
                         <Mail className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">{user.email}</span>
@@ -115,7 +117,7 @@ export function UsersList({ users, onDelete, onRoleChange }: UsersListProps) {
                         {roleLabels[user.role].label}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                       {user.createdAt !== 'N/A'
                         ? new Date(user.createdAt).toLocaleDateString('es-EC', {
                             year: 'numeric',

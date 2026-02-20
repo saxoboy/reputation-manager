@@ -50,7 +50,7 @@ export function FeedbackCharts() {
           </CardDescription>
         </CardHeader>
         <CardContent className="pl-2">
-          <div className="h-75 w-full">
+          <div className="h-50 md:h-75 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={FEEDBACK_DATA}>
                 <CartesianGrid
@@ -99,7 +99,7 @@ export function FeedbackCharts() {
           <CardDescription>Desglose de puntuaciones recibidas.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-75 w-full">
+          <div className="h-50 md:h-75 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie

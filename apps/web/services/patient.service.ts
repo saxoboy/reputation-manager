@@ -64,6 +64,14 @@ export interface PatientStats {
   deleted: number;
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 class PatientService {
   async getAll(
     workspaceId: string,
@@ -72,17 +80,20 @@ class PatientService {
       hasConsent?: boolean;
       optedOut?: boolean;
     },
-  ): Promise<Patient[]> {
+    page = 1,
+    limit = 20,
+  ): Promise<PaginatedResponse<Patient>> {
     const params = new URLSearchParams();
     if (filters?.campaignId) params.append('campaignId', filters.campaignId);
     if (filters?.hasConsent !== undefined)
       params.append('hasConsent', String(filters.hasConsent));
     if (filters?.optedOut !== undefined)
       params.append('optedOut', String(filters.optedOut));
+    params.append('page', String(page));
+    params.append('limit', String(limit));
 
-    const queryString = params.toString();
-    const endpoint = `/workspaces/${workspaceId}/patients${queryString ? `?${queryString}` : ''}`;
-    return apiClient.get<Patient[]>(endpoint);
+    const endpoint = `/workspaces/${workspaceId}/patients?${params.toString()}`;
+    return apiClient.get<PaginatedResponse<Patient>>(endpoint);
   }
 
   async getByCampaign(

@@ -43,40 +43,42 @@ export function RatingDistributionChart({
         <CardTitle>Distribución de Ratings</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis
-              dataKey="rating"
-              className="text-xs"
-              tick={{ fill: '#9ca3af' }}
-            />
-            <YAxis
-              className="text-xs"
-              tick={{ fill: '#9ca3af' }}
-              label={{
-                value: 'Cantidad',
-                angle: -90,
-                position: 'insideLeft',
-                style: { fill: '#9ca3af' },
-              }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '6px',
-              }}
-              labelStyle={{ color: 'hsl(var(--foreground))' }}
-              cursor={{ fill: 'hsl(var(--muted))' }}
-            />
-            <Bar dataKey="count" name="Respuestas" radius={[8, 8, 0, 0]}>
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={colors[index]} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="h-50 md:h-75">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis
+                dataKey="rating"
+                className="text-xs"
+                tick={{ fill: '#9ca3af' }}
+              />
+              <YAxis
+                className="text-xs"
+                tick={{ fill: '#9ca3af' }}
+                label={{
+                  value: 'Cantidad',
+                  angle: -90,
+                  position: 'insideLeft',
+                  style: { fill: '#9ca3af' },
+                }}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '6px',
+                }}
+                labelStyle={{ color: 'hsl(var(--foreground))' }}
+                cursor={{ fill: 'hsl(var(--muted))' }}
+              />
+              <Bar dataKey="count" name="Respuestas" radius={[8, 8, 0, 0]}>
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={colors[index]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );

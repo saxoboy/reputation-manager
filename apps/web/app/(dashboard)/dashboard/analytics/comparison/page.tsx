@@ -58,15 +58,16 @@ export default function ComparisonPage() {
     enabled: !!workspace?.id,
   });
 
-  // Obtener lista de campaigns
-  const { data: campaigns = [] } = useQuery({
+  // Obtener lista de campaigns (sin paginar — sólo necesitamos los nombres para seleccionar)
+  const { data: campaignsResponse } = useQuery({
     queryKey: ['campaigns', workspace?.id],
     queryFn: () => {
       if (!workspace?.id) throw new Error('No workspace');
-      return campaignService.getAll(workspace.id);
+      return campaignService.getAll(workspace.id, 1, 100);
     },
     enabled: !!workspace?.id,
   });
+  const campaigns = campaignsResponse?.data ?? [];
 
   // Query comparación
   const { data: comparison, isLoading } = useQuery({
