@@ -64,7 +64,8 @@ export function CampaignSettingsDialog({
   }, [open, campaign]);
 
   const hoursValue = parseInt(scheduledHoursAfter, 10);
-  const isHoursValid = !isNaN(hoursValue) && hoursValue >= 1 && hoursValue <= 72;
+  const isHoursValid =
+    !isNaN(hoursValue) && hoursValue >= 1 && hoursValue <= 72;
 
   const handleSave = () => {
     updateCampaign.mutate(
