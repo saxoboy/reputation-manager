@@ -63,8 +63,10 @@ export function CampaignSettingsDialog({
     }
   }, [open, campaign]);
 
+  const hoursValue = parseInt(scheduledHoursAfter, 10);
+  const isHoursValid = !isNaN(hoursValue) && hoursValue >= 1 && hoursValue <= 72;
+
   const handleSave = () => {
-    const hours = parseInt(scheduledHoursAfter, 10);
     updateCampaign.mutate(
       {
         campaignId: campaign.id,
@@ -72,7 +74,6 @@ export function CampaignSettingsDialog({
           name: name.trim(),
           description: description.trim() || undefined,
           status,
-          scheduledHoursAfter: isNaN(hours) ? undefined : hours,
         },
       },
       {
@@ -100,7 +101,7 @@ export function CampaignSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-120">
         <DialogHeader>
           <DialogTitle>Configuración de Campaña</DialogTitle>
           <DialogDescription>
@@ -220,7 +221,7 @@ export function CampaignSettingsDialog({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={updateCampaign.isPending || !name.trim()}
+            disabled={updateCampaign.isPending || !name.trim() || !isHoursValid}
           >
             {updateCampaign.isPending ? 'Guardando...' : 'Guardar cambios'}
           </Button>
