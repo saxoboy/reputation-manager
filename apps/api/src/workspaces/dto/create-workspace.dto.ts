@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsIn,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class CreateWorkspaceDto {
   @IsString()
@@ -6,4 +13,9 @@ export class CreateWorkspaceDto {
   @MinLength(3, { message: 'El nombre debe tener al menos 3 caracteres' })
   @MaxLength(100, { message: 'El nombre no puede exceder 100 caracteres' })
   name: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['FREE', 'STARTER', 'PROFESSIONAL', 'ENTERPRISE'])
+  plan?: string;
 }

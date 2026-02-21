@@ -46,7 +46,7 @@ export class WorkspacesService {
     const workspace = await this.prisma.workspace.create({
       data: {
         name: dto.name,
-        plan: 'FREE',
+        plan: dto.plan ?? 'FREE',
         messageCredits: 50,
         users: {
           create: {

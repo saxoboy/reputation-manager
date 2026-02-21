@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
@@ -13,6 +14,7 @@ import {
   CardTitle,
 } from '../../../components/ui/card';
 import { Badge } from '../../../components/ui/badge';
+import { workspaceService } from '../../../services/workspace.service';
 
 const plans = [
   {
@@ -71,6 +73,7 @@ const plans = [
 
 export default function OnboardingContent() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -89,23 +92,16 @@ export default function OnboardingContent() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3001/api/workspaces', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          name: workspaceName,
-          plan: selectedPlan,
-        }),
+      const newWorkspace = await workspaceService.create({
+        name: workspaceName,
+        plan: selectedPlan as
+          | 'FREE'
+          | 'STARTER'
+          | 'PROFESSIONAL'
+          | 'ENTERPRISE',
       });
-
-      if (!response.ok) {
-        throw new Error('Error al crear el workspace');
-      }
-
-      // Redirigir al dashboard
+      // Populate cache immediately so WorkspaceGuard doesn't redirect back
+      queryClient.setQueryData(['workspaces'], [newWorkspace]);
       router.push('/dashboard');
     } catch (err) {
       console.error('Create workspace error:', err);

@@ -8,7 +8,7 @@ import {
 } from '../ui/table';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { FileText, Pencil, Trash2, Copy } from 'lucide-react';
+import { FileText, Pencil, Trash2, Copy, Plus } from 'lucide-react';
 import { Template, MessageType } from '../../types/mock-types';
 
 interface TemplatesListProps {
@@ -16,6 +16,7 @@ interface TemplatesListProps {
   onEdit: (template: Template) => void;
   onDelete: (id: string) => void;
   onDuplicate: (template: Template) => void;
+  onCreateClick?: () => void;
 }
 
 const TEMPLATE_TYPES: Record<MessageType, string> = {
@@ -30,30 +31,26 @@ export function TemplatesList({
   onEdit,
   onDelete,
   onDuplicate,
+  onCreateClick,
 }: TemplatesListProps) {
-  const getBadgeVariant = (type: MessageType) => {
-    switch (type) {
-      case 'INITIAL':
-        return 'default';
-      case 'FOLLOWUP_HAPPY':
-        return 'success'; // Assuming you have a success variant or stick to default/secondary
-      case 'FOLLOWUP_UNHAPPY':
-        return 'destructive';
-      default:
-        return 'secondary';
-    }
-  };
-
   if (templates.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <FileText className="h-10 w-10 text-muted-foreground/50 mb-3" />
-        <p className="text-sm font-medium text-muted-foreground">
-          No hay plantillas
-        </p>
-        <p className="text-xs text-muted-foreground/70 mt-1">
-          Crea una plantilla para personalizar los mensajes a tus pacientes.
-        </p>
+      <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+        <FileText className="h-10 w-10 text-muted-foreground/40" />
+        <div>
+          <p className="text-sm font-medium text-muted-foreground">
+            No hay plantillas
+          </p>
+          <p className="text-xs text-muted-foreground/70 mt-1">
+            Crea una plantilla para personalizar los mensajes a tus pacientes.
+          </p>
+        </div>
+        {onCreateClick && (
+          <Button size="sm" onClick={onCreateClick}>
+            <Plus className="mr-2 h-4 w-4" />
+            Crear mi primera plantilla
+          </Button>
+        )}
       </div>
     );
   }

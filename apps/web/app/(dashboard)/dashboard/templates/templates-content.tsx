@@ -132,6 +132,7 @@ export default function TemplatesContent() {
         }}
         onDelete={handleDelete}
         onDuplicate={handleDuplicate}
+        onCreateClick={() => setIsCreateOpen(true)}
       />
 
       <TemplateDialog

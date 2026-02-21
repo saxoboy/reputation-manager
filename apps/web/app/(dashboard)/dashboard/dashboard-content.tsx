@@ -2,10 +2,13 @@
 
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../../hooks/use-auth';
+import { useWorkspace } from '../../../hooks/use-workspace';
 import { Button } from '../../../components/ui/button';
 import { OverviewStats } from '../../../components/dashboard/overview-stats';
 import { RecentActivity } from '../../../components/dashboard/recent-activity';
+import { SetupChecklist } from '../../../components/dashboard/setup-checklist';
 
 const FeedbackCharts = dynamic(
   () =>
@@ -20,9 +23,15 @@ const FeedbackCharts = dynamic(
 
 export default function DashboardContent() {
   const { user, isPending } = useAuth();
+  const { workspace } = useWorkspace();
   const userName = user?.name ? user.name.split(' ')[0] : 'Doctor';
+  const [mounted, setMounted] = useState(false);
 
-  if (isPending) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || isPending) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
@@ -55,11 +64,13 @@ export default function DashboardContent() {
         </div>
       </div>
 
-      <OverviewStats />
+      {workspace?.id && <SetupChecklist workspaceId={workspace.id} />}
 
-      <FeedbackCharts />
+      <OverviewStats workspaceId={workspace?.id ?? ''} />
 
-      <RecentActivity />
+      <FeedbackCharts workspaceId={workspace?.id ?? ''} />
+
+      <RecentActivity workspaceId={workspace?.id ?? ''} />
     </div>
   );
 }
