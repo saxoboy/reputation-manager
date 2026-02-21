@@ -13,6 +13,7 @@ import {
   CheckCircle,
   GitCompareArrows,
   Calendar,
+  BarChart2,
 } from 'lucide-react';
 import {
   Card,
@@ -211,6 +212,8 @@ export default function AnalyticsPage() {
 
   const { overview, distribution, timeline } = analytics;
 
+  const isEmpty = overview.totalMessages === 0;
+
   // Calcular formato para métricas
   const formatPercentage = (value: number) => `${value.toFixed(1)}%`;
   const formatRating = (value: number) => value.toFixed(2);
@@ -252,171 +255,196 @@ export default function AnalyticsPage() {
         </Link>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <KpiCard
-          title="Mensajes Enviados"
-          value={overview.totalMessages.toLocaleString('es-EC')}
-          description="Total de mensajes"
-          icon={<MessageSquare className="h-4 w-4" />}
-        />
-
-        <KpiCard
-          title="Tasa de Respuesta"
-          value={formatPercentage(overview.responseRate)}
-          description={`${overview.totalResponses} de ${overview.totalMessages} respondieron`}
-          icon={<CheckCircle className="h-4 w-4" />}
-        />
-
-        <KpiCard
-          title="Rating Promedio"
-          value={formatRating(overview.averageRating)}
-          description="De 5.0 estrellas"
-          icon={<Star className="h-4 w-4" />}
-        />
-
-        <KpiCard
-          title="NPS Score"
-          value={overview.npsScore}
-          description={
-            overview.npsScore >= 50
-              ? 'Excelente'
-              : overview.npsScore >= 0
-                ? 'Bueno'
-                : 'Mejorable'
-          }
-          icon={<BarChart3 className="h-4 w-4" />}
-        />
-      </div>
-
-      {/* Sentiment Analysis */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Análisis de Sentimiento</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-green-600">
-                    Felices (4-5 ⭐)
-                  </span>
-                  <span className="text-sm font-bold">
-                    {distribution.sentiment.happy}
-                  </span>
-                </div>
-                <div className="h-2 rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-green-600"
-                    style={{
-                      width: `${(distribution.sentiment.happy / overview.totalResponses) * 100}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-yellow-600">
-                    Neutrales (3 ⭐)
-                  </span>
-                  <span className="text-sm font-bold">
-                    {distribution.sentiment.neutral}
-                  </span>
-                </div>
-                <div className="h-2 rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-yellow-600"
-                    style={{
-                      width: `${(distribution.sentiment.neutral / overview.totalResponses) * 100}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-red-600">
-                    Infelices (1-2 ⭐)
-                  </span>
-                  <span className="text-sm font-bold">
-                    {distribution.sentiment.unhappy}
-                  </span>
-                </div>
-                <div className="h-2 rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-red-600"
-                    style={{
-                      width: `${(distribution.sentiment.unhappy / overview.totalResponses) * 100}%`,
-                    }}
-                  />
-                </div>
-              </div>
+      {isEmpty ? (
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center gap-4">
+            <BarChart2 className="h-12 w-12 text-muted-foreground/40" />
+            <div>
+              <p className="font-semibold text-lg">Aún no hay datos</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Las métricas aparecerán aquí una vez que tus pacientes respondan
+                los mensajes.
+              </p>
+            </div>
+            <div className="flex gap-2 mt-2">
+              <Link href="/dashboard/campaigns">
+                <Button>Crear campaña</Button>
+              </Link>
+              <Link href="/dashboard/practices">
+                <Button variant="outline">Agregar consultorio</Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
+      ) : (
+        <>
+          {/* KPI Cards */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <KpiCard
+              title="Mensajes Enviados"
+              value={overview.totalMessages.toLocaleString('es-EC')}
+              description="Total de mensajes"
+              icon={<MessageSquare className="h-4 w-4" />}
+            />
 
-        <SentimentChart sentiment={distribution.sentiment} />
-      </div>
+            <KpiCard
+              title="Tasa de Respuesta"
+              value={formatPercentage(overview.responseRate)}
+              description={`${overview.totalResponses} de ${overview.totalMessages} respondieron`}
+              icon={<CheckCircle className="h-4 w-4" />}
+            />
 
-      {/* Top Campaigns - Solo para workspace analytics */}
-      {'campaigns' in analytics && analytics.campaigns.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Mejores Campañas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {'campaigns' in analytics &&
-                analytics.campaigns
-                  .slice(0, 5)
-                  .map(
-                    (campaign: {
-                      id: string;
-                      name: string;
-                      messagesSent: number;
-                      averageRating: number;
-                      responseRate: number;
-                    }) => (
+            <KpiCard
+              title="Rating Promedio"
+              value={formatRating(overview.averageRating)}
+              description="De 5.0 estrellas"
+              icon={<Star className="h-4 w-4" />}
+            />
+
+            <KpiCard
+              title="NPS Score"
+              value={overview.npsScore}
+              description={
+                overview.npsScore >= 50
+                  ? 'Excelente'
+                  : overview.npsScore >= 0
+                    ? 'Bueno'
+                    : 'Mejorable'
+              }
+              icon={<BarChart3 className="h-4 w-4" />}
+            />
+          </div>
+
+          {/* Sentiment Analysis */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Análisis de Sentimiento</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-green-600">
+                        Felices (4-5 ⭐)
+                      </span>
+                      <span className="text-sm font-bold">
+                        {distribution.sentiment.happy}
+                      </span>
+                    </div>
+                    <div className="h-2 rounded-full bg-muted">
                       <div
-                        key={campaign.id}
-                        className="flex items-center justify-between border-b pb-3 last:border-0"
-                      >
-                        <div className="space-y-1">
-                          <p className="font-medium">{campaign.name}</p>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Users className="h-3 w-3" />
-                              {campaign.messagesSent} mensajes
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Star className="h-3 w-3" />
-                              {campaign.averageRating.toFixed(2)}
-                            </span>
+                        className="h-full rounded-full bg-green-600"
+                        style={{
+                          width: `${overview.totalResponses > 0 ? (distribution.sentiment.happy / overview.totalResponses) * 100 : 0}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-yellow-600">
+                        Neutrales (3 ⭐)
+                      </span>
+                      <span className="text-sm font-bold">
+                        {distribution.sentiment.neutral}
+                      </span>
+                    </div>
+                    <div className="h-2 rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-yellow-600"
+                        style={{
+                          width: `${overview.totalResponses > 0 ? (distribution.sentiment.neutral / overview.totalResponses) * 100 : 0}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-red-600">
+                        Infelices (1-2 ⭐)
+                      </span>
+                      <span className="text-sm font-bold">
+                        {distribution.sentiment.unhappy}
+                      </span>
+                    </div>
+                    <div className="h-2 rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-red-600"
+                        style={{
+                          width: `${overview.totalResponses > 0 ? (distribution.sentiment.unhappy / overview.totalResponses) * 100 : 0}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <SentimentChart sentiment={distribution.sentiment} />
+          </div>
+
+          {/* Top Campaigns - Solo para workspace analytics */}
+          {'campaigns' in analytics && analytics.campaigns.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Mejores Campañas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {'campaigns' in analytics &&
+                    analytics.campaigns
+                      .slice(0, 5)
+                      .map(
+                        (campaign: {
+                          id: string;
+                          name: string;
+                          messagesSent: number;
+                          averageRating: number;
+                          responseRate: number;
+                        }) => (
+                          <div
+                            key={campaign.id}
+                            className="flex items-center justify-between border-b pb-3 last:border-0"
+                          >
+                            <div className="space-y-1">
+                              <p className="font-medium">{campaign.name}</p>
+                              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <Users className="h-3 w-3" />
+                                  {campaign.messagesSent} mensajes
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Star className="h-3 w-3" />
+                                  {campaign.averageRating.toFixed(2)}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold text-green-600">
+                                {campaign.responseRate.toFixed(1)}%
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                respuesta
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-green-600">
-                            {campaign.responseRate.toFixed(1)}%
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            respuesta
-                          </p>
-                        </div>
-                      </div>
-                    ),
-                  )}
-            </div>
-          </CardContent>
-        </Card>
+                        ),
+                      )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Rating Distribution */}
+          <RatingDistributionChart distribution={distribution.rating} />
+
+          {/* Timeline */}
+          {timeline.length > 0 && <TimelineChart data={timeline} />}
+        </>
       )}
-
-      {/* Rating Distribution */}
-      <RatingDistributionChart distribution={distribution.rating} />
-
-      {/* Timeline */}
-      {timeline.length > 0 && <TimelineChart data={timeline} />}
     </div>
   );
 }

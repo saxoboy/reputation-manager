@@ -18,7 +18,7 @@ import {
 } from '../../../../components/ui/card';
 import { Skeleton } from '../../../../components/ui/skeleton';
 import { Alert, AlertDescription } from '../../../../components/ui/alert';
-import { Plus, AlertCircle } from 'lucide-react';
+import { Plus, AlertCircle, Building2 } from 'lucide-react';
 import { PracticesList } from '../../../../components/practices/practices-list';
 import { PracticeDialog } from '../../../../components/practices/practice-dialog';
 import { DeletePracticeDialog } from '../../../../components/practices/delete-practice-dialog';
@@ -175,8 +175,20 @@ export default function PracticesContent() {
               <Skeleton className="h-20 w-full" />
             </div>
           ) : practices.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No hay consultorios registrados. Crea uno para comenzar.
+            <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+              <Building2 className="h-10 w-10 text-muted-foreground/40" />
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  No hay consultorios registrados
+                </p>
+                <p className="text-xs text-muted-foreground/70 mt-1">
+                  Agrega tu primera ubicación para organizar tus campañas.
+                </p>
+              </div>
+              <Button size="sm" onClick={handleOpenCreateDialog}>
+                <Plus className="mr-2 h-4 w-4" />
+                Crear mi primer consultorio
+              </Button>
             </div>
           ) : (
             <PracticesList
