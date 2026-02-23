@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
+import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaService } from '@reputation-manager/database';
 import {
   TwilioService,
@@ -10,6 +11,7 @@ import {
 } from '@reputation-manager/integrations';
 import { QUEUES } from '@reputation-manager/shared-types';
 import { CampaignProcessor } from '../processors/campaign.processor';
+import { CampaignScheduler } from '../schedulers/campaign.scheduler';
 import { WeeklyReportsModule } from '../weekly-reports.module';
 
 @Module({
@@ -17,6 +19,7 @@ import { WeeklyReportsModule } from '../weekly-reports.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     BullModule.forRoot({
       connection: {
         host: process.env.REDIS_HOST || 'localhost',
@@ -37,6 +40,7 @@ import { WeeklyReportsModule } from '../weekly-reports.module';
     GooglePlacesService,
     EmailService,
     CampaignProcessor,
+    CampaignScheduler,
   ],
 })
 export class AppModule {}

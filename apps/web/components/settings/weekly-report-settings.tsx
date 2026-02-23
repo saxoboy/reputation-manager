@@ -24,6 +24,7 @@ import { Badge } from '../ui/badge';
 import { CalendarDays, Mail, Send, X } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
 import { getBaseUrl } from '../../lib/get-base-url';
+import { useCurrentWorkspace } from '../../hooks/use-workspaces';
 
 interface WeeklyReportConfig {
   id: string;
@@ -45,6 +46,7 @@ const DAYS_OF_WEEK = [
 
 export function WeeklyReportSettings() {
   const { toast } = useToast();
+  const { data: workspace } = useCurrentWorkspace();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testingEmail, setTestingEmail] = useState(false);
@@ -61,15 +63,15 @@ export function WeeklyReportSettings() {
 
   // Cargar configuración actual
   useEffect(() => {
-    loadConfig();
-  }, []);
+    if (workspace?.id) loadConfig();
+  }, [workspace?.id]);
 
   const loadConfig = async () => {
+    if (!workspace?.id) return;
     setLoading(true);
     try {
-      const workspaceId = 'test-workspace-id'; // TODO: Get from context
       const response = await fetch(
-        `${getBaseUrl()}/api/workspaces/${workspaceId}/weekly-reports/config`,
+        `${getBaseUrl()}/api/workspaces/${workspace.id}/weekly-reports/config`,
         {
           credentials: 'include',
         },
@@ -97,11 +99,11 @@ export function WeeklyReportSettings() {
   };
 
   const handleSave = async () => {
+    if (!workspace?.id) return;
     setSaving(true);
     try {
-      const workspaceId = 'test-workspace-id'; // TODO: Get from context
       const response = await fetch(
-        `${getBaseUrl()}/api/workspaces/${workspaceId}/weekly-reports/config`,
+        `${getBaseUrl()}/api/workspaces/${workspace.id}/weekly-reports/config`,
         {
           method: 'PUT',
           headers: {
@@ -184,11 +186,11 @@ export function WeeklyReportSettings() {
       return;
     }
 
+    if (!workspace?.id) return;
     setTestingEmail(true);
     try {
-      const workspaceId = 'test-workspace-id'; // TODO: Get from context
       const response = await fetch(
-        `${getBaseUrl()}/api/workspaces/${workspaceId}/weekly-reports/test`,
+        `${getBaseUrl()}/api/workspaces/${workspace.id}/weekly-reports/test`,
         {
           method: 'POST',
           headers: {

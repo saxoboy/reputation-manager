@@ -5,6 +5,10 @@ export interface Workspace {
   name: string;
   plan: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
   messageCredits: number;
+  defaultChannel: 'SMS' | 'WHATSAPP' | 'EMAIL';
+  smsEnabled: boolean;
+  whatsappEnabled: boolean;
+  emailEnabled: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -17,6 +21,13 @@ export interface CreateWorkspaceDto {
 export interface UpdateWorkspaceDto {
   name?: string;
   plan?: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
+}
+
+export interface UpdateWorkspaceChannelSettingsDto {
+  defaultChannel?: 'SMS' | 'WHATSAPP' | 'EMAIL';
+  smsEnabled?: boolean;
+  whatsappEnabled?: boolean;
+  emailEnabled?: boolean;
 }
 
 export const workspaceService = {
@@ -38,6 +49,16 @@ export const workspaceService = {
 
   async delete(id: string): Promise<void> {
     return apiClient.delete<void>(`/workspaces/${id}`);
+  },
+
+  async updateChannelSettings(
+    id: string,
+    data: UpdateWorkspaceChannelSettingsDto,
+  ): Promise<Workspace> {
+    return apiClient.patch<Workspace>(
+      `/workspaces/${id}/channel-settings`,
+      data,
+    );
   },
 
   async getCurrent(): Promise<Workspace> {

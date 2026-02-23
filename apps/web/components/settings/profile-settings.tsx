@@ -1,6 +1,9 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '../../hooks/use-auth';
+import { authClient } from '../../lib/auth-client';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -16,7 +19,6 @@ export function ProfileSettings() {
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -28,10 +30,8 @@ export function ProfileSettings() {
 
   const handleUpdate = async () => {
     setLoading(true);
-
     try {
-      // TODO: Implement API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await authClient.updateUser({ name });
       toast.success('Perfil actualizado correctamente');
     } catch {
       toast.error('Error al actualizar el perfil');
@@ -65,7 +65,7 @@ export function ProfileSettings() {
           </p>
         </div>
 
-        <Button onClick={handleUpdate} disabled={loading}>
+        <Button onClick={handleUpdate} disabled={loading || !name.trim()}>
           {loading ? 'Guardando...' : 'Guardar Cambios'}
         </Button>
       </CardContent>

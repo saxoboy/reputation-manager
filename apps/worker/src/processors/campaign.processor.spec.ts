@@ -54,7 +54,14 @@ describe('CampaignProcessor', () => {
   };
 
   beforeEach(async () => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
+
+    // Re-establish default return values cleared by resetAllMocks
+    mockGooglePlacesService.generateReviewUrl.mockReturnValue(
+      'https://g.page/review/test',
+    );
+    mockEmailService.sendLowCreditsAlert.mockResolvedValue(true);
+    mockEmailService.isEnabled.mockReturnValue(true);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -77,6 +84,7 @@ describe('CampaignProcessor', () => {
         id: 'job-1',
         name,
         data,
+        updateData: jest.fn(),
       }) as unknown as Job;
 
     describe('credit deduction logic', () => {
@@ -141,11 +149,17 @@ describe('CampaignProcessor', () => {
       });
 
       it('should skip credit deduction for ENTERPRISE plan', async () => {
-        mockPrisma.workspace.findUnique.mockResolvedValueOnce({
-          id: 'ws-1',
-          plan: 'ENTERPRISE',
-          messageCredits: 0,
-        });
+        mockPrisma.workspace.findUnique
+          .mockResolvedValueOnce({
+            id: 'ws-1',
+            plan: 'ENTERPRISE',
+            messageCredits: 0,
+          }) // validateCredits
+          .mockResolvedValueOnce({
+            id: 'ws-1',
+            plan: 'ENTERPRISE',
+            messageCredits: 0,
+          }); // checkAndDeductCredits (returns early for ENTERPRISE)
 
         mockPrisma.patient.findUnique.mockResolvedValue({
           id: 'p-1',
@@ -182,11 +196,11 @@ describe('CampaignProcessor', () => {
       });
 
       it('should throw error when insufficient credits', async () => {
-        mockPrisma.workspace.findUnique.mockResolvedValue({
+        mockPrisma.workspace.findUnique.mockResolvedValueOnce({
           id: 'ws-1',
           plan: 'FREE',
           messageCredits: 0,
-        });
+        }); // validateCredits throws, no further calls needed
 
         mockPrisma.patient.findUnique.mockResolvedValue({
           id: 'p-1',
@@ -282,13 +296,18 @@ describe('CampaignProcessor', () => {
           .mockResolvedValueOnce({
             id: 'ws-1',
             plan: 'FREE',
+            messageCredits: 1,
+          }) // validateCredits
+          .mockResolvedValueOnce({
+            id: 'ws-1',
+            plan: 'FREE',
             messageCredits: 1, // Will become 0 after deduction
-          })
+          }) // checkAndDeductCredits
           .mockResolvedValueOnce({
             id: 'ws-1',
             name: 'Test Clinic',
             users: [{ user: { email: 'doc@test.com', name: 'Dr. Test' } }],
-          });
+          }); // checkLowCredits
 
         mockPrisma.workspace.update.mockResolvedValue({
           messageCredits: 0,
@@ -334,11 +353,17 @@ describe('CampaignProcessor', () => {
       });
 
       it('should NOT send email for ENTERPRISE plan', async () => {
-        mockPrisma.workspace.findUnique.mockResolvedValueOnce({
-          id: 'ws-1',
-          plan: 'ENTERPRISE',
-          messageCredits: 0,
-        });
+        mockPrisma.workspace.findUnique
+          .mockResolvedValueOnce({
+            id: 'ws-1',
+            plan: 'ENTERPRISE',
+            messageCredits: 0,
+          }) // validateCredits
+          .mockResolvedValueOnce({
+            id: 'ws-1',
+            plan: 'ENTERPRISE',
+            messageCredits: 0,
+          }); // checkAndDeductCredits (returns early, no checkLowCredits)
 
         mockPrisma.patient.findUnique.mockResolvedValue({
           id: 'p-1',
@@ -378,12 +403,17 @@ describe('CampaignProcessor', () => {
             id: 'ws-1',
             plan: 'FREE',
             messageCredits: 1,
-          })
+          }) // validateCredits
+          .mockResolvedValueOnce({
+            id: 'ws-1',
+            plan: 'FREE',
+            messageCredits: 1,
+          }) // checkAndDeductCredits
           .mockResolvedValueOnce({
             id: 'ws-1',
             name: 'Test Clinic',
             users: [{ user: { email: 'doc@test.com', name: 'Dr. Test' } }],
-          });
+          }); // checkLowCredits
 
         mockPrisma.workspace.update.mockResolvedValue({
           messageCredits: 0,
@@ -430,11 +460,17 @@ describe('CampaignProcessor', () => {
 
   describe('process - routing', () => {
     it('should route send-initial-message job correctly', async () => {
-      mockPrisma.workspace.findUnique.mockResolvedValueOnce({
-        id: 'ws-1',
-        plan: 'ENTERPRISE',
-        messageCredits: 0,
-      });
+      mockPrisma.workspace.findUnique
+        .mockResolvedValueOnce({
+          id: 'ws-1',
+          plan: 'ENTERPRISE',
+          messageCredits: 0,
+        }) // validateCredits
+        .mockResolvedValueOnce({
+          id: 'ws-1',
+          plan: 'ENTERPRISE',
+          messageCredits: 0,
+        }); // checkAndDeductCredits (returns early for ENTERPRISE)
 
       mockPrisma.patient.findUnique.mockResolvedValue({
         id: 'p-1',
@@ -461,6 +497,7 @@ describe('CampaignProcessor', () => {
         id: 'job-1',
         name: 'send-initial-message',
         data: { patientId: 'p-1', workspaceId: 'ws-1', campaignId: 'c-1' },
+        updateData: jest.fn(),
       } as unknown as Job;
 
       const result = await processor.process(job);
@@ -493,6 +530,7 @@ describe('CampaignProcessor', () => {
         id: 'job-1',
         name: 'send-initial-message',
         data: { patientId: 'p-1', workspaceId: 'ws-1', campaignId: 'c-1' },
+        updateData: jest.fn(),
       } as unknown as Job;
 
       const result = await processor.process(job);
@@ -527,6 +565,7 @@ describe('CampaignProcessor', () => {
         id: 'job-1',
         name: 'send-initial-message',
         data: { patientId: 'p-1', workspaceId: 'ws-1', campaignId: 'c-1' },
+        updateData: jest.fn(),
       } as unknown as Job;
 
       const result = await processor.process(job);

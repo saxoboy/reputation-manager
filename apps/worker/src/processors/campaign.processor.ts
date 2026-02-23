@@ -46,10 +46,31 @@ export class CampaignProcessor extends WorkerHost {
   }
 
   /**
-   * Check if workspace has credits and deduct 1 credit
-   * Throws error if insufficient credits (except ENTERPRISE plan)
-   * Creates transaction record for audit trail
-   * Returns remaining credits and checks for low credit alerts
+   * Validates that workspace has at least 1 credit available (read-only, no deduction).
+   * Throws if insufficient credits. Used as a fast-fail check before attempting to send.
+   */
+  private async validateCredits(workspaceId: string): Promise<void> {
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { plan: true, messageCredits: true },
+    });
+
+    if (!workspace) throw new Error('Workspace not found');
+    if (workspace.plan === 'ENTERPRISE') return;
+
+    if (workspace.messageCredits < 1) {
+      this.logger.error(
+        `Workspace ${workspaceId} has insufficient credits: ${workspace.messageCredits}`,
+      );
+      throw new Error(
+        `Insufficient message credits. You have ${workspace.messageCredits} credits but need 1. Please purchase more credits or upgrade your plan.`,
+      );
+    }
+  }
+
+  /**
+   * Deducts 1 credit from workspace after a successful send.
+   * Creates transaction record for audit trail and checks for low credit alerts.
    */
   private async checkAndDeductCredits(
     workspaceId: string,
@@ -345,67 +366,109 @@ export class CampaignProcessor extends WorkerHost {
       channel === 'WHATSAPP'
         ? 'Template: feedback_request_v1'
         : `Hola ${patient.name}, gracias por tu visita. ¿Cómo nos calificarías del 1 al 5?`;
-    let externalId = '';
 
-    // 💳 Check credits and deduct 1 before sending
-    await this.checkAndDeductCredits(workspaceId);
+    // 💳 Validate credits before attempting send (read-only, no deduction yet)
+    await this.validateCredits(workspaceId);
 
-    if (channel === 'WHATSAPP') {
-      const success = await this.whatsAppService.sendTemplateMessage(
-        patient.phone,
-        'feedback_request_v1',
-        patient.language || 'es',
-        [
-          {
-            type: 'body',
-            parameters: [{ type: 'text', text: patient.name }],
-          },
-        ],
-      );
+    // Create message as PENDING first so the scheduler doesn't re-enqueue
+    // this patient while the send is in progress or if it fails.
+    // On BullMQ retries we reuse the same record via job.data.pendingMessageId.
+    const pendingMessageId: string | undefined = job.data.pendingMessageId;
+    let message;
 
-      if (!success) {
-        throw new Error('Failed to send WhatsApp template');
-      }
-      externalId = 'wa-pending-id'; // TODO: Update service to return ID
-    } else if (channel === 'SMS') {
-      // Send SMS via Twilio
-      const smsResult = await this.twilioService.sendSMS({
-        to: patient.phone,
-        body: messageContent,
+    if (pendingMessageId) {
+      message = await this.prisma.message.update({
+        where: { id: pendingMessageId },
+        data: { status: 'PENDING' },
       });
-
-      if (!smsResult.success) {
-        this.logger.error(
-          `Failed to send SMS to ${patient.phone}: ${smsResult.error}`,
-        );
-        throw new Error(smsResult.error);
-      }
-      externalId = smsResult.messageId;
-    } else if (channel === 'EMAIL') {
-      // TODO: Implementar envío de Email cuando SendGrid esté configurado
-      this.logger.warn('Email channel not yet implemented, skipping');
-      return;
+    } else {
+      message = await this.prisma.message.create({
+        data: {
+          type: 'INITIAL',
+          channel,
+          status: 'PENDING',
+          content: messageContent,
+          patientId,
+          campaignId,
+          workspaceId,
+        },
+      });
+      await job.updateData({ ...job.data, pendingMessageId: message.id });
     }
 
-    const message = await this.prisma.message.create({
-      data: {
-        type: 'INITIAL',
-        channel,
-        status: 'SENT',
-        content: messageContent,
-        sentAt: new Date(),
-        externalId,
-        patientId,
-        campaignId,
-        workspaceId,
-      },
-    });
+    try {
+      let externalId = '';
 
-    return { success: true, messageId: message.id };
+      if (channel === 'WHATSAPP') {
+        // TODO: Replace 'hello_world' with 'feedback_request_v1' once the template
+        // is approved in Meta WhatsApp Manager. hello_world is the default sandbox template.
+        const waMessageId = await this.whatsAppService.sendTemplateMessage(
+          patient.phone,
+          'hello_world',
+          'en_US',
+          [],
+        );
+
+        if (!waMessageId) {
+          throw new Error('Failed to send WhatsApp template');
+        }
+        externalId = waMessageId;
+      } else if (channel === 'SMS') {
+        const smsResult = await this.twilioService.sendSMS({
+          to: patient.phone,
+          body: messageContent,
+        });
+
+        if (!smsResult.success) {
+          this.logger.error(
+            `Failed to send SMS to ${patient.phone}: ${smsResult.error}`,
+          );
+          throw new Error(smsResult.error);
+        }
+        externalId = smsResult.messageId;
+      } else if (channel === 'EMAIL') {
+        if (!patient.email) {
+          this.logger.warn(
+            `Patient ${patientId} has no email address, skipping EMAIL channel`,
+          );
+          await this.prisma.message.update({
+            where: { id: message.id },
+            data: { status: 'FAILED' },
+          });
+          return;
+        }
+        const emailId = await this.emailService.sendPatientMessage({
+          patientEmail: patient.email,
+          patientName: patient.name,
+          subject: '¿Cómo fue tu experiencia con nosotros?',
+          content: messageContent,
+        });
+        if (!emailId) {
+          throw new Error('Failed to send patient email');
+        }
+        externalId = emailId;
+      }
+
+      // 💳 Deduct 1 credit only after successful send
+      await this.checkAndDeductCredits(workspaceId);
+
+      await this.prisma.message.update({
+        where: { id: message.id },
+        data: { status: 'SENT', sentAt: new Date(), externalId },
+      });
+
+      return { success: true, messageId: message.id };
+    } catch (error) {
+      await this.prisma.message.update({
+        where: { id: message.id },
+        data: { status: 'FAILED' },
+      });
+      throw error; // Re-throw so BullMQ retries (attempts: 3)
+    }
   }
 
   private async handleResponse(job: Job): Promise<any> {
-    const { messageId, rating, text, from } = job.data;
+    const { messageId, rating } = job.data;
 
     this.logger.log(
       `Handling response for message ${messageId} with rating ${rating}`,
@@ -505,18 +568,39 @@ export class CampaignProcessor extends WorkerHost {
     const channel = patient.preferredChannel || 'SMS';
     let externalId = '';
 
-    // 💳 Check credits and deduct 1 before sending
-    await this.checkAndDeductCredits(workspaceId);
+    // 💳 Validate credits before attempting send (read-only, no deduction yet)
+    await this.validateCredits(workspaceId);
 
     if (channel === 'WHATSAPP') {
-      const success = await this.whatsAppService.sendTextMessage(
+      const waMessageId = await this.whatsAppService.sendTextMessage(
         patient.phone,
         content,
       );
-      if (!success) {
+      if (!waMessageId) {
         throw new Error('Failed to send WhatsApp text');
       }
-      externalId = 'wa-pending-id';
+      externalId = waMessageId;
+    } else if (channel === 'EMAIL') {
+      if (!patient.email) {
+        this.logger.warn(
+          `Patient ${patientId} has no email for followup, skipping`,
+        );
+        return;
+      }
+      const subject =
+        type === 'HAPPY'
+          ? '¡Gracias por tu buena valoración!'
+          : 'Tu opinión es importante para nosotros';
+      const emailId = await this.emailService.sendPatientMessage({
+        patientEmail: patient.email,
+        patientName: patient.name,
+        subject,
+        content,
+      });
+      if (!emailId) {
+        throw new Error('Failed to send followup email');
+      }
+      externalId = emailId;
     } else {
       // Send SMS via Twilio
       const smsResult = await this.twilioService.sendSMS({
@@ -532,6 +616,9 @@ export class CampaignProcessor extends WorkerHost {
       }
       externalId = smsResult.messageId;
     }
+
+    // 💳 Deduct 1 credit only after successful send
+    await this.checkAndDeductCredits(workspaceId);
 
     await this.prisma.message.create({
       data: {

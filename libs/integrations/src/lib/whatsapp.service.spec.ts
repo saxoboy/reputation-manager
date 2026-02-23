@@ -48,7 +48,7 @@ describe('WhatsAppService', () => {
         'hello_world',
       );
 
-      expect(result).toBe(true);
+      expect(result).toBe('wamid.HBg...');
       expect(global.fetch).toHaveBeenCalledWith(
         expect.stringContaining('/messages'),
         expect.objectContaining({
@@ -69,7 +69,7 @@ describe('WhatsAppService', () => {
         'hello_world',
       );
 
-      expect(result).toBe(false);
+      expect(result).toBeNull();
     });
   });
 
@@ -85,7 +85,7 @@ describe('WhatsAppService', () => {
         'Hello there!',
       );
 
-      expect(result).toBe(true);
+      expect(result).toBe('wamid.HBg...');
       expect(global.fetch).toHaveBeenCalledWith(
         expect.stringContaining('/messages'),
         expect.objectContaining({

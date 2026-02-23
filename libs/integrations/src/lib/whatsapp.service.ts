@@ -34,7 +34,7 @@ export class WhatsAppService {
     templateName: string,
     languageCode = 'es',
     components: unknown[] = [],
-  ): Promise<boolean> {
+  ): Promise<string | null> {
     const formattedTo = to.replace('+', '');
     const url = `${this.baseUrl}/${this.apiVersion}/${this.phoneNumberId}/messages`;
 
@@ -67,13 +67,12 @@ export class WhatsAppService {
         throw new Error(JSON.stringify(data));
       }
 
-      this.logger.log(
-        `WhatsApp template sent to ${to}: ${JSON.stringify(data)}`,
-      );
-      return true;
+      const messageId = data?.messages?.[0]?.id ?? null;
+      this.logger.log(`WhatsApp template sent to ${to}: id=${messageId}`);
+      return messageId;
     } catch (error) {
       this.logger.error(`Error sending WhatsApp to ${to}: ${error}`);
-      return false;
+      return null;
     }
   }
 
@@ -82,7 +81,7 @@ export class WhatsAppService {
    * @param to Phone number
    * @param content Message content
    */
-  async sendTextMessage(to: string, content: string): Promise<boolean> {
+  async sendTextMessage(to: string, content: string): Promise<string | null> {
     const formattedTo = to.replace('+', '');
     const url = `${this.baseUrl}/${this.apiVersion}/${this.phoneNumberId}/messages`;
 
@@ -113,11 +112,12 @@ export class WhatsAppService {
         throw new Error(JSON.stringify(data));
       }
 
-      this.logger.log(`WhatsApp text sent to ${to}: ${JSON.stringify(data)}`);
-      return true;
+      const messageId = data?.messages?.[0]?.id ?? null;
+      this.logger.log(`WhatsApp text sent to ${to}: id=${messageId}`);
+      return messageId;
     } catch (error) {
       this.logger.error(`Error sending WhatsApp text to ${to}: ${error}`);
-      return false;
+      return null;
     }
   }
 }

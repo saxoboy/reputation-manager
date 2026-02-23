@@ -207,7 +207,8 @@ export class MessagesService {
   }
 
   /**
-   * Crear un nuevo mensaje (MOCK - sin envío real)
+   * Crear un nuevo mensaje en estado PENDING.
+   * El envío real se realiza a través del worker (BullMQ).
    */
   async create(workspaceId: string, dto: CreateMessageDto) {
     // Verificar que el paciente pertenezca al workspace
@@ -237,7 +238,6 @@ export class MessagesService {
       }
     }
 
-    // Crear el mensaje (MOCK - simular envío)
     const message = await this.prisma.message.create({
       data: {
         type: dto.type,
@@ -272,19 +272,6 @@ export class MessagesService {
         },
       },
     });
-
-    // MOCK: Simular envío exitoso después de un delay
-    // En producción, esto se manejaría con un job de BullMQ
-    setTimeout(async () => {
-      await this.prisma.message.update({
-        where: { id: message.id },
-        data: {
-          status: 'SENT',
-          sentAt: new Date(),
-        },
-      });
-      console.log(`[MOCK] Mensaje ${message.id} enviado a ${patient.phone}`);
-    }, 1000);
 
     return message;
   }
@@ -413,24 +400,19 @@ export class MessagesService {
         content = content.replace('{feedbackLink}', feedbackFormUrl);
       }
 
-      // Crear mensaje de seguimiento
-      setTimeout(async () => {
-        await this.prisma.message.create({
-          data: {
-            type: followupType,
-            channel: message.channel,
-            content,
-            status: 'PENDING',
-            patientId: message.patientId,
-            campaignId: message.campaignId,
-            workspaceId,
-            templateId: template.id,
-          },
-        });
-        console.log(
-          `[MOCK] Mensaje de seguimiento ${followupType} creado para paciente ${updatedMessage.patient.name}`,
-        );
-      }, 2000);
+      // Crear mensaje de seguimiento en estado PENDING
+      await this.prisma.message.create({
+        data: {
+          type: followupType,
+          channel: message.channel,
+          content,
+          status: 'PENDING',
+          patientId: message.patientId,
+          campaignId: message.campaignId,
+          workspaceId,
+          templateId: template.id,
+        },
+      });
     }
 
     return updatedMessage;

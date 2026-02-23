@@ -31,6 +31,13 @@ export interface InvitationEmail {
   acceptUrl: string;
 }
 
+export interface PatientMessage {
+  patientEmail: string;
+  patientName: string;
+  subject: string;
+  content: string;
+}
+
 export interface InvoiceEmail {
   email: string;
   name: string;
@@ -202,6 +209,64 @@ export class EmailService {
         error,
       );
       return false;
+    }
+  }
+
+  /**
+   * Send a feedback request or followup message to a patient via email
+   * Returns a synthetic message ID (email provider ID) or null on failure
+   */
+  async sendPatientMessage(data: PatientMessage): Promise<string | null> {
+    if (!this.enabled || !this.resend) {
+      this.logger.warn('Email service disabled - skipping patient message');
+      return null;
+    }
+
+    try {
+      this.logger.log(`📧 Sending patient message to ${data.patientEmail}`);
+
+      const result = await this.resend.emails.send({
+        to: data.patientEmail,
+        from: `${this.fromName} <${this.fromEmail}>`,
+        subject: data.subject,
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+    <h1 style="color: white; margin: 0; font-size: 24px;">Reputation Manager</h1>
+  </div>
+  <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+    <p style="font-size: 16px;">Hola ${data.patientName},</p>
+    <div style="font-size: 14px; white-space: pre-line;">${data.content.replace(/\n/g, '<br>')}</div>
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+    <p style="font-size: 12px; color: #9ca3af; text-align: center; margin: 0;">
+      Este mensaje fue enviado en nombre de tu médico. Si no deseas recibir más comunicaciones, responde STOP.
+    </p>
+  </div>
+</body>
+</html>`,
+      });
+
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+
+      const messageId = result.data?.id ?? null;
+      this.logger.log(
+        `✅ Patient message sent to ${data.patientEmail}: id=${messageId}`,
+      );
+      return messageId;
+    } catch (error) {
+      this.logger.error(
+        `Failed to send patient message to ${data.patientEmail}`,
+        error,
+      );
+      return null;
     }
   }
 
