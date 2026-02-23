@@ -1,4 +1,6 @@
-import { useState } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -14,7 +16,6 @@ import { Badge } from '../ui/badge';
 import { Separator } from '../ui/separator';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Info, MessageSquare, Send } from 'lucide-react';
-import { MOCK_PLANS } from '../../types/mock-types';
 import { Switch } from '../ui/switch';
 import {
   Select,
@@ -23,31 +24,53 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+import { Skeleton } from '../ui/skeleton';
+import { useCurrentWorkspace } from '../../hooks/use-workspaces';
+import { workspaceService } from '../../services/workspace.service';
+
+const PLAN_LABELS: Record<string, string> = {
+  FREE: 'Gratuito',
+  STARTER: 'Starter',
+  PROFESSIONAL: 'Profesional',
+  ENTERPRISE: 'Enterprise',
+};
+
+const PLAN_CREDITS: Record<string, number | null> = {
+  FREE: 50,
+  STARTER: 500,
+  PROFESSIONAL: 2000,
+  ENTERPRISE: null,
+};
 
 export function WorkspaceSettings() {
-  const [workspaceName, setWorkspaceName] = useState('Mi Consultorio');
-  const [currentPlan] = useState('STARTER');
-  const [messageCredits] = useState(500);
+  const { data: workspace, isLoading, refetch } = useCurrentWorkspace();
 
-  // Channel settings
+  const [workspaceName, setWorkspaceName] = useState('');
   const [defaultChannel, setDefaultChannel] = useState<
     'SMS' | 'WHATSAPP' | 'EMAIL'
   >('SMS');
   const [smsEnabled, setSmsEnabled] = useState(true);
   const [whatsappEnabled, setWhatsappEnabled] = useState(false);
   const [emailEnabled, setEmailEnabled] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const [channelLoading, setChannelLoading] = useState(false);
 
-  const currentPlanDetails = MOCK_PLANS.find((p) => p.id === currentPlan);
+  useEffect(() => {
+    if (workspace) {
+      setWorkspaceName(workspace.name);
+      setDefaultChannel(workspace.defaultChannel ?? 'SMS');
+      setSmsEnabled(workspace.smsEnabled ?? true);
+      setWhatsappEnabled(workspace.whatsappEnabled ?? false);
+      setEmailEnabled(workspace.emailEnabled ?? false);
+    }
+  }, [workspace]);
 
   const handleUpdate = async () => {
+    if (!workspace) return;
     setLoading(true);
-
     try {
-      // TODO: Implement API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await workspaceService.update(workspace.id, { name: workspaceName });
+      await refetch();
       toast.success('Configuración del workspace actualizada correctamente');
     } catch {
       toast.error('Error al actualizar la configuración');
@@ -57,9 +80,9 @@ export function WorkspaceSettings() {
   };
 
   const handleChannelUpdate = async () => {
+    if (!workspace) return;
     setChannelLoading(true);
 
-    // Validación: al menos un canal debe estar habilitado
     if (!smsEnabled && !whatsappEnabled && !emailEnabled) {
       toast.error(
         'Al menos un canal debe estar habilitado (SMS, WhatsApp o Email)',
@@ -67,8 +90,6 @@ export function WorkspaceSettings() {
       setChannelLoading(false);
       return;
     }
-
-    // Validación: el canal por defecto debe estar habilitado
     if (defaultChannel === 'SMS' && !smsEnabled) {
       toast.error(
         'No puedes establecer SMS como canal por defecto si está deshabilitado',
@@ -92,8 +113,13 @@ export function WorkspaceSettings() {
     }
 
     try {
-      // TODO: Implement API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await workspaceService.updateChannelSettings(workspace.id, {
+        smsEnabled,
+        whatsappEnabled,
+        emailEnabled,
+        defaultChannel,
+      });
+      await refetch();
       toast.success('Configuración de canales actualizada correctamente');
     } catch {
       toast.error('Error al actualizar la configuración de canales');
@@ -101,6 +127,29 @@ export function WorkspaceSettings() {
       setChannelLoading(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-32" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const planLabel = workspace
+    ? (PLAN_LABELS[workspace.plan] ?? workspace.plan)
+    : '';
+  const planMax = workspace ? PLAN_CREDITS[workspace.plan] : null;
+  const credits = workspace?.messageCredits ?? 0;
 
   return (
     <div className="space-y-6">
@@ -128,32 +177,33 @@ export function WorkspaceSettings() {
             <Label>Plan Actual</Label>
             <div className="flex items-center gap-4">
               <Badge variant="secondary" className="text-base">
-                {currentPlanDetails?.name}
+                {planLabel}
               </Badge>
-              <span className="text-sm text-muted-foreground">
-                {currentPlanDetails?.price}/mes
-              </span>
             </div>
           </div>
 
           <div className="space-y-2">
             <Label>Créditos de Mensajes</Label>
-            <div className="flex items-center gap-2">
-              <div className="text-2xl font-bold">{messageCredits}</div>
-              <span className="text-sm text-muted-foreground">
-                de {currentPlanDetails?.messages} disponibles
-              </span>
-            </div>
-            <div className="h-2 w-full rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary"
-                style={{
-                  width: `${
-                    (messageCredits / (currentPlanDetails?.messages || 1)) * 100
-                  }%`,
-                }}
-              />
-            </div>
+            {planMax === null ? (
+              <div className="text-2xl font-bold">Ilimitados</div>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="text-2xl font-bold">{credits}</div>
+                  <span className="text-sm text-muted-foreground">
+                    de {planMax} disponibles
+                  </span>
+                </div>
+                <div className="h-2 w-full rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary"
+                    style={{
+                      width: `${Math.min((credits / planMax) * 100, 100)}%`,
+                    }}
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           <Button onClick={handleUpdate} disabled={loading}>
