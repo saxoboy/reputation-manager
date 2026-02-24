@@ -1,22 +1,11 @@
 # Railway configuration for Reputation Manager (monorepo)
 #
-# Each service uses its own railway.toml:
-#   apps/api/railway.toml    → API service
-#   apps/web/railway.toml    → Web service
-#   apps/worker/railway.toml → Worker service
-#
+# Each service uses its own railway.toml.
 # In the Railway dashboard, set each service's "Config Path" to the
-# corresponding file above. Root Directory should be "/" for all services
+# corresponding file below. Root Directory should be "/" for all services
 # so the Dockerfiles can access the full monorepo.
 #
+#   API service    → Config Path: apps/api/railway.toml
+#   Worker service → Config Path: apps/worker/railway.toml
+#
 # See docs/DEPLOYMENT.md for the full setup guide.
-
-[build]
-builder = "DOCKERFILE"
-dockerfilePath = "apps/api/Dockerfile"
-
-[deploy]
-healthcheckPath = "/health"
-healthcheckTimeout = 300
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 10
