@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../hooks/use-auth';
 import { Button } from '../components/ui/button';
+import { Switch } from '../components/ui/switch';
 import {
   MessageSquare,
   Star,
@@ -419,14 +420,11 @@ function PricingSection() {
             >
               Mensual
             </span>
-            <button
-              onClick={() => setYearly(!yearly)}
-              className={`relative h-6 w-11 rounded-full transition-colors focus:outline-none ${yearly ? 'bg-teal-500' : 'bg-muted'}`}
-            >
-              <span
-                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${yearly ? 'translate-x-5' : 'translate-x-0.5'}`}
-              />
-            </button>
+            <Switch
+              checked={yearly}
+              onCheckedChange={setYearly}
+              className="data-[state=checked]:bg-teal-500"
+            />
             <span
               className={`cursor-pointer text-sm font-medium transition-colors ${yearly ? 'text-foreground' : 'text-muted-foreground'}`}
               onClick={() => setYearly(true)}
