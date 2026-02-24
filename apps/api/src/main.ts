@@ -1,13 +1,15 @@
 // Sentry must be imported first
 import './instrument';
 
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
+import { Logger } from 'nestjs-pino';
 import { AppModule } from './app/app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  app.useLogger(app.get(Logger));
 
   // Security headers
   app.use(helmet());
@@ -40,8 +42,10 @@ async function bootstrap() {
 
   const port = process.env.PORT || process.env.API_PORT || 3000;
   await app.listen(port);
-  Logger.log(`🚀 API is running on: http://localhost:${port}/api`);
-  Logger.log(`💚 Health check available at: http://localhost:${port}/health`);
+  app.get(Logger).log(`🚀 API is running on: http://localhost:${port}/api`);
+  app
+    .get(Logger)
+    .log(`💚 Health check available at: http://localhost:${port}/health`);
 }
 
 bootstrap();

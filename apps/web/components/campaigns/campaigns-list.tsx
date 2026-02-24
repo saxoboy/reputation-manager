@@ -96,94 +96,159 @@ export function CampaignsList({
             <CreateCampaignDialog workspaceId={workspaceId} />
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead className="hidden md:table-cell">
-                    Pacientes
-                  </TableHead>
-                  <TableHead className="hidden md:table-cell">
-                    Respuestas
-                  </TableHead>
-                  <TableHead className="hidden md:table-cell">NPS</TableHead>
-                  <TableHead className="hidden md:table-cell">
-                    Fecha Creación
-                  </TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {campaigns.map((campaign) => (
-                  <TableRow key={campaign.id}>
-                    <TableCell className="font-medium">
-                      <div>{campaign.name}</div>
-                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+          <>
+            {/* Mobile card view */}
+            <div className="md:hidden space-y-3">
+              {campaigns.map((campaign) => (
+                <div
+                  key={campaign.id}
+                  className="border rounded-lg p-4 space-y-3"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-medium text-sm">{campaign.name}</p>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                         <Building2 className="h-3 w-3" />
                         {campaign.practiceName}
                       </div>
-                    </TableCell>
-                    <TableCell>{getStatusBadge(campaign.status)}</TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {campaign.patientsCount}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {campaign.respondedCount}
-                      <span className="text-xs text-muted-foreground ml-1">
-                        (
-                        {campaign.patientsCount > 0
-                          ? Math.round(
-                              (campaign.respondedCount /
-                                campaign.patientsCount) *
-                                100,
-                            )
-                          : 0}
-                        %)
-                      </span>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {campaign.nps > 0 ? (
-                        <span
-                          className={
-                            campaign.nps >= 50
-                              ? 'text-green-600 font-medium'
-                              : 'text-yellow-600'
-                          }
-                        >
-                          {campaign.nps}
+                    </div>
+                    {getStatusBadge(campaign.status)}
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-xs text-center">
+                    <div>
+                      <p className="text-muted-foreground">Pacientes</p>
+                      <p className="font-medium">{campaign.patientsCount}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Respuestas</p>
+                      <p className="font-medium">
+                        {campaign.respondedCount}
+                        <span className="text-muted-foreground ml-0.5">
+                          (
+                          {campaign.patientsCount > 0
+                            ? Math.round(
+                                (campaign.respondedCount /
+                                  campaign.patientsCount) *
+                                  100,
+                              )
+                            : 0}
+                          %)
                         </span>
-                      ) : (
-                        '-'
-                      )}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
-                      {formatDateTime(campaign.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-right flex items-center justify-end gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleOpenUpload(campaign)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">NPS</p>
+                      <p
+                        className={`font-medium ${campaign.nps >= 50 ? 'text-green-600' : campaign.nps > 0 ? 'text-yellow-600' : ''}`}
                       >
-                        <Upload className="h-4 w-4" />
-                        <span className="hidden sm:inline ml-1">
-                          Importar CSV
-                        </span>
-                      </Button>
-                      <Button variant="secondary" size="sm" asChild>
-                        <Link href={`/dashboard/campaigns/${campaign.id}`}>
-                          <span className="hidden sm:inline">Ver Detalles</span>
-                          <span className="sm:hidden">Ver</span>
-                        </Link>
-                      </Button>
-                    </TableCell>
+                        {campaign.nps > 0 ? campaign.nps : '-'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => handleOpenUpload(campaign)}
+                    >
+                      <Upload className="h-3.5 w-3.5 mr-1" />
+                      Importar
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="flex-1"
+                      asChild
+                    >
+                      <Link href={`/dashboard/campaigns/${campaign.id}`}>
+                        Ver Detalles
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table view */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Pacientes</TableHead>
+                    <TableHead>Respuestas</TableHead>
+                    <TableHead>NPS</TableHead>
+                    <TableHead>Fecha Creación</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {campaigns.map((campaign) => (
+                    <TableRow key={campaign.id}>
+                      <TableCell className="font-medium">
+                        <div>{campaign.name}</div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Building2 className="h-3 w-3" />
+                          {campaign.practiceName}
+                        </div>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(campaign.status)}</TableCell>
+                      <TableCell>{campaign.patientsCount}</TableCell>
+                      <TableCell>
+                        {campaign.respondedCount}
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (
+                          {campaign.patientsCount > 0
+                            ? Math.round(
+                                (campaign.respondedCount /
+                                  campaign.patientsCount) *
+                                  100,
+                              )
+                            : 0}
+                          %)
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {campaign.nps > 0 ? (
+                          <span
+                            className={
+                              campaign.nps >= 50
+                                ? 'text-green-600 font-medium'
+                                : 'text-yellow-600'
+                            }
+                          >
+                            {campaign.nps}
+                          </span>
+                        ) : (
+                          '-'
+                        )}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {formatDateTime(campaign.createdAt)}
+                      </TableCell>
+                      <TableCell className="text-right flex items-center justify-end gap-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleOpenUpload(campaign)}
+                        >
+                          <Upload className="h-4 w-4" />
+                          <span className="ml-1">Importar CSV</span>
+                        </Button>
+                        <Button variant="secondary" size="sm" asChild>
+                          <Link href={`/dashboard/campaigns/${campaign.id}`}>
+                            Ver Detalles
+                          </Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         )}
         {pagination && (
           <PaginationControls

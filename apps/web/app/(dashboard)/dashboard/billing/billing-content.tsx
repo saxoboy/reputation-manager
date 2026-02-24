@@ -562,9 +562,17 @@ export default function BillingContent() {
         </CardHeader>
         <CardContent>
           {transactions.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              No hay transacciones registradas
-            </p>
+            <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+              <CreditCard className="h-10 w-10 text-muted-foreground/40" />
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Sin transacciones aún
+                </p>
+                <p className="text-xs text-muted-foreground/70 mt-1">
+                  Aquí aparecerán tus pagos y compras de créditos.
+                </p>
+              </div>
+            </div>
           ) : (
             <Table>
               <TableHeader>

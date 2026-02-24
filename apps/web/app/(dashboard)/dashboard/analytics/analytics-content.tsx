@@ -14,6 +14,7 @@ import {
   GitCompareArrows,
   Calendar,
   BarChart2,
+  HelpCircle,
 } from 'lucide-react';
 import {
   Card,
@@ -22,6 +23,11 @@ import {
   CardTitle,
 } from '../../../../components/ui/card';
 import { Button } from '../../../../components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '../../../../components/ui/tooltip';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsService } from '../../../../services/analytics.service';
 import { practiceService } from '../../../../services/practice.service';
@@ -57,17 +63,37 @@ interface KpiCardProps {
   value: string | number;
   description?: string;
   icon: React.ReactNode;
+  tooltip?: string;
   trend?: {
     value: number;
     isPositive: boolean;
   };
 }
 
-function KpiCard({ title, value, description, icon, trend }: KpiCardProps) {
+function KpiCard({
+  title,
+  value,
+  description,
+  icon,
+  tooltip,
+  trend,
+}: KpiCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <div className="flex items-center gap-1">
+          <CardTitle className="text-sm font-medium">{title}</CardTitle>
+          {tooltip && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-56 text-center">
+                {tooltip}
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
         <div className="text-muted-foreground">{icon}</div>
       </CardHeader>
       <CardContent>
@@ -292,6 +318,7 @@ export default function AnalyticsPage() {
               value={formatPercentage(overview.responseRate)}
               description={`${overview.totalResponses} de ${overview.totalMessages} respondieron`}
               icon={<CheckCircle className="h-4 w-4" />}
+              tooltip="Porcentaje de pacientes que respondieron al mensaje de solicitud de feedback."
             />
 
             <KpiCard
@@ -312,6 +339,7 @@ export default function AnalyticsPage() {
                     : 'Mejorable'
               }
               icon={<BarChart3 className="h-4 w-4" />}
+              tooltip="Net Promoter Score: diferencia entre promotores (4-5★) y detractores (1-2★). Rango: -100 a 100. Sobre 50 es excelente."
             />
           </div>
 

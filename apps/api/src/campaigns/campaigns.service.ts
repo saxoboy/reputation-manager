@@ -16,6 +16,7 @@ import {
 } from '@reputation-manager/shared-utils';
 import { PaginatedResponse } from '@reputation-manager/shared-types';
 import { BillingService } from '../billing/billing.service';
+import { RedisCacheService } from '../cache/redis-cache.service';
 import * as ExcelJS from 'exceljs';
 import Anthropic from '@anthropic-ai/sdk';
 
@@ -24,6 +25,7 @@ export class CampaignsService {
   constructor(
     private prisma: PrismaService,
     private billingService: BillingService,
+    private cache: RedisCacheService,
   ) {}
 
   /**
@@ -204,6 +206,7 @@ export class CampaignsService {
       },
     });
 
+    await this.cache.delByPattern(`analytics:ws:${workspaceId}:*`);
     return campaign;
   }
 

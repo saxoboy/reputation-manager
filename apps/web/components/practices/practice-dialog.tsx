@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import {
   Dialog,
@@ -10,6 +12,8 @@ import {
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { toast } from 'sonner';
+import { Copy, ExternalLink, Star } from 'lucide-react';
 import { Practice } from '../../services/practice.service';
 import { GooglePlacesAutocompleteInput } from './google-places-autocomplete';
 import { googlePlacesService } from '../../services/google-places.service';
@@ -174,6 +178,48 @@ export function PracticeDialog({
               Se completa automáticamente al buscar en Google Maps
             </p>
           </div>
+          {formData.googlePlaceId && (
+            <div className="space-y-2 rounded-md border bg-muted/40 p-3">
+              <div className="flex items-center gap-1.5">
+                <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                <Label className="text-xs font-medium">
+                  Link de Reseña Google
+                </Label>
+              </div>
+              <p className="truncate text-xs text-muted-foreground font-mono">
+                {`https://search.google.com/local/writereview?placeid=${formData.googlePlaceId}`}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    const url = `https://search.google.com/local/writereview?placeid=${formData.googlePlaceId}`;
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                  }}
+                >
+                  <ExternalLink className="mr-1.5 h-3 w-3" />
+                  Probar link
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    const url = `https://search.google.com/local/writereview?placeid=${formData.googlePlaceId}`;
+                    navigator.clipboard.writeText(url);
+                    toast.success('Link copiado al portapapeles');
+                  }}
+                >
+                  <Copy className="mr-1.5 h-3 w-3" />
+                  Copiar link
+                </Button>
+              </div>
+            </div>
+          )}
           <DialogFooter>
             <Button
               type="button"

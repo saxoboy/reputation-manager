@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { BullModule } from '@nestjs/bullmq';
+import { LoggerModule } from 'nestjs-pino';
 import { PrismaService } from '@reputation-manager/database';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -18,9 +19,24 @@ import { WebhooksModule } from '../webhooks/webhooks.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { WeeklyReportsModule } from '../weekly-reports/weekly-reports.module';
 import { BillingModule } from '../billing/billing.module';
+import { RedisCacheModule } from '../cache/redis-cache.module';
+import { FeedbackModule } from '../feedback/feedback.module';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+        transport:
+          process.env.NODE_ENV !== 'production'
+            ? {
+                target: 'pino-pretty',
+                options: { colorize: true, singleLine: true },
+              }
+            : undefined,
+        redact: ['req.headers.authorization', 'req.headers.cookie'],
+      },
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -47,7 +63,7 @@ import { BillingModule } from '../billing/billing.module';
     AuthModule.forRoot({
       auth,
       basePath: '/api/auth', // Especificar la ruta completa incluyendo el prefijo global
-      publicRoutes: ['/health', '/api/invitations'], // Rutas que no requieren autenticación
+      publicRoutes: ['/health', '/api/invitations', '/api/feedback'], // Rutas que no requieren autenticación
     }),
     WorkspacesModule,
     PracticesModule,
@@ -60,6 +76,8 @@ import { BillingModule } from '../billing/billing.module';
     AnalyticsModule,
     WeeklyReportsModule,
     BillingModule,
+    RedisCacheModule,
+    FeedbackModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

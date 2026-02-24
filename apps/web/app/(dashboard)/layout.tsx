@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Sidebar } from '../../components/dashboard/sidebar';
 import { Header } from '../../components/dashboard/header';
 import { Breadcrumbs } from '../../components/dashboard/breadcrumbs';
+import { FeedbackWidget } from '../../components/beta/feedback-widget';
 
 export const metadata: Metadata = {
   title: 'Dashboard - Reputation Manager',
@@ -22,6 +23,7 @@ export default function DashboardLayout({
         </div>
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
+      {process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <FeedbackWidget />}
     </div>
   );
 }

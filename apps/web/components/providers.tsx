@@ -2,7 +2,10 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
-import { useState, type ReactNode } from 'react';
+import { Suspense, useState, type ReactNode } from 'react';
+import { TooltipProvider } from './ui/tooltip';
+import { PostHogProvider } from './providers/posthog-provider';
+import { PostHogPageview } from './providers/posthog-pageview';
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -25,7 +28,12 @@ export function Providers({ children }: { children: ReactNode }) {
         enableSystem
         disableTransitionOnChange
       >
-        {children}
+        <PostHogProvider>
+          <Suspense fallback={null}>
+            <PostHogPageview />
+          </Suspense>
+          <TooltipProvider>{children}</TooltipProvider>
+        </PostHogProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
