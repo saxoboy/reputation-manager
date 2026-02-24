@@ -473,9 +473,17 @@ export function CampaignDetail({ campaignId }: CampaignDetailProps) {
               {isMessagesLoading ? (
                 <div className="flex justify-center p-4">Cargando...</div>
               ) : messages?.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  No hay mensajes aún. Los mensajes se generan cuando el Worker
-                  procesa los pacientes de la campaña activa.
+                <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+                  <MessageSquare className="h-10 w-10 text-muted-foreground/40" />
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      No hay mensajes enviados aún
+                    </p>
+                    <p className="text-xs text-muted-foreground/70 mt-1">
+                      Los mensajes se generan automáticamente cuando el worker
+                      procesa los pacientes de la campaña activa.
+                    </p>
+                  </div>
                 </div>
               ) : (
                 <Table>

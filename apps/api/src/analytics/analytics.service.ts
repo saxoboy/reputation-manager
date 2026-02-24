@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@reputation-manager/database';
 import { MessageStatus, MessageType } from '@prisma/client';
+import { RedisCacheService } from '../cache/redis-cache.service';
 
 export interface WorkspaceAnalytics {
   overview: {
@@ -134,7 +135,10 @@ export interface CohortAnalysis {
 export class AnalyticsService {
   private readonly logger = new Logger(AnalyticsService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cache: RedisCacheService,
+  ) {}
 
   /**
    * Obtiene analytics del workspace completo
@@ -144,6 +148,10 @@ export class AnalyticsService {
     startDate?: Date,
     endDate?: Date,
   ): Promise<WorkspaceAnalytics> {
+    const cacheKey = `analytics:ws:${workspaceId}:${startDate?.toISOString() ?? ''}:${endDate?.toISOString() ?? ''}`;
+    const cached = await this.cache.get<WorkspaceAnalytics>(cacheKey);
+    if (cached) return cached;
+
     const dateFilter = this.buildDateFilter(startDate, endDate);
 
     // Total de mensajes enviados
@@ -196,7 +204,7 @@ export class AnalyticsService {
     // Top campaigns
     const campaigns = await this.getTopCampaigns(workspaceId, 5);
 
-    return {
+    const result: WorkspaceAnalytics = {
       overview: {
         totalMessages,
         totalResponses,
@@ -211,6 +219,8 @@ export class AnalyticsService {
       timeline,
       campaigns,
     };
+    await this.cache.set(cacheKey, result, 600); // 10 minutos
+    return result;
   }
 
   /**
@@ -220,6 +230,10 @@ export class AnalyticsService {
     workspaceId: string,
     campaignId: string,
   ): Promise<CampaignAnalytics> {
+    const cacheKey = `analytics:campaign:${campaignId}`;
+    const cached = await this.cache.get<CampaignAnalytics>(cacheKey);
+    if (cached) return cached;
+
     const campaign = await this.prisma.campaign.findUnique({
       where: { id: campaignId, workspaceId },
       include: {
@@ -283,7 +297,7 @@ export class AnalyticsService {
       };
     });
 
-    return {
+    const result: CampaignAnalytics = {
       campaignId: campaign.id,
       campaignName: campaign.name,
       totalPatients,
@@ -298,6 +312,8 @@ export class AnalyticsService {
       },
       patients,
     };
+    await this.cache.set(cacheKey, result, 300); // 5 minutos
+    return result;
   }
 
   /**
@@ -776,6 +792,10 @@ export class AnalyticsService {
     workspaceId: string,
     months = 6,
   ): Promise<CohortAnalysis> {
+    const cacheKey = `analytics:cohort:${workspaceId}:${months}`;
+    const cached = await this.cache.get<CohortAnalysis>(cacheKey);
+    if (cached) return cached;
+
     const cohorts: CohortEntry[] = [];
 
     for (let i = months - 1; i >= 0; i--) {
@@ -833,7 +853,9 @@ export class AnalyticsService {
     const withData = cohorts.filter((c) => c.totalMessages > 0);
     const trends = this.calculateTrends(withData);
 
-    return { cohorts, trends };
+    const result: CohortAnalysis = { cohorts, trends };
+    await this.cache.set(cacheKey, result, 3600); // 1 hora
+    return result;
   }
 
   /**

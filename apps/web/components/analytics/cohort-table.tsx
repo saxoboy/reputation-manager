@@ -66,91 +66,161 @@ export function CohortTable({ cohorts, trends }: CohortTableProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Mes</TableHead>
-              <TableHead className="text-right">Mensajes</TableHead>
-              <TableHead className="text-right">Respuestas</TableHead>
-              <TableHead className="text-right">Tasa Resp.</TableHead>
-              <TableHead className="text-right">Rating</TableHead>
-              <TableHead className="text-right">NPS</TableHead>
-              <TableHead className="text-right">% Felices</TableHead>
-              <TableHead className="text-right">% Infelices</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {cohorts.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="text-center text-muted-foreground py-8"
+        {cohorts.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">
+            No hay datos de cohortes disponibles
+          </p>
+        ) : (
+          <>
+            {/* Mobile card view */}
+            <div className="md:hidden space-y-3">
+              {cohorts.map((cohort) => (
+                <div
+                  key={cohort.cohort}
+                  className="border rounded-lg p-4 space-y-3"
                 >
-                  No hay datos de cohortes disponibles
-                </TableCell>
-              </TableRow>
-            ) : (
-              cohorts.map((cohort) => (
-                <TableRow key={cohort.cohort}>
-                  <TableCell className="font-medium">
+                  <p className="font-medium text-sm">
                     {formatMonth(cohort.cohort)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {cohort.totalMessages.toLocaleString('es-EC')}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {cohort.totalResponses.toLocaleString('es-EC')}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <span
-                      className={
-                        cohort.responseRate >= 50
-                          ? 'text-green-600 font-medium'
-                          : cohort.responseRate >= 30
-                            ? 'text-yellow-600'
-                            : 'text-red-600'
-                      }
-                    >
-                      {cohort.responseRate.toFixed(1)}%
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {cohort.averageRating > 0
-                      ? cohort.averageRating.toFixed(1)
-                      : '—'}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <span
-                      className={
-                        cohort.npsScore >= 50
-                          ? 'text-green-600 font-medium'
-                          : cohort.npsScore >= 0
-                            ? 'text-yellow-600'
-                            : 'text-red-600'
-                      }
-                    >
-                      {cohort.totalResponses > 0 ? cohort.npsScore : '—'}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <span className="text-green-600">
-                      {cohort.totalResponses > 0
-                        ? `${cohort.happyPercent}%`
-                        : '—'}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <span className="text-red-600">
-                      {cohort.totalResponses > 0
-                        ? `${cohort.unhappyPercent}%`
-                        : '—'}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                  </p>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Mensajes</span>
+                      <span className="font-medium">
+                        {cohort.totalMessages.toLocaleString('es-EC')}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Respuestas</span>
+                      <span className="font-medium">
+                        {cohort.totalResponses.toLocaleString('es-EC')}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Tasa Resp.</span>
+                      <span
+                        className={`font-medium ${cohort.responseRate >= 50 ? 'text-green-600' : cohort.responseRate >= 30 ? 'text-yellow-600' : 'text-red-600'}`}
+                      >
+                        {cohort.responseRate.toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Rating</span>
+                      <span className="font-medium">
+                        {cohort.averageRating > 0
+                          ? cohort.averageRating.toFixed(1)
+                          : '—'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">NPS</span>
+                      <span
+                        className={`font-medium ${cohort.npsScore >= 50 ? 'text-green-600' : cohort.npsScore >= 0 ? 'text-yellow-600' : 'text-red-600'}`}
+                      >
+                        {cohort.totalResponses > 0 ? cohort.npsScore : '—'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        Felices / Infelices
+                      </span>
+                      <span>
+                        <span className="text-green-600">
+                          {cohort.totalResponses > 0
+                            ? `${cohort.happyPercent}%`
+                            : '—'}
+                        </span>
+                        {' / '}
+                        <span className="text-red-600">
+                          {cohort.totalResponses > 0
+                            ? `${cohort.unhappyPercent}%`
+                            : '—'}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table view */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Mes</TableHead>
+                    <TableHead className="text-right">Mensajes</TableHead>
+                    <TableHead className="text-right">Respuestas</TableHead>
+                    <TableHead className="text-right">Tasa Resp.</TableHead>
+                    <TableHead className="text-right">Rating</TableHead>
+                    <TableHead className="text-right">NPS</TableHead>
+                    <TableHead className="text-right">% Felices</TableHead>
+                    <TableHead className="text-right">% Infelices</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {cohorts.map((cohort) => (
+                    <TableRow key={cohort.cohort}>
+                      <TableCell className="font-medium">
+                        {formatMonth(cohort.cohort)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {cohort.totalMessages.toLocaleString('es-EC')}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {cohort.totalResponses.toLocaleString('es-EC')}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span
+                          className={
+                            cohort.responseRate >= 50
+                              ? 'text-green-600 font-medium'
+                              : cohort.responseRate >= 30
+                                ? 'text-yellow-600'
+                                : 'text-red-600'
+                          }
+                        >
+                          {cohort.responseRate.toFixed(1)}%
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {cohort.averageRating > 0
+                          ? cohort.averageRating.toFixed(1)
+                          : '—'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span
+                          className={
+                            cohort.npsScore >= 50
+                              ? 'text-green-600 font-medium'
+                              : cohort.npsScore >= 0
+                                ? 'text-yellow-600'
+                                : 'text-red-600'
+                          }
+                        >
+                          {cohort.totalResponses > 0 ? cohort.npsScore : '—'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span className="text-green-600">
+                          {cohort.totalResponses > 0
+                            ? `${cohort.happyPercent}%`
+                            : '—'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span className="text-red-600">
+                          {cohort.totalResponses > 0
+                            ? `${cohort.unhappyPercent}%`
+                            : '—'}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );

@@ -3,6 +3,7 @@ import { ForbiddenException } from '@nestjs/common';
 import { CampaignsService } from './campaigns.service';
 import { PrismaService } from '@reputation-manager/database';
 import { BillingService } from '../billing/billing.service';
+import { RedisCacheService } from '../cache/redis-cache.service';
 
 // Mock parsePatientsCSV
 jest.mock('@reputation-manager/shared-utils', () => ({
@@ -37,6 +38,13 @@ describe('CampaignsService - Credit Pre-check', () => {
     canSendMessage: jest.fn(),
   };
 
+  const mockCache = {
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue(undefined),
+    del: jest.fn().mockResolvedValue(undefined),
+    delByPattern: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -45,6 +53,7 @@ describe('CampaignsService - Credit Pre-check', () => {
         CampaignsService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: BillingService, useValue: mockBillingService },
+        { provide: RedisCacheService, useValue: mockCache },
       ],
     }).compile();
 
