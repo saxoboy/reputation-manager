@@ -2,15 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
 import {
-  CheckCircle2,
-  Circle,
   X,
   Building2,
   Megaphone,
   FileText,
+  CheckCircle2,
+  ChevronRight,
 } from 'lucide-react';
 import { usePractices } from '../../hooks/use-practices';
 import { useCampaigns } from '../../hooks/use-campaigns';
@@ -39,18 +37,22 @@ export function SetupChecklist({ workspaceId }: SetupChecklistProps) {
   const steps = [
     {
       label: 'Crea tu primer consultorio',
+      description:
+        'Configura tu clínica con dirección y link de Google Reviews.',
       done: hasPractice,
       href: '/dashboard/practices',
       icon: Building2,
     },
     {
       label: 'Crea tu primera campaña',
+      description: 'Importa pacientes y activa el envío automático post-cita.',
       done: hasCampaign,
       href: '/dashboard/campaigns',
       icon: Megaphone,
     },
     {
-      label: 'Personaliza tus plantillas de mensaje',
+      label: 'Personaliza tus plantillas',
+      description: 'Ajusta el mensaje que recibirán tus pacientes por SMS.',
       done: hasTemplate,
       href: '/dashboard/templates',
       icon: FileText,
@@ -59,6 +61,7 @@ export function SetupChecklist({ workspaceId }: SetupChecklistProps) {
 
   const completedCount = steps.filter((s) => s.done).length;
   const allDone = completedCount === steps.length;
+  const progressPct = Math.round((completedCount / steps.length) * 100);
 
   if (dismissed || allDone) return null;
 
@@ -68,58 +71,126 @@ export function SetupChecklist({ workspaceId }: SetupChecklistProps) {
   };
 
   return (
-    <Card className="border-primary/20 bg-primary/5">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-base">
-              Configura tu cuenta ({completedCount}/{steps.length} completados)
-            </CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Completa estos pasos para empezar a recopilar feedback de tus
-              pacientes.
-            </p>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-muted-foreground"
-            onClick={handleDismiss}
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Cerrar</span>
-          </Button>
+    <div className="rounded-2xl border border-teal-500/20 bg-card p-5 shadow-sm">
+      {/* Header */}
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <div>
+          <h3 className="font-display font-semibold leading-tight">
+            Configura tu cuenta
+          </h3>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            Completa estos pasos para empezar a recopilar reseñas de tus
+            pacientes.
+          </p>
         </div>
-      </CardHeader>
-      <CardContent>
-        <ul className="space-y-2">
-          {steps.map((step) => {
-            const Icon = step.icon;
-            return (
-              <li key={step.label} className="flex items-center gap-3">
-                {step.done ? (
-                  <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" />
-                ) : (
-                  <Circle className="h-5 w-5 shrink-0 text-muted-foreground/40" />
-                )}
-                <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                {step.done ? (
-                  <span className="text-sm text-muted-foreground line-through">
-                    {step.label}
-                  </span>
-                ) : (
-                  <Link
-                    href={step.href}
-                    className="text-sm font-medium hover:underline"
-                  >
-                    {step.label}
-                  </Link>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      </CardContent>
-    </Card>
+        <button
+          onClick={handleDismiss}
+          className="mt-0.5 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          aria-label="Cerrar"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Progress bar */}
+      <div className="mb-5">
+        <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground">
+          <span>
+            {completedCount} de {steps.length} completados
+          </span>
+          <span className="font-medium text-teal-600 dark:text-teal-400">
+            {progressPct}%
+          </span>
+        </div>
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-teal-500 transition-all duration-700 ease-out"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Step cards */}
+      <div className="grid gap-3 md:grid-cols-3">
+        {steps.map((step, i) => {
+          const Icon = step.icon;
+          // Highlight the first incomplete step
+          const isNext = !step.done && steps.slice(0, i).every((s) => s.done);
+
+          return (
+            <div
+              key={step.label}
+              className={`relative rounded-xl border p-4 transition-all duration-200 ${
+                step.done
+                  ? 'border-border bg-muted/30'
+                  : isNext
+                    ? 'border-teal-500/40 bg-teal-500/5 shadow-sm shadow-teal-500/10'
+                    : 'border-border bg-card hover:border-border/80'
+              }`}
+            >
+              {/* Done checkmark */}
+              {step.done && (
+                <CheckCircle2 className="absolute right-3 top-3 h-4 w-4 text-teal-500" />
+              )}
+
+              {/* Icon */}
+              <div
+                className={`mb-3 flex h-9 w-9 items-center justify-center rounded-lg ${
+                  step.done
+                    ? 'bg-muted'
+                    : isNext
+                      ? 'bg-teal-500/15'
+                      : 'bg-muted'
+                }`}
+              >
+                <Icon
+                  className={`h-4 w-4 ${
+                    step.done
+                      ? 'text-muted-foreground'
+                      : isNext
+                        ? 'text-teal-600 dark:text-teal-400'
+                        : 'text-muted-foreground'
+                  }`}
+                />
+              </div>
+
+              {/* Step label */}
+              <p className="mb-0.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                Paso {i + 1}
+              </p>
+              <p
+                className={`mb-2 text-sm font-semibold leading-snug ${
+                  step.done ? 'text-muted-foreground line-through' : ''
+                }`}
+              >
+                {step.label}
+              </p>
+
+              {/* Description */}
+              {!step.done && (
+                <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+                  {step.description}
+                </p>
+              )}
+
+              {/* CTA */}
+              {!step.done && (
+                <Link
+                  href={step.href}
+                  className={`inline-flex items-center gap-0.5 text-xs font-semibold transition-colors ${
+                    isNext
+                      ? 'text-teal-600 hover:text-teal-500 dark:text-teal-400 dark:hover:text-teal-300'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Ir ahora
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
