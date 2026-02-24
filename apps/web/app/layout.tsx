@@ -1,14 +1,21 @@
 import './global.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Bricolage_Grotesque, Plus_Jakarta_Sans } from 'next/font/google';
 import { Providers } from '../components/providers';
 import { Toaster } from '../components/ui/sonner';
 import { ApiConnectionStatus } from '../components/api-connection-status';
 import { FeedbackWidgetLoader } from '../components/feedback-widget-loader';
 
-const inter = Inter({
+const displayFont = Bricolage_Grotesque({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-bricolage',
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
+});
+
+const sansFont = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-jakarta',
   display: 'swap',
 });
 
@@ -25,7 +32,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={inter.variable} suppressHydrationWarning>
+    <html
+      lang="es"
+      className={`${displayFont.variable} ${sansFont.variable}`}
+      suppressHydrationWarning
+    >
       <body className="font-sans antialiased">
         <Providers>
           {children}
