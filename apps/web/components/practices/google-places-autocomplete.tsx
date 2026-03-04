@@ -111,37 +111,38 @@ export function GooglePlacesAutocompleteInput({
           required={required}
           autoComplete="off"
         />
-      </div>
 
-      {/* Dropdown con predicciones */}
-      {showDropdown && predictions.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-60 overflow-auto">
-          {predictions.map((prediction) => (
-            <button
-              key={prediction.placeId}
-              type="button"
-              onClick={() => handleSelect(prediction)}
-              className={cn(
-                'w-full text-left px-3 py-2 hover:bg-accent transition-colors',
-                'flex items-start gap-2 text-sm',
-              )}
-            >
-              <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
-              <span className="flex-1">{prediction.description}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Mensaje si no hay resultados */}
-      {showDropdown &&
-        !isLoading &&
-        predictions.length === 0 &&
-        inputValue.length >= 3 && (
-          <div className="absolute z-50 w-full mt-1 bg-background border border-border rounded-md shadow-lg p-3 text-sm text-muted-foreground">
-            No se encontraron resultados. Intenta con otro término de búsqueda.
+        {/* Dropdown con predicciones — dentro del div relative para posicionarse correctamente */}
+        {showDropdown && predictions.length > 0 && (
+          <div className="absolute left-0 right-0 top-full z-200 mt-1 max-h-60 overflow-auto rounded-md border border-border bg-popover shadow-lg">
+            {predictions.map((prediction) => (
+              <button
+                key={prediction.placeId}
+                type="button"
+                onClick={() => handleSelect(prediction)}
+                className={cn(
+                  'w-full text-left px-3 py-2 hover:bg-accent transition-colors',
+                  'flex items-start gap-2 text-sm',
+                )}
+              >
+                <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
+                <span className="flex-1">{prediction.description}</span>
+              </button>
+            ))}
           </div>
         )}
+
+        {/* Mensaje si no hay resultados */}
+        {showDropdown &&
+          !isLoading &&
+          predictions.length === 0 &&
+          inputValue.length >= 3 && (
+            <div className="absolute left-0 right-0 top-full z-200 mt-1 rounded-md border border-border bg-popover p-3 shadow-lg text-sm text-muted-foreground">
+              No se encontraron resultados. Intenta con otro término de
+              búsqueda.
+            </div>
+          )}
+      </div>
     </div>
   );
 }
