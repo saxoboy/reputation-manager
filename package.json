@@ -119,7 +119,7 @@
     "@thallesp/nestjs-better-auth": "^2.2.2",
     "@types/pdfkit": "^0.17.4",
     "bcrypt": "^6.0.0",
-    "better-auth": "^1.4.15",
+    "better-auth": "^1.6.2",
     "bullmq": "^5.66.5",
     "cache-manager": "^7.2.8",
     "class-transformer": "^0.5.1",
